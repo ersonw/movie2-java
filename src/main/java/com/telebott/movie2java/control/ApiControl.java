@@ -1,0 +1,47 @@
+package com.telebott.movie2java.control;
+
+import com.alibaba.fastjson.JSONObject;
+import com.telebott.movie2java.data.GetData;
+import com.telebott.movie2java.data.pData;
+import com.telebott.movie2java.util.ApiGlobalModel;
+import io.lettuce.core.dynamic.annotation.Param;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
+@Api(value = "api", tags = "无验证控制器")
+@ApiResponses({
+        @ApiResponse(code = 200, message = "成功"),
+        @ApiResponse(code = 105, message = "未带token请求"),
+        @ApiResponse(code = 106, message = "token非法或者登录已过期"),
+})
+@RestController
+@RequestMapping("/api")
+public class ApiControl {
+    @ApiOperation(value="请求的接口示例", notes = "测试接口")
+//    @ApiImplicitParam(name = "s",value = "ss",readOnly = true,dataType = "String", paramType = "path")
+    @GetMapping("/test/{page}/{limit}")
+    public String test1(@PathVariable("page") int page, @PathVariable("limit") int limit) {
+        return "ok";
+    }
+//    @Param("")
+//    @RequestBody
+//    @ModelAttribute
+//    @ApiGlobalModel(component = pData.class, value = "limit,page")
+//    @PostMapping("/test")
+//    public String test(JSONObject data) {
+//        return JSONObject.toJSONString(data);
+//    }
+//    @ApiIgnore
+
+}

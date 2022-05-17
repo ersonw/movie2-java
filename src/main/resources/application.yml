@@ -1,0 +1,30 @@
+server:
+  port: 8017
+  tomcat:
+    uri-encoding: UTF-8
+spring:
+  application:
+    name: websocket-chat
+  jpa:
+    hibernate:
+      use-new-id-generator-mappings: false
+  main:
+    allow-bean-definition-overriding: true
+  thymeleaf:
+    prefix: classpath:/static/
+    mode: LEGACYHTML5
+  web:
+    resources:
+      static-locations:  classpath:/static/
+  datasource:
+    url: jdbc:mysql://119.8.56.223:3306/movies?useSSL=false&useUnicode=true&character_set_server=utf8mb4
+    username: movies
+    password: 5diXYxcYL7H4LbRN
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      max-lifetime: 28000
+  redis:
+    #    host: 119.8.56.223
+    host: 127.0.0.1
+    port: 6379
+#    password: 2pmnpw47@
