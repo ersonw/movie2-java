@@ -85,7 +85,7 @@ public class AuthDao {
             for (Object user: users) {
                 ObjectMapper objectMapper = new ObjectMapper();
                 User userEntity = objectMapper.convertValue(user, User.class);
-                if (userEntity.getIdentifier().equals(userToken.getIdentifier()) || userEntity.getToken().equals(userToken.getToken()) || (userEntity.getId() > 0 && userToken.getId() > 0 && userEntity.getId() == userToken.getId())){
+                if (userEntity.getToken().equals(userToken.getToken()) || (userEntity.getId() > 0 && userToken.getId() > 0 && userEntity.getId() == userToken.getId())){
                     popUser(userEntity);
                 }
             }
@@ -121,19 +121,19 @@ public class AuthDao {
     public void popUser(User userToken){
         redisTemplate.opsForSet().remove("Users" ,userToken);
     }
-    public User findUserByIdentifier(String id) {
-        Set users = redisTemplate.opsForSet().members("Users");
-        if (users != null){
-            for (Object user: users) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                User userEntity = objectMapper.convertValue(user,User.class);
-                if (userEntity.getIdentifier().equals(id)){
-                    return userEntity;
-                }
-            }
-        }
-        return null;
-    }
+//    public User findUserByIdentifier(String id) {
+//        Set users = redisTemplate.opsForSet().members("Users");
+//        if (users != null){
+//            for (Object user: users) {
+//                ObjectMapper objectMapper = new ObjectMapper();
+//                User userEntity = objectMapper.convertValue(user,User.class);
+//                if (userEntity.getIdentifier().equals(id)){
+//                    return userEntity;
+//                }
+//            }
+//        }
+//        return null;
+//    }
     public User findUserByToken(String token) {
         Set users = redisTemplate.opsForSet().members("Users");
         if (users != null){

@@ -9,14 +9,15 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "user")
+@Table(name = "game_scroll")
 @Cacheable
 @ToString(includeFieldNames = true)
-public class User {
+public class GameScroll {
     @Id
     @GeneratedValue
     private long id;
-
-    @Transient
-    private String token;
+    private String name;
+    private long amount;
+    private String game;
+    private long addTime;
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.AuthDao;
 import com.telebott.movie2java.dao.UserDao;
 import com.telebott.movie2java.entity.User;
+import com.telebott.movie2java.util.ToolsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -35,23 +36,6 @@ public class MyFilter implements Filter {
 //        authDao = new AuthDao();
     }
 
-    private String getJsonBodyString(HttpServletRequest httpServletRequest) {
-        try {
-            httpServletRequest.setCharacterEncoding("UTF-8");
-            StringBuilder buffer = new StringBuilder();
-            BufferedReader reader = null;
-            reader = new BufferedReader(new InputStreamReader(httpServletRequest.getInputStream(), StandardCharsets.UTF_8));
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-            }
-            return buffer.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     @Override
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (req instanceof HttpServletRequest) {
@@ -75,7 +59,7 @@ public class MyFilter implements Filter {
             }else if (request.getMethod().equals("POST")){
                 if (contentType != null){
                     if (contentType.equals(MediaType.APPLICATION_JSON_VALUE)){
-                        String postContent = getJsonBodyString(request);
+                        String postContent = ToolsUtil.getJsonBodyString(request);
                         JSONObject jsStr = null;
                         if (StringUtils.isNotEmpty(postContent) && postContent.startsWith("{") && postContent.endsWith("}")) {
                             //修改、新增、删除参数

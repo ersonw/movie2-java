@@ -2,7 +2,7 @@ package com.telebott.movie2java.util;
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.SmsRecordsDao;
 import com.telebott.movie2java.data.SmsCode;
-import com.telebott.movie2java.entity.SmsRecords;
+import com.telebott.movie2java.entity.SmsRecord;
 import com.telebott.movie2java.service.SmsBaoService;
 
 import java.io.BufferedReader;
@@ -54,7 +54,7 @@ public class SmsBaoUtil {
     }
 
     private static void handlerChangeMessage(String phone, String code, String data) {
-        SmsRecords records = smsRecordsDao.findByNumberCode(phone,code);
+        SmsRecord records = smsRecordsDao.findByNumberCode(phone,code);
         if (records != null){
             records.setData(data);
             smsRecordsDao.saveAndFlush(records);

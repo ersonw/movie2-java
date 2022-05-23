@@ -7,17 +7,18 @@ import lombok.ToString;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "sms_records")
+@Table(name = "sms_record")
 @ToString(includeFieldNames = true)
 @Setter
 @Getter
-public class SmsRecords {
+public class SmsRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String code;
-    private String number;
-    private long ctime;
-    private int status;
+    private String phone;
     private String data;
+    private int status;
+    private long addTime;
+    private long updateTime;
 }
