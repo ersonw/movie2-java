@@ -9,24 +9,16 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "user")
+@Table(name = "membership_experience")
 @Cacheable
 @ToString(includeFieldNames = true)
-public class User {
+public class MembershipExperience {
     @Id
     @GeneratedValue
     private long id;
-    private String avatar;
-    private String nickname;
+    private long userId;
     private String text;
-    private String username;
-    private String phone;
-    private String email;
-    private String salt;
-    private String password;
-    private int status;
+    private long experience;
     private long addTime;
     private long updateTime;
-    @Transient
-    private String token;
 }

@@ -9,24 +9,20 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "user")
+@Table(name = "cash_in_option")
 @Cacheable
 @ToString(includeFieldNames = true)
-public class User {
+public class CashInOption {
     @Id
     @GeneratedValue
     private long id;
-    private String avatar;
-    private String nickname;
-    private String text;
-    private String username;
-    private String phone;
-    private String email;
-    private String salt;
-    private String password;
+    private String title;
+    private long configId;
+    private long sortId;
+    private int game;
+    private long mini;
+    private long max;
     private int status;
     private long addTime;
     private long updateTime;
-    @Transient
-    private String token;
 }
