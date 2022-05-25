@@ -3,7 +3,7 @@ package com.telebott.movie2java.bootstrap;
 import com.alibaba.fastjson.JSONObject;
 
 import com.telebott.movie2java.dao.AuthDao;
-import com.telebott.movie2java.dao.SmsRecordsDao;
+import com.telebott.movie2java.dao.SmsRecordDao;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.SmsBaoService;
 import com.telebott.movie2java.util.WebSocketUtil;
@@ -16,7 +16,6 @@ import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,7 +27,7 @@ public class ServerWebSocket {
     @Autowired
     private AuthDao authDao;
     @Autowired
-    public SmsRecordsDao smsRecordsDao;
+    public SmsRecordDao smsRecordDao;
     @Autowired
     private SmsBaoService smsBaoService;
     private static ServerWebSocket self;

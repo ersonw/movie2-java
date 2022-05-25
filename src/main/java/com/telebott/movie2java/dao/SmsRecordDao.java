@@ -6,9 +6,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @Repository
-public interface SmsRecordsDao extends JpaRepository<SmsRecord, Long>, CrudRepository<SmsRecord, Long> {
+public interface SmsRecordDao extends JpaRepository<SmsRecord, Long>, CrudRepository<SmsRecord, Long> {
     SmsRecord findAllByData(String data);
     @Query(value = "SELECT COUNT(*) FROM `sms_records` where number =:phone and ctime > :cTime", nativeQuery = true)
     Long countTodayMax(@Param(value = "cTime")long cTime,@Param(value = "phone") String phone);

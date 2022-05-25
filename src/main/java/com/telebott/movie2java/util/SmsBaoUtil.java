@@ -1,6 +1,6 @@
 package com.telebott.movie2java.util;
 import com.alibaba.fastjson.JSONObject;
-import com.telebott.movie2java.dao.SmsRecordsDao;
+import com.telebott.movie2java.dao.SmsRecordDao;
 import com.telebott.movie2java.data.SmsCode;
 import com.telebott.movie2java.entity.SmsRecord;
 import com.telebott.movie2java.service.SmsBaoService;
@@ -16,7 +16,7 @@ import java.util.Random;
 
 public class SmsBaoUtil {
     public static SmsBaoService smsBaoService;
-    public static SmsRecordsDao smsRecordsDao;
+    public static SmsRecordDao smsRecordDao;
     private static String user;
     private static String passwd;
     private static String name;
@@ -54,10 +54,10 @@ public class SmsBaoUtil {
     }
 
     private static void handlerChangeMessage(String phone, String code, String data) {
-        SmsRecord records = smsRecordsDao.findByNumberCode(phone,code);
+        SmsRecord records = smsRecordDao.findByNumberCode(phone,code);
         if (records != null){
             records.setData(data);
-            smsRecordsDao.saveAndFlush(records);
+            smsRecordDao.saveAndFlush(records);
         }
     }
 
@@ -117,9 +117,9 @@ public class SmsBaoUtil {
         }
         return object;
     }
-    public static void init(SmsBaoService smsService, SmsRecordsDao smsRecords){
+    public static void init(SmsBaoService smsService, SmsRecordDao smsRecords){
         smsBaoService = smsService;
-        smsRecordsDao =smsRecords;
+        smsRecordDao =smsRecords;
         JSONObject object = smsBaoService.getSmsConfig();
         user = object.getString("user");
         passwd = object.getString("passwd");
