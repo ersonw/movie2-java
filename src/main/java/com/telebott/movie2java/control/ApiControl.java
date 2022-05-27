@@ -2,6 +2,7 @@ package com.telebott.movie2java.control;
 
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.data.GetData;
+import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.pData;
 import com.telebott.movie2java.util.ApiGlobalModel;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -33,6 +34,12 @@ public class ApiControl {
     @GetMapping("/test/{page}/{limit}")
     public String test1(@PathVariable("page") int page, @PathVariable("limit") int limit) {
         return "ok";
+    }
+    @GetMapping("/test/{text}")
+    public ResponseData test2(@PathVariable("text") String text, @Param("token") String token) {
+        System.out.println(text);
+        System.out.println(token);
+        return new ResponseData();
     }
 //    @Param("")
 //    @RequestBody
