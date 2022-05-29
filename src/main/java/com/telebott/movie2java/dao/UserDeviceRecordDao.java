@@ -13,4 +13,7 @@ import java.util.List;
 public interface UserDeviceRecordDao extends JpaRepository<UserDeviceRecord, Long>, CrudRepository<UserDeviceRecord, Long> {
     List<UserDeviceRecord> findAllByDeviceId(String deviceId);
     long countAllByDeviceId(String deviceId);
+    UserDeviceRecord findAllByUserIdAndDeviceId(long userId, String deviceId);
+
+    UserDeviceRecord findAllByUserId(long id);
 }

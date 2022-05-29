@@ -24,6 +24,7 @@ public class User {
     private String email;
     private String salt;
     private String password;
+    private String registerIp;
     private int status;
     private long addTime;
     private long updateTime;

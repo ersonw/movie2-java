@@ -1,6 +1,7 @@
 package com.telebott.movie2java.bootstrap;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.telebott.movie2java.dao.AuthDao;
 import com.telebott.movie2java.dao.UserDao;
 import com.telebott.movie2java.entity.User;
@@ -35,13 +36,52 @@ public class MyFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
 //        authDao = new AuthDao();
     }
+    /**
+     * 获取访问者IP
+     * 在一般情况下使用Request.getRemoteAddr()即可，但是经过nginx等反向代理软件后，这个方法会失效。
+     * 本方法先从Header中获取X-Real-IP，如果不存在再从X-Forwarded-For获得第一个IP(用,分割)，
+     * 如果还不存在则调用Request .getRemoteAddr()。
+     * @param request
+     * @return
+     */
+    public static String getIpAddr(HttpServletRequest request) {
+        String ip = request.getHeader("X-Real-IP");
+        if (!StringUtils.isBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+            if(ip.contains("../")||ip.contains("..\\")){
+                return "";
+            }
+            return ip;
+        }
+        ip = request.getHeader("X-Forwarded-For");
+        if (!StringUtils.isBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+            // 多次反向代理后会有多个IP值，第一个为真实IP。
+            int index = ip.indexOf(',');
+            if (index != -1) {
+                ip= ip.substring(0, index);
+            }
+            if(ip.contains("../")||ip.contains("..\\")){
+                return "";
+            }
+            return ip;
+        } else {
+            ip=request.getRemoteAddr();
+            if(ip.contains("../")||ip.contains("..\\")){
+                return "";
+            }
+            if(ip.equals("0:0:0:0:0:0:0:1")){
+                ip="127.0.0.1";
+            }
+            return ip;
+        }
 
+    }
     @Override
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (req instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest) req;
             String contentType = request.getContentType();
             String token = ((HttpServletRequest) req).getHeader("Token");
+            String ip = getIpAddr(request);
             User user = null;
             if (StringUtils.isNotEmpty(token)){
 //                user = authDao.findUserByToken(token);
@@ -52,6 +92,7 @@ public class MyFilter implements Filter {
             if (request.getMethod().equals("GET")){
                 Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
                 ParameterRequestWrapper wrapper = new ParameterRequestWrapper(request, parameterMap);
+                wrapper.addParameter("ip", ip);
                 if (user != null){
                     wrapper.addParameter("user", JSONObject.toJSONString(user));
                 }
@@ -60,6 +101,7 @@ public class MyFilter implements Filter {
                 if (contentType != null){
                     if (contentType.equals(MediaType.APPLICATION_JSON_VALUE)){
                         String postContent = ToolsUtil.getJsonBodyString(request);
+//                        System.out.println(postContent);
                         JSONObject jsStr = null;
                         if (StringUtils.isNotEmpty(postContent) && postContent.startsWith("{") && postContent.endsWith("}")) {
                             //修改、新增、删除参数
@@ -67,15 +109,19 @@ public class MyFilter implements Filter {
                         } else {
                             jsStr = new JSONObject();
                         }
+                        jsStr.put("ip", ip);
                         if (user != null) {
                             jsStr.put("user", JSONObject.toJSONString(user));
                         }
                         postContent = jsStr.toJSONString();
                         //将参数放入重写的方法中
                         request = new BodyRequestWrapper(request, postContent);
+//                        Map<String, String[]> parameterMap = JSONObject.parseObject(postContent, new TypeReference<Map<String, String[]>>(){});
+//                        request = new ParameterRequestWrapper(request, parameterMap);
                     }else if (contentType.equals(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                             || contentType.contains(MediaType.MULTIPART_FORM_DATA_VALUE)){
                         Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
+                        parameterMap.put("ip", new String[]{ip});
                         if (user != null) {
                             parameterMap.put("user", new String[]{JSONObject.toJSONString(user)});
                         }

@@ -1,7 +1,9 @@
 package com.telebott.movie2java.config;
 
 import com.telebott.movie2java.service.AuthInterceptor;
+import com.telebott.movie2java.util.CustomMethodArgumentResolver;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -46,5 +48,10 @@ public class AssertConfig implements WebMvcConfigurer {
         registry.addInterceptor(authInterceptor).addPathPatterns("/**")
                 .excludePathPatterns(exclude)
                 .excludePathPatterns("/swagger-resources/**", "/webjars/**", "/v2/**", "/swagger-ui.html/**");
+    }
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new CustomMethodArgumentResolver());
+        WebMvcConfigurer.super.addArgumentResolvers(resolvers);
     }
 }
