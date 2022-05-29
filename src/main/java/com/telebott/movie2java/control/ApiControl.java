@@ -38,7 +38,7 @@ public class ApiControl {
     @GetMapping("/test/{deviceId}")
     public ResponseData test2(@PathVariable("deviceId") String deviceId,@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String sUser) {
         User user = FromUtil.fromUser(sUser);
-        System.out.println(user);
+        System.out.println(deviceId);
         if (user != null){
             return ResponseData.success((JSONObject) (new JSONObject()).put("token", user.getToken()));
         }

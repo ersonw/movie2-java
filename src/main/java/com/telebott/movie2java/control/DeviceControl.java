@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/device")
-@Api(value = "api", tags = "无验证控制器")
+@Api(value = "api", tags = "设备接口")
 public class DeviceControl {
     @Autowired
     private DeviceService service;
 
     @GetMapping("/check/{deviceId}")
     public ResponseData check(@PathVariable("deviceId") String deviceId, @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String sUser) {
+        System.out.println(deviceId);
         User user = FromUtil.fromUser(sUser);
-        System.out.println(user);
         if (user != null){
             return ResponseData.success((JSONObject) (new JSONObject()).put("token", user.getToken()));
         }

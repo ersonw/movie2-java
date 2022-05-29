@@ -45,4 +45,8 @@ public class ResponseData {
     public static ResponseData fail(String message) {
         return new ResponseData(201,message);
     }
+
+    public static ResponseData error(String message) {
+        return fail(message);
+    }
 }
