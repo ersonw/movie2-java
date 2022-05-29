@@ -4,12 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.data.GetData;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.pData;
+import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.util.ApiGlobalModel;
+import com.telebott.movie2java.util.FromUtil;
 import io.lettuce.core.dynamic.annotation.Param;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -30,16 +29,20 @@ import java.nio.charset.StandardCharsets;
 @RequestMapping("/api")
 public class ApiControl {
     @ApiOperation(value="请求的接口示例", notes = "测试接口")
-//    @ApiImplicitParam(name = "s",value = "ss",readOnly = true,dataType = "String", paramType = "path")
     @GetMapping("/test/{page}/{limit}")
     public String test1(@PathVariable("page") int page, @PathVariable("limit") int limit) {
         return "ok";
     }
-    @GetMapping("/test/{text}")
-    public ResponseData test2(@PathVariable("text") String text, @Param("token") String token) {
-        System.out.println(text);
-        System.out.println(token);
-        return new ResponseData();
+
+
+    @GetMapping("/test/{deviceId}")
+    public ResponseData test2(@PathVariable("deviceId") String deviceId,@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String sUser) {
+        User user = FromUtil.fromUser(sUser);
+        System.out.println(user);
+        if (user != null){
+            return ResponseData.success((JSONObject) (new JSONObject()).put("token", user.getToken()));
+        }
+        return ResponseData.fail();
     }
 //    @Param("")
 //    @RequestBody

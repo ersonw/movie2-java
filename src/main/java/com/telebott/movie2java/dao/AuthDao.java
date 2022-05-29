@@ -147,6 +147,19 @@ public class AuthDao {
         }
         return null;
     }
+    public User findUserByUserId(long userId) {
+        Set users = redisTemplate.opsForSet().members("Users");
+        if (users != null){
+            for (Object user: users) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                User userEntity = objectMapper.convertValue(user,User.class);
+                if (userEntity.getId()== userId){
+                    return userEntity;
+                }
+            }
+        }
+        return null;
+    }
 
     public Set getAllUser(){
         return redisTemplate.opsForSet().members("Users");

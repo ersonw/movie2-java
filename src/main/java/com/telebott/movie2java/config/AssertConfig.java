@@ -34,13 +34,14 @@ public class AssertConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         List<String> exclude = new ArrayList<>();
-        exclude.add("/fonts/**");
-        exclude.add("/static/**");
-        exclude.add("/css/**");
-        exclude.add("/js/**");
-        exclude.add("/img/**");
+//        exclude.add("/fonts/**");
+//        exclude.add("/static/**");
+//        exclude.add("/css/**");
+//        exclude.add("/js/**");
+//        exclude.add("/img/**");
         exclude.add("/*");
-        exclude.add("/api/*");
+//        exclude.add("/api/*");
+        exclude.add("/api/**");
         AuthInterceptor authInterceptor = new AuthInterceptor();
         registry.addInterceptor(authInterceptor).addPathPatterns("/**")
                 .excludePathPatterns(exclude)
