@@ -12,13 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface SmsRecordDao extends JpaRepository<SmsRecord, Long>, CrudRepository<SmsRecord, Long> {
     SmsRecord findAllByData(String data);
-    @Query(value = "SELECT COUNT(*) FROM `sms_records` where number =:phone and ctime > :cTime", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM `sms_record` where phone =:phone and add_time > :cTime", nativeQuery = true)
     Long countTodayMax(@Param(value = "cTime")long cTime,@Param(value = "phone") String phone);
     SmsRecord findAllById(int id);
-    @Query(value = "SELECT * FROM `sms_records` where number =:phone and time > :time and status = 0 order by id desc  LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM `sms_record` where phone =:phone and add_time > :time and status = 0 order by id desc  LIMIT 1", nativeQuery = true)
     SmsRecord findByNumberCodeFromTime(@Param(value = "phone")String phone, @Param(value = "time")long time);
-    @Query(value = "SELECT * FROM `sms_records` where number =:phone and code = :code and time > :time and status =0 order by id asc  LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM `sms_record` where phone =:phone and code = :code and add_time > :time and status =0 order by id asc  LIMIT 1", nativeQuery = true)
     SmsRecord findByNumberCodeFirst(@Param(value = "phone")String phone, @Param(value = "code")String code, @Param(value = "time")long time);
-    @Query(value = "SELECT * FROM `sms_records` where number =:phone and code = :code order by id desc LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM `sms_record` where phone =:phone and code = :code order by id desc LIMIT 1", nativeQuery = true)
     SmsRecord findByNumberCode(@Param(value = "phone")String phone, @Param(value = "code")String code);
+    @Query(value = "SELECT * FROM `sms_record` where phone =:phone order by id desc LIMIT 1", nativeQuery = true)
+    SmsRecord getLast(@Param(value = "phone")String phone);
 }

@@ -30,19 +30,20 @@ public class UserControl {
         return service.login(data.getUsername(),data.getPassword(), data.getDeviceId(), data.getPlatform(),data.getIp());
     }
     @PostMapping("/register")
-    @ApiGlobalModel(component = pData.class, value = "username,password,deviceId,platform,codeId,code")
+    @ApiGlobalModel(component = pData.class, value = "password,codeId,code")
     public ResponseData register(@RequestBody pData data){
-//        if (StringUtils.isEmpty(data.getUsername()) || StringUtils.isEmpty(password)){
-//            return ResponseData.error("用户名或密码必填!");
-//        }
-//        return service.register(username,password, codeId, code, deviceId, platform,ip);
-        return ResponseData.fail();
+        if (StringUtils.isEmpty(data.getCode()) || StringUtils.isEmpty(data.getCodeId())){
+            return ResponseData.error("验证码必填!");
+        }
+        if (StringUtils.isEmpty(data.getPassword())){
+            return ResponseData.error("密码必填!");
+        }
+        return service.register(data.getPassword(), data.getCodeId(), data.getCode(), data.getIp());
+//        return ResponseData.fail();
     }
     @GetMapping("/register/sms/{phone}")
     public ResponseData registerSms(@PathVariable("phone") String phone,
                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        System.out.println(phone);
-        System.out.println(ip);
-        return ResponseData.fail();
+        return service.sendSmsRegister(phone);
     }
 }

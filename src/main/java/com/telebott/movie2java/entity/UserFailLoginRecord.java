@@ -19,5 +19,6 @@ public class UserFailLoginRecord {
     private long userId;
     private String deviceId;
     private String platform;
+    private String ip;
     private long addTime;
 }

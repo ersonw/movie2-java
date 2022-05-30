@@ -4,7 +4,10 @@ import com.telebott.movie2java.dao.SmsRecordDao;
 import com.telebott.movie2java.data.SmsCode;
 import com.telebott.movie2java.entity.SmsRecord;
 import com.telebott.movie2java.service.SmsBaoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,10 +16,13 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
-
+@Component
 public class SmsBaoUtil {
-    public static SmsBaoService smsBaoService;
-    public static SmsRecordDao smsRecordDao;
+    private static SmsBaoUtil self;
+    @Autowired
+    public  SmsBaoService smsBaoService;
+    @Autowired
+    public  SmsRecordDao smsRecordDao;
     private static String user;
     private static String passwd;
     private static String name;
@@ -54,10 +60,10 @@ public class SmsBaoUtil {
     }
 
     private static void handlerChangeMessage(String phone, String code, String data) {
-        SmsRecord records = smsRecordDao.findByNumberCode(phone,code);
+        SmsRecord records = self.smsRecordDao.findByNumberCode(phone,code);
         if (records != null){
             records.setData(data);
-            smsRecordDao.saveAndFlush(records);
+            self.smsRecordDao.saveAndFlush(records);
         }
     }
 
@@ -117,10 +123,15 @@ public class SmsBaoUtil {
         }
         return object;
     }
-    public static void init(SmsBaoService smsService, SmsRecordDao smsRecords){
-        smsBaoService = smsService;
-        smsRecordDao =smsRecords;
-        JSONObject object = smsBaoService.getSmsConfig();
+    @PostConstruct
+    public void init(){
+        self = this;
+        rest();
+    }
+    public static void rest(){
+        JSONObject object = self.smsBaoService.getSmsConfig();
+//        JSONObject object = smsBaoService.getSmsConfig();
+//        System.out.println(JSONObject.toJSONString(object));
         user = object.getString("user");
         passwd = object.getString("passwd");
         name = object.getString("name");

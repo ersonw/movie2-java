@@ -15,6 +15,13 @@ public class SmsCode {
     private String phone;
     private String code;
     public SmsCode(){
+        init();
+    }
+    public SmsCode(String phone){
+        init();
+        this.phone = phone;
+    }
+    private void init(){
         UUID uuid = UUID.randomUUID();
         id = uuid.toString().replaceAll("-","");
         code = SmsBaoUtil.getSmsCode();
