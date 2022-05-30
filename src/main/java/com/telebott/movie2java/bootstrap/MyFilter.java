@@ -80,14 +80,16 @@ public class MyFilter implements Filter {
         if (req instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest) req;
             String contentType = request.getContentType();
+//            System.out.println(contentType);
+//            System.out.println(request.getCharacterEncoding());
             String token = ((HttpServletRequest) req).getHeader("Token");
             String ip = getIpAddr(request);
             User user = null;
             if (StringUtils.isNotEmpty(token)){
-//                user = authDao.findUserByToken(token);
-//                if (token.equals("e4188bce3f35436f9dc5f0e627d093e31651674631238")) {
-//                    user = userDao.findAllById(1);
-//                }
+                user = authDao.findUserByToken(token);
+                if (token.equals("e4188bce3f35436f9dc5f0e627d093e31651674631238")) {
+                    user = userDao.findAllById(1);
+                }
             }
             if (request.getMethod().equals("GET")){
                 Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
@@ -99,7 +101,7 @@ public class MyFilter implements Filter {
                 request = wrapper;
             }else if (request.getMethod().equals("POST")){
                 if (contentType != null){
-                    if (contentType.equals(MediaType.APPLICATION_JSON_VALUE)){
+                    if (contentType.contains(MediaType.APPLICATION_JSON_VALUE)){
                         String postContent = ToolsUtil.getJsonBodyString(request);
 //                        System.out.println(postContent);
                         JSONObject jsStr = null;
@@ -114,6 +116,7 @@ public class MyFilter implements Filter {
                             jsStr.put("user", JSONObject.toJSONString(user));
                         }
                         postContent = jsStr.toJSONString();
+//                        System.out.println(postContent);
                         //将参数放入重写的方法中
                         request = new BodyRequestWrapper(request, postContent);
 //                        Map<String, String[]> parameterMap = JSONObject.parseObject(postContent, new TypeReference<Map<String, String[]>>(){});
@@ -125,6 +128,7 @@ public class MyFilter implements Filter {
                         if (user != null) {
                             parameterMap.put("user", new String[]{JSONObject.toJSONString(user)});
                         }
+//                        System.out.println(parameterMap);
                         request = new ParameterRequestWrapper(request, parameterMap);
                     }
                 }

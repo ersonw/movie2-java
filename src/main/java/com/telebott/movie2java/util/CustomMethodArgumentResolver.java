@@ -61,28 +61,30 @@ public class CustomMethodArgumentResolver implements HandlerMethodArgumentResolv
         Class<?> parameterType = parameter.getParameterType();
         String requestBody = getRequestBody(servletRequest);
 //        Map<String, Object> params = ObjectMapperUtil.str2Obj(requestBody, new TypeReference<Map<String, Object>>() {});
+        System.out.println(requestBody);
+
         Map<String, Object> params = JSONObject.parseObject(requestBody, new TypeReference<Map<String, Object>>() {});
 
         params = MapUtils.isEmpty(params) ? new HashMap<>(0) : params;
         String name = StringUtils.isBlank(customParam.value()) ? parameter.getParameterName() : customParam.value();
         Object value = params.get(name);
 
-        if (parameterType.equals(String.class)) {
-            if (StringUtils.isBlank((String) value)) {
-                log.error("参数解析异常,String类型参数不能为空");
-                throw new RuntimeException("参数解析异常,String类型参数不能为空");
-            }
-        }
+//        if (parameterType.equals(String.class)) {
+//            if (StringUtils.isBlank((String) value)) {
+//                log.error("参数解析异常,String类型参数不能为空");
+//                throw new RuntimeException("参数解析异常,String类型参数不能为空");
+//            }
+//        }
 
         if (customParam.required()) {
             if (value == null) {
-                log.error("参数解析异常,require=true,值不能为空");
-                throw new RuntimeException("参数解析异常,require=true,值不能为空");
+//                log.error("参数解析异常,require=true,值不能为空");
+                throw new RuntimeException("参数["+name+"]解析异常,require=true,值不能为空");
             }
         } else {
             if (customParam.defaultValue().equals(ValueConstants.DEFAULT_NONE)) {
-                log.error("参数解析异常,require=false,必须指定默认值");
-                throw new RuntimeException("参数解析异常,require=false,必须指定默认值");
+//                log.error("参数解析异常,require=false,必须指定默认值");
+                throw new RuntimeException("参数["+name+"]解析异常,require=false,必须指定默认值");
             }
             if (value == null) {
                 value = customParam.defaultValue();

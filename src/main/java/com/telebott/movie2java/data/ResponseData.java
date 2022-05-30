@@ -40,10 +40,10 @@ public class ResponseData {
     }
 
     public static ResponseData fail() {
-        return new ResponseData(201);
+        return new ResponseData(404);
     }
     public static ResponseData fail(String message) {
-        return new ResponseData(201,message);
+        return new ResponseData(404,message);
     }
 
     public static ResponseData error(String message) {
