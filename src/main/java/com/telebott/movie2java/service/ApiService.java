@@ -102,6 +102,7 @@ public class ApiService {
                 videoClass.setUpdateTime(System.currentTimeMillis());
                 videoClassDao.saveAndFlush(videoClass);
             }
+//            System.out.println(videoClass.getId());
             video.setVodClass(videoClass.getId());
         }
         if (yzmData.getMetadata() != null) {
