@@ -3,6 +3,7 @@ package com.telebott.movie2java.data;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 @AllArgsConstructor
@@ -34,15 +35,16 @@ public class YzmData {
     private String ip;
 
     public MetaData getMetadata(){
-        if (!metadata.startsWith("{") && !metadata.endsWith("}")) return null;
+        if (!metadata.startsWith("{") || !metadata.endsWith("}")) return null;
         return JSONObject.toJavaObject(JSONObject.parseObject(metadata),MetaData.class);
     }
     public OutPutData getOutput(){
-        if (!output.startsWith("{") && !output.endsWith("}")) return null;
+        if (!output.startsWith("{") || !output.endsWith("}")) return null;
         return JSONObject.toJavaObject(JSONObject.parseObject(output),OutPutData.class);
     }
 
     public static YzmData getInstance(String data){
+        if (!data.startsWith("{") || !data.endsWith("}") ) return null;
         JSONObject object = JSONObject.parseObject(data);
         return JSONObject.toJavaObject(object, YzmData.class);
     }
