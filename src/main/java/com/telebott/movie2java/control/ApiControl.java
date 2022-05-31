@@ -32,13 +32,13 @@ public class ApiControl {
     private ApiService service;
     @ApiIgnore
     @PostMapping("/Yzm")
-    public ResponseData Yzm(@RequestParam(value = "passwd", required = false) String passwd, @RequestBody YzmData yzmData) {
+    public ResponseData Yzm(@RequestParam(value = "passwd", required = false) String passwd, @RequestBody String yzmData) {
 //        System.out.println(httpServletRequest.getMethod());
 //        String jsonStr = ToolsUtil.getJsonBodyString(httpServletRequest);
 //        if (jsonStr != null && jsonStr.startsWith("{") && jsonStr.endsWith("}")) {
 //            service.handlerYzm(YzmData.getInstance(jsonStr), passwd);
 //        }
-        return service.handlerYzm(yzmData, passwd);
+        return service.handlerYzm(YzmData.getInstance(yzmData), passwd);
     }
     @ApiIgnore
     @PostMapping("/toPayNotify")
