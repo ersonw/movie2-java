@@ -17,6 +17,7 @@ public class SearchHot {
     @GeneratedValue
     private long id;
     private String words;
+    private String ip;
     private long userId;
     private long addTime;
 }

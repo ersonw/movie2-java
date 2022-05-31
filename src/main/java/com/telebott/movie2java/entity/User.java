@@ -1,5 +1,6 @@
 package com.telebott.movie2java.entity;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -30,4 +31,9 @@ public class User {
     private long updateTime;
     @Transient
     private String token;
+
+    public static User getInstance(String s){
+        JSONObject object = JSONObject.parseObject(s);
+        return JSONObject.toJavaObject(object, User.class);
+    }
 }

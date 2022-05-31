@@ -5,6 +5,7 @@ import com.telebott.movie2java.data.GetData;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.pData;
 import com.telebott.movie2java.entity.User;
+import com.telebott.movie2java.service.ApiService;
 import com.telebott.movie2java.util.ApiGlobalModel;
 import com.telebott.movie2java.util.FromUtil;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -28,6 +29,8 @@ import java.nio.charset.StandardCharsets;
 @RestController
 @RequestMapping("/api")
 public class ApiControl {
+    @Autowired
+    private ApiService service;
     @ApiOperation(value="请求的接口示例", notes = "测试接口")
     @GetMapping("/test/{page}/{limit}")
     public String test1(@PathVariable("page") int page, @PathVariable("limit") int limit) {

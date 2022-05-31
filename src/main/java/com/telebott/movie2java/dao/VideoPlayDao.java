@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface VideoPlayDao extends JpaRepository<VideoPlay, Long>, CrudRepository<VideoPlay, Long> {
+    long countAllByVideoId(long videoId);
 }

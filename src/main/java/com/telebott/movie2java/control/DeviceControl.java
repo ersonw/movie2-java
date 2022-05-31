@@ -22,14 +22,10 @@ public class DeviceControl {
 //        System.out.println(deviceId);
         User user = FromUtil.fromUser(sUser);
         if (user != null){
-            JSONObject json = new JSONObject();
-            json.put("token", user.getToken());
-            return ResponseData.success(json);
+            return ResponseData.success(ResponseData.object("token", user.getToken()));
         }
         if (service.check(deviceId)){
-            JSONObject json = new JSONObject();
-            json.put("token", service.getToken(deviceId));
-            return ResponseData.success(json);
+            return ResponseData.success(ResponseData.object("token", service.getToken(deviceId)));
         }
         return ResponseData.fail();
     }

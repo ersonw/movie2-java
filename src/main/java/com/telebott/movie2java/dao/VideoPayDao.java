@@ -9,4 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface VideoPayDao extends JpaRepository<VideoPay, Long>, CrudRepository<VideoPay, Long> {
+    VideoPay findAllById(Long id);
+    VideoPay findAllByVideoId(Long videoId);
 }

@@ -42,11 +42,25 @@ public class ResponseData {
     public static ResponseData fail() {
         return new ResponseData(404);
     }
+    public static ResponseData error() {
+        return new ResponseData(404);
+    }
+    public static ResponseData error(int code) {
+        return new ResponseData(code);
+    }
+    public static ResponseData error(int code, String message) {
+        return new ResponseData(code, message);
+    }
     public static ResponseData fail(String message) {
         return new ResponseData(404,message);
     }
 
     public static ResponseData error(String message) {
         return fail(message);
+    }
+    public static JSONObject object(String name, Object val) {
+        JSONObject obj = new JSONObject();
+        obj.put(name,val);
+        return obj;
     }
 }

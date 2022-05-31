@@ -29,7 +29,7 @@ public class UserService {
     @Autowired
     private UserFailLoginRecordDao failLoginRecordDao;
 
-    private static long FAIL_LOGIN_TIMES = 5;
+    private static long FAIL_LOGIN_TIMES = 6;
     private long checkFailLogin(long userId){
         List<UserFailLoginRecord> records = failLoginRecordDao.checkUserToday(userId, TimeUtil.getTodayZero());
         return FAIL_LOGIN_TIMES - records.size();
@@ -72,12 +72,11 @@ public class UserService {
                 deviceRecord.setPlatform(platform);
                 deviceRecord.setUserId(user.getId());
             }
+            deviceRecord.setIp(ip);
             deviceRecord.setAddTime(System.currentTimeMillis());
             deviceRecordDao.saveAndFlush(deviceRecord);
             authDao.pushUser(user);
-            JSONObject json = new JSONObject();
-            json.put("token", user.getToken());
-            return ResponseData.success(json);
+            return ResponseData.success(ResponseData.object("token", user.getToken()));
         }else {
             fail--;
             UserFailLoginRecord record = new UserFailLoginRecord();
@@ -113,9 +112,7 @@ public class UserService {
         user.setText("本人很懒，不想说话！");
         userDao.saveAndFlush(user);
 //        return login(username,password,deviceId,platform,ip);
-        JSONObject json = new JSONObject();
-        json.put("id", user.getId());
-        return ResponseData.success(json);
+        return ResponseData.success(ResponseData.object("id", user.getId()));
     }
     public ResponseData sendSmsRegister(String phone){
         if (!MobileRegularExp.isMobileNumber(phone)){
@@ -147,9 +144,7 @@ public class UserService {
         if (SmsBaoUtil.sendSmsCode(code)){
             smsRecords.setStatus(1);
             smsRecordDao.saveAndFlush(smsRecords);
-            JSONObject json = new JSONObject();
-            json.put("id", code.getId());
-            return ResponseData.success(json);
+            return ResponseData.success(ResponseData.object("id", code.getId()));
         }
         authDao.popCode(code);
         return ResponseData.fail("短信发送失败，请联系管理员!");
