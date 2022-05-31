@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface VideoClassDao extends JpaRepository<VideoClass, Long>, CrudRepository<VideoClass, Long> {
+    VideoClass findAllByName(String name);
 }

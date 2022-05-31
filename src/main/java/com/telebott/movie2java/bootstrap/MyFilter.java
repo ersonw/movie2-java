@@ -121,8 +121,7 @@ public class MyFilter implements Filter {
                         request = new BodyRequestWrapper(request, postContent);
 //                        Map<String, String[]> parameterMap = JSONObject.parseObject(postContent, new TypeReference<Map<String, String[]>>(){});
 //                        request = new ParameterRequestWrapper(request, parameterMap);
-                    }else if (contentType.equals(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                            || contentType.contains(MediaType.MULTIPART_FORM_DATA_VALUE)){
+                    }else{
                         Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
                         parameterMap.put("ip", new String[]{ip});
                         if (user != null) {

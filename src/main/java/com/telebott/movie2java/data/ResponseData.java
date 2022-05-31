@@ -63,4 +63,8 @@ public class ResponseData {
         obj.put(name,val);
         return obj;
     }
+
+    public static ResponseData success(String message) {
+        return new ResponseData(200,message);
+    }
 }

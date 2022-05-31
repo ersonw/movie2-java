@@ -1,13 +1,12 @@
 package com.telebott.movie2java.control;
 
 import com.alibaba.fastjson.JSONObject;
-import com.telebott.movie2java.data.GetData;
-import com.telebott.movie2java.data.ResponseData;
-import com.telebott.movie2java.data.pData;
+import com.telebott.movie2java.data.*;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.ApiService;
 import com.telebott.movie2java.util.ApiGlobalModel;
 import com.telebott.movie2java.util.FromUtil;
+import com.telebott.movie2java.util.ToolsUtil;
 import io.lettuce.core.dynamic.annotation.Param;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-@Api(value = "api", tags = "无验证控制器")
+@Api(value = "api", tags = "根接口")
 @ApiResponses({
         @ApiResponse(code = 200, message = "成功"),
         @ApiResponse(code = 105, message = "未带token请求"),
@@ -31,21 +30,44 @@ import java.nio.charset.StandardCharsets;
 public class ApiControl {
     @Autowired
     private ApiService service;
-    @ApiOperation(value="请求的接口示例", notes = "测试接口")
-    @GetMapping("/test/{page}/{limit}")
-    public String test1(@PathVariable("page") int page, @PathVariable("limit") int limit) {
-        return "ok";
+    @ApiIgnore
+    @PostMapping("/Yzm")
+    public ResponseData Yzm(@RequestParam(value = "passwd", required = false) String passwd, @RequestBody YzmData yzmData) {
+//        System.out.println(httpServletRequest.getMethod());
+//        String jsonStr = ToolsUtil.getJsonBodyString(httpServletRequest);
+//        if (jsonStr != null && jsonStr.startsWith("{") && jsonStr.endsWith("}")) {
+//            service.handlerYzm(YzmData.getInstance(jsonStr), passwd);
+//        }
+        return service.handlerYzm(yzmData, passwd);
     }
-
-
-    @GetMapping("/test/{deviceId}")
-    public ResponseData test2(@PathVariable("deviceId") String deviceId,@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String sUser) {
-        User user = FromUtil.fromUser(sUser);
-        System.out.println(deviceId);
-        if (user != null){
-            return ResponseData.success((JSONObject) (new JSONObject()).put("token", user.getToken()));
-        }
-        return ResponseData.fail();
+    @ApiIgnore
+    @PostMapping("/toPayNotify")
+    public String toPayNotify(@RequestBody ToPayNotify payNotify) {
+//        System.out.println(payNotify);
+//        if (service.handlerToPayNotify(payNotify)) {
+//            return "success";
+//        }
+//        return "fail";
+        return service.handlerToPayNotify(payNotify);
+    }
+    @ApiIgnore
+    @GetMapping("/toPay")
+    public String toPay(@ModelAttribute ToPayNotify payNotify) {
+        return "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    <meta charset=\"utf-8\">\n" +
+                "</head>\n" +
+                "<script type=\"text/javascript\">\n" +
+                "\n" +
+                "    function run(){\n" +
+                "        document.getElementById(\"sp\").click();\n" +
+                "    }\n" +
+                "</script>\n" +
+                "<body οnlοad=\"run()\">\n" +
+                "<a href=\"moviescheme://123\">打开应用<h1 id=\"sp\"></h1></a>\n" +
+                "</body>\n" +
+                "</html>";
     }
 //    @Param("")
 //    @RequestBody

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface VideoDao extends JpaRepository<Video, Long>, CrudRepository<Video, Long> {
+    Video findAllByShareId(String shareId);
     Page<Video> findAllByTitle(String title, Pageable pageable);
     Page<Video> findAllByTitleLikeAndStatus(String title,int status, Pageable pageable);
 }

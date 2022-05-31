@@ -21,6 +21,10 @@ public class TimeUtil {
     public static String getNowString() {
         return getNowString(10);
     }
+    public static String getNowDate() {
+        LocalDateTime ld = LocalDateTime.now();
+        return format(ld,"yyyy-MM-dd HH:mm:ss");
+    }
 
     public static String timeToString(long time, int v) {
         String[] sTime = new String[]{Long.toString(time)};

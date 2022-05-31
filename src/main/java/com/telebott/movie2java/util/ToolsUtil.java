@@ -33,6 +33,15 @@ import java.util.regex.Pattern;
 
 public class ToolsUtil {
     public static final int TIME_OUT = 30;
+
+    public static long cardinality(long max){
+        return cardinality(100,max);
+    }
+    public static long cardinality(long mini, long max){
+        if (mini < 0) mini = 0;
+        if (max < mini) max = mini+2;
+        return  (long) (mini+Math.random()*(max-mini+1));
+    }
     public static boolean checkEmailFormat(String content){
         String REGEX="^\\w+((-\\w+)|(\\.\\w+))*@\\w+(\\.\\w{2,3}){1,3}$";
         Pattern p = Pattern.compile(REGEX);
