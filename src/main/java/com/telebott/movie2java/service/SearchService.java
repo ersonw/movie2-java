@@ -34,7 +34,7 @@ public class SearchService {
         page--;
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.DESC, "id"));
-        Page<Video> videoPage = videoDao.findAllByTitleLikeAndStatus(text,1, pageable);
+        Page<Video> videoPage = videoDao.findAllByTitleLikeAndStatus("%"+text+"%",1, pageable);
         JSONArray array = new JSONArray();
         for (Video video : videoPage.getContent()) {
             array.add(getVideo(video));
