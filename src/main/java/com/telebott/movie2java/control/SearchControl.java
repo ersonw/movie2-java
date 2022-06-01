@@ -15,11 +15,28 @@ public class SearchControl {
     @Autowired
     private SearchService service;
 
-    @GetMapping("/movie/{page}/{text}")
-    public ResponseData movie(@PathVariable int page,
-                              @PathVariable String text,
+    @GetMapping("/movie/{text}")
+    public ResponseData movie(@PathVariable String text,
                               @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        return service.searchMovie(text, page,User.getInstance(user), ip);
+        return service.searchMovie(text,User.getInstance(user), ip);
+    }
+    @GetMapping("/movie/{page}/{id}")
+    public ResponseData movie(@PathVariable int page,
+                              @PathVariable String id,
+                              @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.searchResult(id, page,User.getInstance(user), ip);
+    }
+    @GetMapping("/movie/cancel/{id}")
+    public ResponseData cancel(@PathVariable String id,
+                              @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.searchCancel(id, ip);
+    }
+    @GetMapping("/label/anytime")
+    public ResponseData labelAnytime(@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.labelAnytime(User.getInstance(user),ip);
     }
 }

@@ -2,6 +2,7 @@ package com.telebott.movie2java.dao;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.telebott.movie2java.data.SearchData;
 import com.telebott.movie2java.data.SmsCode;
 import com.telebott.movie2java.entity.User;
 import org.apache.commons.lang3.StringUtils;
@@ -9,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 @Repository
 public class AuthDao {
@@ -20,6 +19,53 @@ public class AuthDao {
     @Autowired
     RedisTemplate redisTemplate;
     private static final Timer timer = new Timer();
+    public void pushSearch(SearchData data){
+        SearchData object = findSearch(data.getId());
+        if (object != null){
+            popSearch(object);
+        }
+        redisTemplate.opsForSet().add("searchs",JSONObject.toJSONString(data));
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                popSearch(object);
+            }
+        }, 1000 * 60 * 60);
+    }
+    public List<SearchData> findSearchByUserId(long userId){
+        Set searchs = redisTemplate.opsForSet().members("searchs");
+        if (searchs != null){
+            List<SearchData> datas = new ArrayList<>();
+            for (Object search: searchs) {
+                JSONObject jsonObject = JSONObject.parseObject(search.toString());
+                if (jsonObject.getLong("userId") == userId){
+                    datas.add(JSONObject.toJavaObject(jsonObject,SearchData.class));
+                }
+            }
+            return datas;
+        }
+        return null;
+    }
+    public SearchData findSearch(String id){
+        Set searchs = redisTemplate.opsForSet().members("searchs");
+        if (searchs != null){
+            for (Object search: searchs) {
+                JSONObject jsonObject = JSONObject.parseObject(search.toString());
+                if (id.equals(jsonObject.get("id"))){
+                    return JSONObject.toJavaObject(jsonObject,SearchData.class);
+                }
+            }
+        }
+        return null;
+    }
+    public void popSearch(List<SearchData> datas){
+        for (SearchData data: datas) {
+            redisTemplate.opsForSet().remove("searchs" ,JSONObject.toJSONString(data));
+        }
+    }
+    public void popSearch(SearchData data){
+        redisTemplate.opsForSet().remove("searchs" ,JSONObject.toJSONString(data));
+    }
     public void pushCode(SmsCode smsCode){
         SmsCode object = findCode(smsCode.getId());
         if (object != null){
