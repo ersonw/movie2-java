@@ -1,5 +1,8 @@
 package com.telebott.movie2java.util;
 
+import com.alibaba.fastjson.JSONObject;
+import com.telebott.movie2java.dao.FilterWordsDao;
+import com.telebott.movie2java.entity.FilterWords;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -11,8 +14,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -30,10 +36,26 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+@Component
 public class ToolsUtil {
-    public static final int TIME_OUT = 30;
+    private static ToolsUtil self;
+    @Autowired
+    private FilterWordsDao filterWordsDao;
 
+    private static List<FilterWords> filterWords;
+    public static final int TIME_OUT = 30;
+    public static final int MAX_Black = 3;
+    @PostConstruct
+    public void init(){
+        self = this;
+        rest();
+    }
+    public static void rest(){
+        filterWords = self.filterWordsDao.findAll();
+    }
+    public static boolean filterWords(String words){
+        return false;
+    }
     public static long cardinality(long max){
         return cardinality(100,max);
     }
