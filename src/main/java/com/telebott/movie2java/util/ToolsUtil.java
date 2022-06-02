@@ -53,6 +53,12 @@ public class ToolsUtil {
     public static void rest(){
         filterWords = self.filterWordsDao.findAll();
     }
+    public static boolean filterSearchWords(String words){
+        for (FilterWords word: filterWords) {
+            if (word.getWords().contains(words)) return false;
+        }
+        return true;
+    }
     public static boolean filterWords(String words){
         return false;
     }

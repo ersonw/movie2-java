@@ -7,6 +7,7 @@ import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.SearchData;
 import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.util.TimeUtil;
+import com.telebott.movie2java.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,6 +40,9 @@ public class SearchService {
 //        System.out.println(text);
         if (text == null || "".equals(text)) {
             return ResponseData.error("Invalid search text");
+        }
+        if (!ToolsUtil.filterSearchWords(text)){
+            return ResponseData.error("禁止搜索敏感词汇!");
         }
         SearchData data = new SearchData(text);
         if (user != null){
@@ -84,6 +88,7 @@ public class SearchService {
         json.put("plays", video.getPlays()+ videoPlayDao.countAllByVideoId(video.getId()));
         json.put("likes", video.getLikes()+ videoLikeDao.countAllByVideoId(video.getId()));
         json.put("price", 0);
+        json.put("pay", true);
         VideoPay pay = videoPayDao.findAllByVideoId(video.getId());
         if (pay != null) {
             json.put("price", pay.getAmount());
@@ -93,12 +98,12 @@ public class SearchService {
 
     public ResponseData searchCancel(String id,String ip) {
         SearchData data = authDao.findSearch(id);
-        if (data != null && data.getUserId() > 0) {
+        if (data != null && data.getUserId() > 0 && ToolsUtil.filterSearchWords(data.getText())) {
             SearchHot hot = new SearchHot(0,data.getText(),ip, data.getUserId(),System.currentTimeMillis());
             hotDao.saveAndFlush(hot);
         }
         authDao.popSearch(data);
-        return ResponseData.success();
+        return ResponseData.error();
     }
 
     public ResponseData labelAnytime(User user, String ip) {
