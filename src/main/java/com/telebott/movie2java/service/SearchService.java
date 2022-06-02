@@ -14,10 +14,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+
 @Slf4j
 @Service
 public class SearchService {
     private static int COUNT_ANY_TIME = 0;
+    private static final int LIMIT_ANY_TIME = 12;
     @Autowired
     private AuthDao authDao;
     @Autowired
@@ -59,13 +63,16 @@ public class SearchService {
         }
         page--;
         if (page < 0) page = 0;
-        Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.findAllByTitleLikeAndStatus("%"+data.getText()+"%",1, pageable);
         JSONArray array = new JSONArray();
         for (Video video : videoPage.getContent()) {
             array.add(getVideo(video));
         }
-        return ResponseData.success(ResponseData.object("list", array));
+        JSONObject object = ResponseData.object("list",array);
+        object.put("total", videoPage.getTotalPages());
+        object.put("text", data.getText());
+        return ResponseData.success(object);
     }
     public JSONObject getVideo(Video video) {
         JSONObject json = new JSONObject();
@@ -86,12 +93,8 @@ public class SearchService {
 
     public ResponseData searchCancel(String id,String ip) {
         SearchData data = authDao.findSearch(id);
-        if (data != null) {
-            SearchHot hot = new SearchHot();
-            hot.setAddTime(System.currentTimeMillis());
-            hot.setUserId(data.getUserId());
-            hot.setIp(ip);
-            hot.setWords(data.getText());
+        if (data != null && data.getUserId() > 0) {
+            SearchHot hot = new SearchHot(0,data.getText(),ip, data.getUserId(),System.currentTimeMillis());
             hotDao.saveAndFlush(hot);
         }
         authDao.popSearch(data);
@@ -99,9 +102,23 @@ public class SearchService {
     }
 
     public ResponseData labelAnytime(User user, String ip) {
-        log.info("[{}] labelAnytime userId:{} IP:{}", TimeUtil.getNowDate(), user.getId(), ip);
-//        Pageable pageable = PageRequest.of(COUNT_ANY_TIME, 12, Sort.by(Sort.Direction.DESC, "id"));
-//        Page<SearchHot> hotPage = hotDao.
-        return ResponseData.success();
+//        log.info("[{}] labelAnytime userId:{} IP:{}", TimeUtil.getNowDate(), user.getId(), ip);
+        Long count = hotDao.countByHot();
+        if (((long) COUNT_ANY_TIME * LIMIT_ANY_TIME) > count) {
+            COUNT_ANY_TIME = 0;
+        }
+        List<SearchHot> hots = hotDao.getByHot(COUNT_ANY_TIME*LIMIT_ANY_TIME, LIMIT_ANY_TIME);
+        if (count > ((long) COUNT_ANY_TIME * LIMIT_ANY_TIME)) {
+            COUNT_ANY_TIME++;
+        }
+        return ResponseData.success(SearchHot.getObject(hots));
+    }
+    public ResponseData labelHot(User user, String ip) {
+//        log.info("[{}] labelHot userId:{} IP:{}", TimeUtil.getNowDate(), user.getId(), ip);
+        List<SearchHot> month = hotDao.getByHot(TimeUtil.getMonthZero(),0, LIMIT_ANY_TIME);
+        List<SearchHot> year = hotDao.getByHot(TimeUtil.getYearZero(),0, LIMIT_ANY_TIME);
+        JSONObject object = ResponseData.object("month", SearchHot.getObject(month));
+        object.put("year", SearchHot.getObject(year));
+        return ResponseData.success(object);
     }
 }

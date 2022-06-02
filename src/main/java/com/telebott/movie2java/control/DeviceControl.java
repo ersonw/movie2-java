@@ -18,15 +18,14 @@ public class DeviceControl {
     private DeviceService service;
 
     @GetMapping("/check/{deviceId}")
-    public ResponseData check(@PathVariable("deviceId") String deviceId, @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String sUser) {
+    public ResponseData check(@PathVariable("deviceId") String deviceId,
+                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip,
+                              @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String sUser) {
 //        System.out.println(deviceId);
-        User user = FromUtil.fromUser(sUser);
+        User user = User.getInstance(sUser);
         if (user != null){
             return ResponseData.success(ResponseData.object("token", user.getToken()));
         }
-        if (service.check(deviceId)){
-            return ResponseData.success(ResponseData.object("token", service.getToken(deviceId)));
-        }
-        return ResponseData.fail();
+        return service.checkDevice(deviceId, ip);
     }
 }

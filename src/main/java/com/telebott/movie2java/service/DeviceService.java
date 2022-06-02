@@ -2,6 +2,7 @@ package com.telebott.movie2java.service;
 
 import com.telebott.movie2java.dao.AuthDao;
 import com.telebott.movie2java.dao.UserDeviceRecordDao;
+import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.entity.UserDeviceRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,14 @@ public class DeviceService {
             return null;
         }
         return user.getToken();
+    }
+
+    public ResponseData checkDevice(String deviceId, String ip) {
+        if(!check(deviceId)){
+            return ResponseData.fail();
+        }
+        String token = getToken(deviceId);
+//        if (token == null) {}
+        return ResponseData.success(ResponseData.object("token", token));
     }
 }

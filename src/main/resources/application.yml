@@ -22,7 +22,10 @@ spring:
     password: 5diXYxcYL7H4LbRN
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      max-lifetime: 28000
+      max-lifetime: 2800
+    dbcp2:
+      test-on-borrow: true
+      validation-query: Select 1
   redis:
     #    host: 119.8.56.223
     host: 127.0.0.1

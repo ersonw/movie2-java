@@ -21,8 +21,8 @@ public class SearchControl {
                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.searchMovie(text,User.getInstance(user), ip);
     }
-    @GetMapping("/movie/{page}/{id}")
-    public ResponseData movie(@PathVariable int page,
+    @GetMapping("/result/{page}/{id}")
+    public ResponseData searchResult(@PathVariable int page,
                               @PathVariable String id,
                               @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
@@ -38,5 +38,10 @@ public class SearchControl {
     public ResponseData labelAnytime(@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user,
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.labelAnytime(User.getInstance(user),ip);
+    }
+    @GetMapping("/label/hot")
+    public ResponseData labelHot(@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.labelHot(User.getInstance(user),ip);
     }
 }

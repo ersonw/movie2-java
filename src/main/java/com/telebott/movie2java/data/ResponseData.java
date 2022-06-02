@@ -1,5 +1,6 @@
 package com.telebott.movie2java.data;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,6 +38,9 @@ public class ResponseData {
     }
     public static ResponseData success(JSONObject data) {
         return new ResponseData(data);
+    }
+    public static ResponseData success(JSONArray array) {
+        return new ResponseData(object("list", array));
     }
 
     public static ResponseData fail() {

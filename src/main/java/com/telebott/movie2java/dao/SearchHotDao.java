@@ -13,8 +13,10 @@ import java.util.List;
 @Transactional
 @Repository
 public interface SearchHotDao extends JpaRepository<SearchHot, Long>, CrudRepository<SearchHot, Long> {
-    @Query(value = "SELECT `id`,`words`,`ip`,`user_id`,`add_time`,COUNT(*) AS c FROM `search_hot` GROUP BY words ORDER BY c DESC LIMIT :page,12", nativeQuery = true)
-    List<SearchHot> getByHot(int page);
-
+    @Query(value = "SELECT s.*,COUNT(*) AS c FROM `search_hot` s GROUP BY words ORDER BY c DESC LIMIT :page,:limit", nativeQuery = true)
+    List<SearchHot> getByHot(int page, int limit);
+    @Query(value = "SELECT s.*,COUNT(*) AS c FROM `search_hot` s WHERE add_time >= :time GROUP BY words ORDER BY c DESC LIMIT :page,:limit", nativeQuery = true)
+    List<SearchHot> getByHot(long time,int page, int limit);
+    @Query(value = "select count(*) from (SELECT `words`,count(*) as count FROM search_hot group by `words`) T", nativeQuery = true)
     long countByHot();
 }
