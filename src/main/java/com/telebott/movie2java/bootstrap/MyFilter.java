@@ -5,6 +5,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.telebott.movie2java.dao.AuthDao;
 import com.telebott.movie2java.dao.UserDao;
 import com.telebott.movie2java.entity.User;
+import com.telebott.movie2java.util.AESUtils;
 import com.telebott.movie2java.util.ToolsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +105,10 @@ public class MyFilter implements Filter {
                     if (contentType.contains(MediaType.APPLICATION_JSON_VALUE)){
                         String postContent = ToolsUtil.getJsonBodyString(request);
 //                        System.out.println(postContent);
+                        String s =  AESUtils.Decrypt(postContent);
+                        if (s != null){
+                            postContent = s;
+                        }
                         JSONObject jsStr = null;
                         if (StringUtils.isNotEmpty(postContent) && postContent.startsWith("{") && postContent.endsWith("}")) {
                             //修改、新增、删除参数

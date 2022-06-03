@@ -18,5 +18,6 @@ public class ShortVideoPlay {
     private long id;
     private long userId;
     private long videoId;
+    private String ip;
     private long addTime;
 }

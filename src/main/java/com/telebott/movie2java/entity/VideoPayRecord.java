@@ -18,5 +18,6 @@ public class VideoPayRecord {
     private long id;
     private long userId;
     private long payId;
+    private String ip;
     private long addTime;
 }

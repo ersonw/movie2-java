@@ -18,6 +18,7 @@ public class SmsRecord {
     private String code;
     private String phone;
     private String data;
+    private String ip;
     private int status;
     private long addTime;
     private long updateTime;

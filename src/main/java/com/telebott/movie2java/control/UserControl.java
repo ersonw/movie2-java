@@ -44,6 +44,6 @@ public class UserControl {
     @GetMapping("/register/sms/{phone}")
     public ResponseData registerSms(@PathVariable("phone") String phone,
                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        return service.sendSmsRegister(phone);
+        return service.sendSmsRegister(phone, ip);
     }
 }

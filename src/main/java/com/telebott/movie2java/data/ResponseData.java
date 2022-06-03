@@ -2,6 +2,7 @@ package com.telebott.movie2java.data;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.telebott.movie2java.util.AESUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,6 +14,10 @@ public class ResponseData {
     private  int code = 200;
     private  String message;
     private  String data;
+    public String getData(){
+        if (data != null) return AESUtils.Encrypt(data);
+        return null;
+    }
 
     public ResponseData() {}
     public ResponseData(String message) {

@@ -114,7 +114,7 @@ public class UserService {
 //        return login(username,password,deviceId,platform,ip);
         return ResponseData.success(ResponseData.object("id", user.getId()));
     }
-    public ResponseData sendSmsRegister(String phone){
+    public ResponseData sendSmsRegister(String phone, String ip){
         if (!MobileRegularExp.isMobileNumber(phone)){
             return ResponseData.fail("手机号码格式错误！");
         }
@@ -135,15 +135,16 @@ public class UserService {
             authDao.removeByPhone(phone);
             authDao.pushCode(code);
         }
-        SmsRecord smsRecords = new SmsRecord();
-        smsRecords.setCode(code.getCode());
-        smsRecords.setPhone(code.getPhone());
-        smsRecords.setStatus(0);
-        smsRecords.setAddTime(System.currentTimeMillis());
-        smsRecordDao.saveAndFlush(smsRecords);
+        SmsRecord smsRecord = new SmsRecord();
+        smsRecord.setIp(ip);
+        smsRecord.setCode(code.getCode());
+        smsRecord.setPhone(code.getPhone());
+        smsRecord.setStatus(0);
+        smsRecord.setAddTime(System.currentTimeMillis());
+        smsRecordDao.saveAndFlush(smsRecord);
         if (SmsBaoUtil.sendSmsCode(code)){
-            smsRecords.setStatus(1);
-            smsRecordDao.saveAndFlush(smsRecords);
+            smsRecord.setStatus(1);
+            smsRecordDao.saveAndFlush(smsRecord);
             return ResponseData.success(ResponseData.object("id", code.getId()));
         }
         authDao.popCode(code);

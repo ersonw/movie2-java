@@ -10,6 +10,7 @@ import java.io.Serializable;
 @ApiModel
 public  class pData  {
     public pData(){}
+
     @ApiModelProperty(name = "username", value= "用户账号或者手机号",required = false)
     private String username;
     @ApiModelProperty(name = "password", value= "用户密码",required = false)
@@ -25,6 +26,12 @@ public  class pData  {
     private String codeId;
     @ApiModelProperty(name = "code", value= "验证码",required = false)
     private String code;
+
+    @ApiModelProperty(name = "seek", value= "视频刻度",required = false)
+    private long seek;
+
+    @ApiModelProperty(name = "id", value= "唯一ID",required = false)
+    private long id;
 
     @ApiModelProperty(hidden = true)
     private String ip;

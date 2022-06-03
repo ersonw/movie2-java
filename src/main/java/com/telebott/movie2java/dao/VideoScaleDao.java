@@ -13,9 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface VideoScaleDao extends JpaRepository<VideoScale, Long>, CrudRepository<VideoScale, Long> {
-//    @Query(value = "select * from users where expireds > :time ", nativeQuery = true)
-//    Page<VideoScale> findAll(long time , Pageable pageable);
-//     @Modifying
-//     @Query(value = "UPDATE `videos` SET actor=0 WHERE actor=:aid", nativeQuery = true)
-//     void removeAllByAid(long aid);
+    VideoScale findAllById(long id);
+    VideoScale findAllByUserId(long id);
 }
