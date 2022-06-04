@@ -22,7 +22,7 @@ spring:
     password: 5diXYxcYL7H4LbRN
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      max-lifetime: 2800
+      max-lifetime: 28000
     dbcp2:
       test-on-borrow: true
       validation-query: Select 1
