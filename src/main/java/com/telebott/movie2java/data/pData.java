@@ -32,6 +32,10 @@ public  class pData  {
 
     @ApiModelProperty(name = "id", value= "唯一ID",required = false)
     private long id;
+    @ApiModelProperty(name = "toId", value= "目标ID",required = false)
+    private long toId;
+    @ApiModelProperty(name = "text", value= "字符串",required = false)
+    private String text;
 
     @ApiModelProperty(hidden = true)
     private String ip;

@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface VideoCommentDao extends JpaRepository<VideoComment, Long>, CrudRepository<VideoComment, Long> {
+    //
 }

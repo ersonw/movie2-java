@@ -28,5 +28,22 @@ public class VideoControl {
                                      @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.player(id, User.getInstance(user), ip);
     }
+    @GetMapping("/comment/{page}/{id}")
+    public ResponseData comment(@PathVariable long id,
+                                @PathVariable int page,
+                                     @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.comment(id,page, User.getInstance(user), ip);
+    }
+    @PostMapping("/comment")
+    @ApiGlobalModel(component = pData.class, value = "toId,id,text,seek")
+    public ResponseData comment(@RequestBody pData data){
+        return service.comment(data.getId(), data.getText(),data.getSeek(),data.getToId(), data.getUser(),data.getIp());
+    }
+    @GetMapping("/anytime")
+    public ResponseData anytime(@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.anytime(User.getInstance(user), ip);
+    }
 
 }

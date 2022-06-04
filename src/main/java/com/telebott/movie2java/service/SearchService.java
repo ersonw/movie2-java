@@ -24,6 +24,8 @@ public class SearchService {
     private static int COUNT_ANY_TIME = 0;
     private static final int LIMIT_ANY_TIME = 12;
     @Autowired
+    private ApiService apiService;
+    @Autowired
     private AuthDao authDao;
     @Autowired
     private SearchHotDao hotDao;
@@ -88,10 +90,12 @@ public class SearchService {
         json.put("plays", video.getPlays()+ videoPlayDao.countAllByVideoId(video.getId()));
         json.put("likes", video.getLikes()+ videoLikeDao.countAllByVideoId(video.getId()));
         json.put("price", 0);
-        json.put("pay", true);
         VideoPay pay = videoPayDao.findAllByVideoId(video.getId());
         if (pay != null) {
+            json.put("pay", true);
             json.put("price", pay.getAmount());
+        }else {
+            json.put("pay", apiService.getVideoConfigBool("VideoPay"));
         }
         return json;
     }

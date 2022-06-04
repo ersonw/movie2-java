@@ -38,21 +38,21 @@ public class ApiService {
     @Autowired
     private OrderService orderService;
 
-    private String getVideoConfig(String name){
+    public String getVideoConfig(String name){
         List<VideoPpvod> ppvods = videoPpvodDao.findAllByName(name);
         if(ppvods.size() > 0){
             return ppvods.get(0).getVal();
         }
         return null;
     }
-    private long getVideoConfigLong(String name){
+    public long getVideoConfigLong(String name){
         String val = getVideoConfig(name);
         if (val != null && ToolsUtil.isNumberString(val)){
             return Long.parseLong(val);
         }
         return 0;
     }
-    private boolean getVideoConfigBool(String name){
+    public boolean getVideoConfigBool(String name){
         return getVideoConfigLong(name) > 0;
     }
     public ResponseData handlerYzm(YzmData yzmData, String passwd) {

@@ -26,6 +26,7 @@ public class Video {
     private int status;
     private long plays;
     private long likes;
+    private long trial;
     private long addTime;
     private long updateTime;
 }

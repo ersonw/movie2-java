@@ -11,12 +11,17 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class VideoService {
+    private static int VIDEO_ANY_TIME = 0;
+    @Autowired
+    private ApiService apiService;
     @Autowired
     private VideoDao videoDao;
     @Autowired
     private VideoScaleDao videoScaleDao;
     @Autowired
     private VideoLikeDao videoLikeDao;
+    @Autowired
+    private VideoCommentDao videoCommentDao;
     @Autowired
     private VideoPlayDao videoPlayDao;
     @Autowired
@@ -44,8 +49,12 @@ public class VideoService {
             scale.setVideoTime(0);
             scale.setUpdateTime(System.currentTimeMillis());
             scale.setVideoId(id);
-            videoScaleDao.saveAndFlush(scale);
         }
+        if (scale.getVideoTime() >= video.getVodDuration()){
+            scale.setVideoTime(0);
+            scale.setUpdateTime(System.currentTimeMillis());
+        }
+        videoScaleDao.saveAndFlush(scale);
         VideoPlay play = new VideoPlay();
         play.setAddTime(System.currentTimeMillis());
         play.setVideoId(id);
@@ -53,12 +62,19 @@ public class VideoService {
         play.setIp(ip);
         videoPlayDao.saveAndFlush(play);
         JSONObject object = new JSONObject();
-        object.put("pay", true);
+
+        object.put("seek", scale.getVideoTime());
         object.put("price", 0);
+        object.put("trial", video.getTrial());
+        if (video.getTrial() == 0){
+            object.put("trial", apiService.getVideoConfigLong("VideoTrial"));
+        }
         VideoPay pay = videoPayDao.findAllByVideoId(id);
         if (pay != null) {
             object.put("pay", videoPayRecordDao.findAllByUserId(user.getId()) != null);
             object.put("price", pay.getAmount());
+        }else {
+            object.put("pay", !apiService.getVideoConfigBool("VideoPay"));
         }
         object.put("id", id);
         object.put("picThumb",video.getPicThumb());
@@ -73,10 +89,14 @@ public class VideoService {
     }
 
     public ResponseData heartbeat(long id, long seek, User user, String ip) {
+        System.out.println(id+"=="+seek);
         if (user == null) {
             return ResponseData.error();
         }
         if (id == 0) {
+            return ResponseData.error();
+        }
+        if (seek < 0){
             return ResponseData.error();
         }
         Video video = videoDao.findAllById(id);
@@ -90,9 +110,34 @@ public class VideoService {
             scale.setAddTime(System.currentTimeMillis());
             scale.setVideoId(id);
         }
+        if (scale.getVideoTime() == seek){
+            return ResponseData.error();
+        }
         scale.setVideoTime(seek);
         videoScaleDao.saveAndFlush(scale);
         scale.setUpdateTime(System.currentTimeMillis());
         return ResponseData.error();
+    }
+
+    public ResponseData comment(long id,
+                                String text,
+                                long seek,
+                                long toId ,
+                                User instance,
+                                String ip) {
+        if (id == 0) return ResponseData.error("You can't find the video with id 0");
+        Video video = videoDao.findAllById(id);
+        if (video == null) return ResponseData.error("Video not found");
+        return ResponseData.success();
+    }
+    public ResponseData comment(long id,int page, User user, String ip) {
+        if (id == 0) return ResponseData.error("You can't find the video with id 0");
+        Video video = videoDao.findAllById(id);
+        if (video == null) return ResponseData.error("Video not found");
+        return ResponseData.success();
+    }
+
+    public ResponseData anytime(User user, String ip) {
+        return ResponseData.success();
     }
 }
