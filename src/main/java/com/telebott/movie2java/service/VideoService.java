@@ -1,11 +1,16 @@
 package com.telebott.movie2java.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -14,6 +19,8 @@ public class VideoService {
     private static int VIDEO_ANY_TIME = 0;
     @Autowired
     private ApiService apiService;
+    @Autowired
+    private SearchService searchService;
     @Autowired
     private VideoDao videoDao;
     @Autowired
@@ -138,6 +145,13 @@ public class VideoService {
     }
 
     public ResponseData anytime(User user, String ip) {
+        Pageable pageable = PageRequest.of(VIDEO_ANY_TIME, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Video> videoPage = videoDao.findAllByStatus(1, pageable);
+        JSONArray array = new JSONArray();
+        for (Video video : videoPage.getContent()) {
+            array.add(searchService.getVideo(video));
+        }
+        JSONObject object = ResponseData.object("list",array);
         return ResponseData.success();
     }
 }

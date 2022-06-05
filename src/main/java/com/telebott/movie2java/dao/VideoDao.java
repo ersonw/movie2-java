@@ -14,5 +14,6 @@ public interface VideoDao extends JpaRepository<Video, Long>, CrudRepository<Vid
     Video findAllByShareId(String shareId);
     Video findAllById(long id);
     Page<Video> findAllByTitle(String title, Pageable pageable);
+    Page<Video> findAllByStatus(int status, Pageable pageable);
     Page<Video> findAllByTitleLikeAndStatus(String title,int status, Pageable pageable);
 }
