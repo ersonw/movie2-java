@@ -22,7 +22,15 @@ spring:
     password: 5diXYxcYL7H4LbRN
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      max-lifetime: 28000
+      connection-timeout: 10000
+      validation-timeout: 3000
+      idle-timeout: 28800
+      login-timeout: 5
+      max-lifetime: 28800
+      maximum-pool-size: 10
+      minimum-idle: 5
+      read-only: false
+      keepaliveTime: 28800
     dbcp2:
       test-on-borrow: true
       validation-query: Select 1

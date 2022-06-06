@@ -40,6 +40,18 @@ public class VideoControl {
     public ResponseData comment(@RequestBody pData data){
         return service.comment(data.getId(), data.getText(),data.getSeek(),data.getToId(), data.getUser(),data.getIp());
     }
+    @GetMapping("/like/{id}")
+    public ResponseData like(@PathVariable long id,
+                             @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                             @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.like(id, User.getInstance(user),ip);
+    }
+    @GetMapping("/share/{id}")
+    public ResponseData share(@PathVariable long id,
+                             @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                             @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.share(id, User.getInstance(user),ip);
+    }
     @GetMapping("/anytime")
     public ResponseData anytime(@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){

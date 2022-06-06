@@ -154,4 +154,34 @@ public class VideoService {
         JSONObject object = ResponseData.object("list",array);
         return ResponseData.success();
     }
+
+    public ResponseData like(long id, User user, String ip) {
+        if (id == 0) return ResponseData.error("You can't find the video with id 0");
+        Video video = videoDao.findAllById(id);
+        if (video == null) return ResponseData.error("Video not found");
+        if (user == null) return ResponseData.error();
+        VideoLike like = videoLikeDao.findAllByUserIdAndVideoId(user.getId(),id);
+        JSONObject object = ResponseData.object("like",false);
+        if (like == null){
+            like = new VideoLike(user.getId(), id,ip);
+            videoLikeDao.saveAndFlush(like);
+            object = ResponseData.object("like",true);
+        }else {
+            videoLikeDao.delete(like);
+        }
+        return ResponseData.success(object);
+    }
+
+    public ResponseData share(long id, User user, String ip) {
+        if (id == 0) return ResponseData.error("You can't find the video with id 0");
+        Video video = videoDao.findAllById(id);
+        if (video == null) return ResponseData.error("Video not found");
+        if (user == null) return ResponseData.error();
+        JSONObject object = ResponseData.object("id",video.getId());
+        object.put("title",video.getTitle());
+        object.put("vodContent",video.getVodContent());
+        object.put("picThumb",video.getPicThumb());
+        object.put("shareUrl","");
+        return ResponseData.success(object);
+    }
 }
