@@ -13,14 +13,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 public class VideoService {
     private static int VIDEO_ANY_TIME = 0;
+    private static int VIDEO_AD = 0;
     @Autowired
     private ApiService apiService;
     @Autowired
     private SearchService searchService;
+    @Autowired
+    private PublicizeDao publicizeDao;
     @Autowired
     private VideoDao videoDao;
     @Autowired
@@ -96,7 +101,7 @@ public class VideoService {
     }
 
     public ResponseData heartbeat(long id, long seek, User user, String ip) {
-        System.out.println(id+"=="+seek);
+//        System.out.println(id+"=="+seek);
         if (user == null) {
             return ResponseData.error();
         }
@@ -147,14 +152,34 @@ public class VideoService {
     public ResponseData anytime(User user, String ip) {
         Pageable pageable = PageRequest.of(VIDEO_ANY_TIME, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.findAllByStatus(1, pageable);
+        if(VIDEO_ANY_TIME < videoPage.getTotalPages()){
+            VIDEO_ANY_TIME++;
+        }else {
+            VIDEO_ANY_TIME = 0;
+        }
         JSONArray array = new JSONArray();
         for (Video video : videoPage.getContent()) {
             array.add(searchService.getVideo(video));
         }
         JSONObject object = ResponseData.object("list",array);
-        return ResponseData.success();
-    }
+        List<Publicize> publicizes = publicizeDao.findAllByPageAndStatus(1,1);
 
+        if (VIDEO_AD < publicizes.size()) {
+            object.put("swiper", getPublicize(publicizes.get(VIDEO_AD)));
+            VIDEO_AD++;
+        }else {
+            VIDEO_AD = 0;
+            object.put("swiper", getPublicize(publicizes.get(VIDEO_AD)));
+        }
+        return ResponseData.success(object);
+    }
+    public JSONObject getPublicize(Publicize publicize){
+        JSONObject json = ResponseData.object("id",publicize.getId());
+        json.put("image",publicize.getImage());
+        json.put("url",publicize.getUrl());
+        json.put("type",publicize.getType());
+        return json;
+    }
     public ResponseData like(long id, User user, String ip) {
         if (id == 0) return ResponseData.error("You can't find the video with id 0");
         Video video = videoDao.findAllById(id);
