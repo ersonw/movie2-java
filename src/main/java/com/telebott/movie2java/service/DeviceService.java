@@ -16,30 +16,42 @@ public class DeviceService {
     private UserDeviceRecordDao deviceRecordDao;
     @Autowired
     private AuthDao authDao;
+    @Autowired
+    private UserService userService;
 
     public boolean check(String deviceId) {
         long records = deviceRecordDao.countAllByDeviceId(deviceId);
         return records > 0;
     }
 
-    public String getToken(String deviceId) {
+    public User getToken(String deviceId, String ip) {
         List<UserDeviceRecord> records = deviceRecordDao.findAllByDeviceId(deviceId);
-        if (records == null || records.size() == 0) {
-            return null;
+//        if (records == null || records.size() == 0) {
+//            return null;
+//        }
+        for (UserDeviceRecord record : records) {
+            User user = authDao.findUserByUserId(record.getUserId());
+            if (user != null) {
+                record.setIp(ip);
+                record.setAddTime(System.currentTimeMillis());
+                deviceRecordDao.saveAndFlush(record);
+                return user;
+            }
         }
-        User user = authDao.findUserByUserId(records.get(0).getUserId());
-        if (user == null) {
-            return null;
-        }
-        return user.getToken();
+        return null;
+//        return authDao.findUserByUserId(records.get(0).getUserId());
     }
 
     public ResponseData checkDevice(String deviceId, String ip) {
         if(!check(deviceId)){
             return ResponseData.fail();
         }
-        String token = getToken(deviceId);
+//        String token = getToken(deviceId);
 //        if (token == null) {}
-        return ResponseData.success(ResponseData.object("token", token));
+        User user = getToken(deviceId, ip);
+        if (user == null) {
+            return ResponseData.fail();
+        }
+        return ResponseData.success(userService.getUserInfo(user));
     }
 }

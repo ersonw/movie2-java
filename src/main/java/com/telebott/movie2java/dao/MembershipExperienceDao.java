@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface MembershipExperienceDao extends JpaRepository<MembershipExperience, Long>, CrudRepository<MembershipExperience, Long> {
+    long countByUserId(long userId);
 }

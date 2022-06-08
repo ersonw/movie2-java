@@ -198,12 +198,14 @@ public class VideoService {
             User user = userDao.findAllById(comment.getUserId());
             if (user != null){
                 JSONObject object = ResponseData.object("id", comment.getId());
+                object.put("status",comment.getStatus());
                 object.put("text",comment.getText());
                 object.put("addTime", comment.getAddTime());
                 object.put("userId",comment.getUserId());
                 object.put("avatar", user.getAvatar());
                 object.put("nickname",user.getNickname());
-                object.put("like", videoCommentLikeDao.countAllByCommentId(comment.getId()));
+                object.put("likes", videoCommentLikeDao.countAllByCommentId(comment.getId()));
+                object.put("like", false);
                 object.put("reply", videoCommentDao.findAllByReplyId(comment.getId()));
                 array.add(object);
             }

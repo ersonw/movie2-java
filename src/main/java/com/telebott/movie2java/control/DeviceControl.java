@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.DeviceService;
+import com.telebott.movie2java.service.UserService;
 import com.telebott.movie2java.util.FromUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 public class DeviceControl {
     @Autowired
     private DeviceService service;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/check/{deviceId}")
     public ResponseData check(@PathVariable("deviceId") String deviceId,
@@ -24,7 +27,7 @@ public class DeviceControl {
 //        System.out.println(deviceId);
         User user = User.getInstance(sUser);
         if (user != null){
-            return ResponseData.success(ResponseData.object("token", user.getToken()));
+            return ResponseData.success(userService.getUserInfo(user));
         }
         return service.checkDevice(deviceId, ip);
     }

@@ -19,6 +19,8 @@ public class UserService {
     @Autowired
     private AuthDao authDao;
     @Autowired
+    private MembershipExperienceDao membershipExperienceDao;
+    @Autowired
     private SmsRecordDao smsRecordDao;
     @Autowired
     private SmsBaoService smsBaoService;
@@ -76,7 +78,7 @@ public class UserService {
             deviceRecord.setAddTime(System.currentTimeMillis());
             deviceRecordDao.saveAndFlush(deviceRecord);
             authDao.pushUser(user);
-            return ResponseData.success(ResponseData.object("token", user.getToken()));
+            return ResponseData.success(getUserInfo(user));
         }else {
             fail--;
             UserFailLoginRecord record = new UserFailLoginRecord();
@@ -88,6 +90,18 @@ public class UserService {
             failLoginRecordDao.saveAndFlush(record);
             return ResponseData.error("密码错误！剩余"+fail+"次尝试机会");
         }
+    }
+    public JSONObject getUserInfo(User user){
+        JSONObject object = ResponseData.object("token", user.getToken());
+        object.put("id",user.getId());
+        object.put("avatar",user.getAvatar());
+        object.put("nickname",user.getNickname());
+        object.put("text",user.getText());
+        object.put("username",user.getUsername());
+        object.put("phone",user.getPhone());
+        object.put("email",user.getEmail());
+        object.put("level", membershipExperienceDao.countByUserId(user.getId()));
+        return object;
     }
     //改为只能手机注册 增加验证码逻辑 增加发送验证码
     public ResponseData register(String password,String codeId,String code,String ip) {
