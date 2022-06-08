@@ -56,12 +56,12 @@ public class ToolsUtil {
 
 
     public static boolean filterSearchWords(String words){
-        for (FilterWords word: filterWords) {
-            if (word.getWords().contains(words)) return false;
-        }
-        return true;
+        return !filterWords(words);
     }
     public static boolean filterWords(String words){
+        for (FilterWords word: filterWords) {
+            if (word.getWords().contains(words)) return true;
+        }
         return false;
     }
     public static long cardinality(long max){

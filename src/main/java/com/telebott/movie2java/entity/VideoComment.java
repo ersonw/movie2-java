@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "video_play")
+@Table(name = "video_comment")
 @Cacheable
 @ToString(includeFieldNames = true)
 public class VideoComment {
@@ -20,6 +20,8 @@ public class VideoComment {
     private long userId;
     private long videoId;
     private long videoTime;
+    private int status;
     private String text;
+    private String ip;
     private long addTime;
 }

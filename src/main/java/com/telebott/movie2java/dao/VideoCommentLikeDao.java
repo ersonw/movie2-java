@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface VideoCommentLikeDao extends JpaRepository<VideoCommentLike, Long>, CrudRepository<VideoCommentLike, Long> {
+    long countAllByCommentId(long id);
 }

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
+import com.telebott.movie2java.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,11 +30,15 @@ public class VideoService {
     @Autowired
     private VideoDao videoDao;
     @Autowired
+    private UserDao userDao;
+    @Autowired
     private VideoScaleDao videoScaleDao;
     @Autowired
     private VideoLikeDao videoLikeDao;
     @Autowired
     private VideoCommentDao videoCommentDao;
+    @Autowired
+    private VideoCommentLikeDao videoCommentLikeDao;
     @Autowired
     private VideoPlayDao videoPlayDao;
     @Autowired
@@ -135,20 +140,76 @@ public class VideoService {
                                 String text,
                                 long seek,
                                 long toId ,
-                                User instance,
+                                User user,
                                 String ip) {
         if (id == 0) return ResponseData.error("You can't find the video with id 0");
         Video video = videoDao.findAllById(id);
         if (video == null) return ResponseData.error("Video not found");
-        return ResponseData.success();
+        if (user == null) return ResponseData.success(ResponseData.object("error", "login"));
+        if (ToolsUtil.filterWords(text)) return ResponseData.error("禁止发布敏感词语");
+        VideoComment comment = videoCommentDao.findAllByUserIdAndVideoIdAndText(user.getId(), video.getId(),text);
+        if (comment != null) return ResponseData.error("此评论已经录入哦，请勿灌水，谢谢！");
+        comment = new VideoComment();
+        comment.setStatus(new Long(apiService.getVideoConfigLong("commentAudit")).intValue());
+        comment.setIp(ip);
+        comment.setVideoId(id);
+        comment.setVideoTime(seek);
+        comment.setAddTime(System.currentTimeMillis());
+        comment.setText(text);
+        comment.setUserId(user.getId());
+        if (toId > 0) {
+            VideoComment videoComment = videoCommentDao.findAllById(toId);
+            if (videoComment != null){
+                if (videoComment.getStatus() == 0 && videoComment.getUserId() == user.getId()){
+                    return ResponseData.error("不能回复自己！");
+                }
+                if (videoComment.getStatus() == 1){
+                    comment.setReplyId(toId);
+                }
+            }
+        }
+        videoCommentDao.saveAndFlush(comment);
+        return ResponseData.success(ResponseData.object("state", "ok"));
     }
     public ResponseData comment(long id,int page, User user, String ip) {
+        page--;
+        if (page < 0) page =0;
         if (id == 0) return ResponseData.error("You can't find the video with id 0");
         Video video = videoDao.findAllById(id);
         if (video == null) return ResponseData.error("Video not found");
-        return ResponseData.success();
+        if (user == null) return ResponseData.success(ResponseData.object("error", "login"));
+//        //统计一级评论
+//        //统计所有审核通过评论
+//        long count = videoCommentDao.countAllByReplyIdAndVideoIdAndStatus(0,id, 0);
+        //获取一级评论
+        //先获取自己的评论
+        List<VideoComment> commentList = videoCommentDao.findAllByReplyIdAndVideoIdAndUserIdAndStatus(0,id, user.getId(), 0);
+        //获取所有审核通过评论
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<VideoComment> videoComments = videoCommentDao.getAllByLike(1,pageable);
+        commentList.addAll(videoComments.getContent());
+        JSONObject object = ResponseData.object("total", videoComments.getTotalPages());
+        object.put("list",getComment(commentList));
+        return ResponseData.success(object);
     }
-
+    public JSONArray getComment(List<VideoComment> videoComments){
+        JSONArray array = new JSONArray();
+        for (VideoComment comment: videoComments) {
+            User user = userDao.findAllById(comment.getUserId());
+            if (user != null){
+                JSONObject object = ResponseData.object("id", comment.getId());
+                object.put("text",comment.getText());
+                object.put("addTime", comment.getAddTime());
+                object.put("userId",comment.getUserId());
+                object.put("avatar", user.getAvatar());
+                object.put("nickname",user.getNickname());
+                object.put("like", videoCommentLikeDao.countAllByCommentId(comment.getId()));
+                object.put("reply", videoCommentDao.findAllByReplyId(comment.getId()));
+                array.add(object);
+            }
+        }
+        return array;
+    }
     public ResponseData anytime(User user, String ip) {
         Pageable pageable = PageRequest.of(VIDEO_ANY_TIME, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.findAllByStatus(1, pageable);
