@@ -22,7 +22,7 @@ import java.util.List;
 public class VideoService {
     private static int VIDEO_ANY_TIME = 0;
     private static int VIDEO_AD = 0;
-    private static final int MAX_COMMENT_WORD_LENGTH = 20;
+    private static final int MAX_COMMENT_WORD_LENGTH = 200;
     private static final int MINI_COMMENT_WORD_LENGTH = 2;
     @Autowired
     private ApiService apiService;
@@ -213,7 +213,7 @@ public class VideoService {
                 object.put("nickname",user.getNickname());
                 object.put("likes", videoCommentLikeDao.countAllByCommentId(comment.getId()));
                 object.put("like", false);
-                object.put("reply", videoCommentDao.findAllByReplyId(comment.getId()));
+                object.put("reply", getComment(videoCommentDao.findAllByReplyId(comment.getId())));
                 array.add(object);
             }
         }
