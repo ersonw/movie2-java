@@ -13,10 +13,18 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class VideoCommentLike {
+    public VideoCommentLike(){}
+    public VideoCommentLike(long userId, long commentId,String ip){
+        this.userId = userId;
+        this.commentId = commentId;
+        this.ip = ip;
+        this.addTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;
     private long userId;
     private long commentId;
+    private String ip;
     private long addTime;
 }

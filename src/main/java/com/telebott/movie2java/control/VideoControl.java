@@ -40,6 +40,20 @@ public class VideoControl {
     public ResponseData comment(@RequestBody pData data){
         return service.comment(data.getId(), data.getText(),data.getSeek(),data.getToId(), data.getUser(),data.getIp());
     }
+    @GetMapping("/comment/delete/{id}")
+    @ApiGlobalModel(component = pData.class, value = "toId,id,text,seek")
+    public ResponseData commentDelete(@PathVariable long id,
+                                @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.commentDelete(id, User.getInstance(user), ip);
+    }
+    @GetMapping("/comment/like/{id}")
+    @ApiGlobalModel(component = pData.class, value = "toId,id,text,seek")
+    public ResponseData commentLike(@PathVariable long id,
+                                @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.commentLike(id, User.getInstance(user), ip);
+    }
     @GetMapping("/like/{id}")
     public ResponseData like(@PathVariable long id,
                              @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,

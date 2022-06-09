@@ -7,6 +7,7 @@ import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,8 @@ import java.util.List;
 public class VideoService {
     private static int VIDEO_ANY_TIME = 0;
     private static int VIDEO_AD = 0;
+    private static final int MAX_COMMENT_WORD_LENGTH = 20;
+    private static final int MINI_COMMENT_WORD_LENGTH = 2;
     @Autowired
     private ApiService apiService;
     @Autowired
@@ -146,6 +149,9 @@ public class VideoService {
         Video video = videoDao.findAllById(id);
         if (video == null) return ResponseData.error("Video not found");
         if (user == null) return ResponseData.success(ResponseData.object("error", "login"));
+        if(StringUtils.isEmpty(text)) return ResponseData.error();
+        if (text.length() < MINI_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能少于"+MINI_COMMENT_WORD_LENGTH+"个字符");
+        if (text.length() > MAX_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能大于"+MAX_COMMENT_WORD_LENGTH+"个字符");
         if (ToolsUtil.filterWords(text)) return ResponseData.error("禁止发布敏感词语");
         VideoComment comment = videoCommentDao.findAllByUserIdAndVideoIdAndText(user.getId(), video.getId(),text);
         if (comment != null) return ResponseData.error("此评论已经录入哦，请勿灌水，谢谢！");
@@ -160,12 +166,13 @@ public class VideoService {
         if (toId > 0) {
             VideoComment videoComment = videoCommentDao.findAllById(toId);
             if (videoComment != null){
-                if (videoComment.getStatus() == 0 && videoComment.getUserId() == user.getId()){
-                    return ResponseData.error("不能回复自己！");
+                if(videoComment.getStatus() == 0){
+//                    return ResponseData.error("未审核通过的评论暂时不可回复！");
                 }
-                if (videoComment.getStatus() == 1){
-                    comment.setReplyId(toId);
+                if (videoComment.getUserId() == user.getId()){
+//                    return ResponseData.error("不能回复自己！");
                 }
+                comment.setReplyId(toId);
             }
         }
         videoCommentDao.saveAndFlush(comment);
@@ -271,5 +278,33 @@ public class VideoService {
         object.put("picThumb",video.getPicThumb());
         object.put("shareUrl","");
         return ResponseData.success(object);
+    }
+
+    public ResponseData commentDelete(long id, User user, String ip) {
+        if (user == null) return ResponseData.success(ResponseData.object("error", "login"));
+        if (id < 1) return ResponseData.error("You can't find the comment with id 0");
+        VideoComment comment = videoCommentDao.findAllById(id);
+        if (comment == null ) return ResponseData.error("comment not fund ");
+        if (comment.getUserId() != user.getId()) return ResponseData.error("该评论不能被删除");
+        videoCommentDao.removeAllByToId(comment.getId());
+        videoCommentLikeDao.removeAllByCommentId(comment.getId());
+        videoCommentDao.delete(comment);
+        return ResponseData.success(ResponseData.object("delete", true));
+    }
+
+    public ResponseData commentLike(long id, User user, String ip) {
+        if (user == null) return ResponseData.success(ResponseData.object("error", "login"));
+        if (id < 1) return ResponseData.error("You can't find the comment with id 0");
+        VideoComment comment = videoCommentDao.findAllById(id);
+        if (comment == null ) return ResponseData.error("comment not fund ");
+        if (comment.getUserId() == user.getId()) return ResponseData.error("不能给自己点赞！");
+        VideoCommentLike like = videoCommentLikeDao.findAllByCommentId(comment.getId());
+        if (like == null){
+            like = new VideoCommentLike(user.getId(), comment.getId(),ip);
+            videoCommentLikeDao.save(like);
+            return ResponseData.success(ResponseData.object("like", true));
+        }
+        videoCommentLikeDao.delete(like);
+        return ResponseData.success(ResponseData.object("like", false));
     }
 }

@@ -17,7 +17,8 @@ spring:
     resources:
       static-locations:  classpath:/static/
   datasource:
-    url: jdbc:mysql://api2.telebott.com:3306/movie?useSSL=false&useUnicode=true&character_set_server=utf8mb4
+#    url: jdbc:mysql://api2.telebott.com:3306/movie?useSSL=false&useUnicode=true&character_set_server=utf8mb4
+    url: jdbc:mysql://172.21.72.18:3306/movie?useSSL=false&useUnicode=true&character_set_server=utf8mb4
     username: movie
     password: 5diXYxcYL7H4LbRN
     driver-class-name: com.mysql.cj.jdbc.Driver
