@@ -19,7 +19,7 @@ public interface VideoCommentDao extends JpaRepository<VideoComment, Long>, Crud
     List<VideoComment> findAllByReplyId(long replyId);
     List<VideoComment> findAllByReplyIdAndVideoIdAndUserIdAndStatus(long replyId, long videoId, long userId, int status);
     long countAllByReplyIdAndVideoIdAndStatus(long replyId, long videoId, int status);
-    @Query(value = "SELECT vc.id, (SELECT COUNT(*) FROM `video_comment_like` WHERE comment_id = vc.id) AS c FROM `video_comment` vc WHERE `status`=:status ORDER BY c DESC", nativeQuery = true)
+    @Query(value = "SELECT vc.id,vc.reply_id,vc.user_id,vc.video_id,vc.video_time,vc.status,vc.text,vc.ip,vc.add_time, (SELECT COUNT(*) FROM `video_comment_like` WHERE comment_id = vc.id) AS c FROM `video_comment` vc WHERE `status`=:status ORDER BY c DESC", nativeQuery = true)
     Page<VideoComment> getAllByLike(int status, Pageable pageable);
 
     VideoComment findAllByUserIdAndVideoIdAndText(long id, long id1, String text);

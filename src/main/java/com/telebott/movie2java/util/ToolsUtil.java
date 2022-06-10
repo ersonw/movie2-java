@@ -64,6 +64,16 @@ public class ToolsUtil {
         }
         return false;
     }
+    public static boolean filterCommentBlack(String words){
+        for (FilterWords word: filterWords) {
+            if (word.getWords().contains(words)){
+                if (word.getBlack() == 1){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     public static long cardinality(long max){
         return cardinality(100,max);
     }

@@ -152,11 +152,15 @@ public class VideoService {
         if(StringUtils.isEmpty(text)) return ResponseData.error();
         if (text.length() < MINI_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能少于"+MINI_COMMENT_WORD_LENGTH+"个字符");
         if (text.length() > MAX_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能大于"+MAX_COMMENT_WORD_LENGTH+"个字符");
-        if (ToolsUtil.filterWords(text)) return ResponseData.error("禁止发布敏感词语");
+        if (ToolsUtil.filterCommentBlack(text)) return ResponseData.error("禁止发布敏感词语");
         VideoComment comment = videoCommentDao.findAllByUserIdAndVideoIdAndText(user.getId(), video.getId(),text);
-        if (comment != null) return ResponseData.error("此评论已经录入哦，请勿灌水，谢谢！");
+//        if (comment != null) return ResponseData.error("此评论已经录入哦，请勿灌水，谢谢！");
+        if (comment != null) return ResponseData.error("");
         comment = new VideoComment();
         comment.setStatus(new Long(apiService.getVideoConfigLong("commentAudit")).intValue());
+        if(ToolsUtil.filterWords(text)){
+            comment.setStatus(0);
+        }
         comment.setIp(ip);
         comment.setVideoId(id);
         comment.setVideoTime(seek);
@@ -167,7 +171,7 @@ public class VideoService {
             VideoComment videoComment = videoCommentDao.findAllById(toId);
             if (videoComment != null){
                 if(videoComment.getStatus() == 0){
-//                    return ResponseData.error("未审核通过的评论暂时不可回复！");
+                    return ResponseData.error("未审核通过的评论暂时不可回复！");
                 }
                 if (videoComment.getUserId() == user.getId()){
 //                    return ResponseData.error("不能回复自己！");
