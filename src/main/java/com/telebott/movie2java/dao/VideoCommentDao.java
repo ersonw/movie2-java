@@ -21,15 +21,11 @@ public interface VideoCommentDao extends JpaRepository<VideoComment, Long>, Crud
     long countAllByReplyIdAndVideoIdAndStatus(long replyId, long videoId, int status);
     @Query(value = "SELECT vc.id,vc.reply_id,vc.user_id,vc.video_id,vc.video_time,vc.status,vc.text,vc.ip,vc.add_time, (SELECT COUNT(*) FROM `video_comment_like` WHERE comment_id = vc.id) AS c FROM `video_comment` vc WHERE `status`=:status ORDER BY c DESC", nativeQuery = true)
     Page<VideoComment> getAllByLike(int status, Pageable pageable);
+    @Query(value = "SELECT vc.id,vc.reply_id,vc.user_id,vc.video_id,vc.video_time,vc.status,vc.text,vc.ip,vc.add_time, (SELECT COUNT(*) FROM `video_comment_like` WHERE comment_id = vc.id) AS c FROM `video_comment` vc WHERE `status`=:status AND reply_id=:replyId AND video_id=:videoId ORDER BY c DESC", nativeQuery = true)
+    Page<VideoComment> getAllByLike(long replyId,long videoId,int status, Pageable pageable);
 
     VideoComment findAllByUserIdAndVideoIdAndText(long id, long id1, String text);
     @Modifying
-    @Query(value = "delete from `video_comment` WHERE video_id=:id", nativeQuery = true)
-    void removeAllByVideoId(long id);
-    @Modifying
-    @Query(value = "delete from `video_comment` WHERE reply_id=:id", nativeQuery = true)
-    void removeAllByToId(long id);
-    @Modifying
-    @Query(value = "delete from `video_comment` WHERE user_id=:id", nativeQuery = true)
-    void removeAllByUserId(long id);
+    @Query(value = "DELETE vc.*,vcl.* FROM video_comment as vc LEFT JOIN video_comment_like as vcl ON vcl.comment_id=vc.id WHERE vc.reply_id =:id OR vc.id=:id", nativeQuery = true)
+    void removeAllById(long id);
 }

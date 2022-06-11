@@ -22,7 +22,7 @@ import java.util.List;
 public class VideoService {
     private static int VIDEO_ANY_TIME = 0;
     private static int VIDEO_AD = 0;
-    private static final int MAX_COMMENT_WORD_LENGTH = 200;
+    private static final int MAX_COMMENT_WORD_LENGTH = 100;
     private static final int MINI_COMMENT_WORD_LENGTH = 2;
     @Autowired
     private ApiService apiService;
@@ -139,12 +139,8 @@ public class VideoService {
         return ResponseData.error();
     }
 
-    public ResponseData comment(long id,
-                                String text,
-                                long seek,
-                                long toId ,
-                                User user,
-                                String ip) {
+    public ResponseData comment(long id, String text, long seek,
+                                long toId , User user, String ip) {
         if (id == 0) return ResponseData.error("You can't find the video with id 0");
         Video video = videoDao.findAllById(id);
         if (video == null) return ResponseData.error("Video not found");
@@ -197,7 +193,7 @@ public class VideoService {
         List<VideoComment> commentList = videoCommentDao.findAllByReplyIdAndVideoIdAndUserIdAndStatus(0,id, user.getId(), 0);
         //获取所有审核通过评论
         Pageable pageable = PageRequest.of(page, 10);
-        Page<VideoComment> videoComments = videoCommentDao.getAllByLike(1,pageable);
+        Page<VideoComment> videoComments = videoCommentDao.getAllByLike(0,id,1,pageable);
         commentList.addAll(videoComments.getContent());
         JSONObject object = ResponseData.object("total", videoComments.getTotalPages());
         object.put("list",getComment(commentList));
@@ -290,9 +286,7 @@ public class VideoService {
         VideoComment comment = videoCommentDao.findAllById(id);
         if (comment == null ) return ResponseData.error("comment not fund ");
         if (comment.getUserId() != user.getId()) return ResponseData.error("该评论不能被删除");
-        videoCommentDao.removeAllByToId(comment.getId());
-        videoCommentLikeDao.removeAllByCommentId(comment.getId());
-        videoCommentDao.delete(comment);
+        videoCommentDao.removeAllById(comment.getId());
         return ResponseData.success(ResponseData.object("delete", true));
     }
 
