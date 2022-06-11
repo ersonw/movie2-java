@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface VideoCommentLikeDao extends JpaRepository<VideoCommentLike, Long>, CrudRepository<VideoCommentLike, Long> {
     VideoCommentLike findAllById(long id);
+    VideoCommentLike findAllByUserIdAndCommentId(long id, long commentId);
     long countAllByCommentId(long id);
     VideoCommentLike findAllByCommentId(long id);
     @Modifying

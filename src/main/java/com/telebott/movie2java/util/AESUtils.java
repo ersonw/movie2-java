@@ -56,7 +56,8 @@ public class AESUtils {
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
             byte[] encrypted = cipher.doFinal(sSrc.getBytes(StandardCharsets.UTF_8));
 //            System.out.println(new String(original_key.getEncoded()));
-            return object.get("encoded")+"#"+(new Base64().encodeToString(encrypted));//此处使用BASE64做转码功能，同时能起到2次加密的作用。
+//            return object.get("encoded")+"#"+(new Base64().encodeToString(encrypted));//此处使用BASE64做转码功能，同时能起到2次加密的作用。
+            return (new Base64().encodeToString(encrypted));//此处使用BASE64做转码功能，同时能起到2次加密的作用。
         } catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
 //            e.printStackTrace();
             System.out.println(e);

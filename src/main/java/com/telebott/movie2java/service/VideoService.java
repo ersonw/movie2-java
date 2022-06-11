@@ -61,7 +61,7 @@ public class VideoService {
         if (video == null) {
             return ResponseData.error("Video not found");
         }
-        VideoScale scale = videoScaleDao.findAllByUserId(user.getId());
+        VideoScale scale = videoScaleDao.findAllByUserIdAndVideoId(user.getId(),id);
         if (scale == null) {
             scale = new VideoScale();
             scale.setUserId(user.getId());
@@ -123,7 +123,7 @@ public class VideoService {
         if (video == null) {
             return ResponseData.error();
         }
-        VideoScale scale = videoScaleDao.findAllByUserId(user.getId());
+        VideoScale scale = videoScaleDao.findAllByUserIdAndVideoId(user.getId(),id);
         if (scale == null) {
             scale = new VideoScale();
             scale.setUserId(user.getId());
@@ -196,10 +196,10 @@ public class VideoService {
         Page<VideoComment> videoComments = videoCommentDao.getAllByLike(0,id,1,pageable);
         commentList.addAll(videoComments.getContent());
         JSONObject object = ResponseData.object("total", videoComments.getTotalPages());
-        object.put("list",getComment(commentList));
+        object.put("list",getComment(commentList,user));
         return ResponseData.success(object);
     }
-    public JSONArray getComment(List<VideoComment> videoComments){
+    public JSONArray getComment(List<VideoComment> videoComments, User _user){
         JSONArray array = new JSONArray();
         for (VideoComment comment: videoComments) {
             User user = userDao.findAllById(comment.getUserId());
@@ -212,8 +212,8 @@ public class VideoService {
                 object.put("avatar", user.getAvatar());
                 object.put("nickname",user.getNickname());
                 object.put("likes", videoCommentLikeDao.countAllByCommentId(comment.getId()));
-                object.put("like", false);
-                object.put("reply", getComment(videoCommentDao.findAllByReplyId(comment.getId())));
+                object.put("like", videoCommentLikeDao.findAllByUserIdAndCommentId(_user.getId(), comment.getId()) != null);
+                object.put("reply", getComment(videoCommentDao.findAllByReplyId(comment.getId()),_user));
                 array.add(object);
             }
         }
