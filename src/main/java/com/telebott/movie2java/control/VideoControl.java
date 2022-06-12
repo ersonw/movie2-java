@@ -71,5 +71,18 @@ public class VideoControl {
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.anytime(User.getInstance(user), ip);
     }
+    @GetMapping("/category/tags")
+    public ResponseData categoryTags(@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                             @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.categoryTags(User.getInstance(user), ip);
+    }
+    @GetMapping("/category/list/{first}/{second}/{last}")
+    public ResponseData categoryList(@PathVariable long first,
+                                     @PathVariable long second,
+                                     @PathVariable long last,
+                                @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.categoryList(first,second,last, User.getInstance(user), ip);
+    }
 
 }

@@ -9,15 +9,15 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "video_produced")
+@Table(name = "video_produced_record")
 @Cacheable
 @ToString(includeFieldNames = true)
-public class VideoProduced {
+public class VideoProducedRecord {
     @Id
     @GeneratedValue
     private long id;
-    private String name;
-    private int status;
+    private long producedId;
+    private long videoId;
     private long addTime;
     private long updateTime;
 }

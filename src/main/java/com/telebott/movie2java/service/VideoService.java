@@ -24,6 +24,11 @@ public class VideoService {
     private static int VIDEO_AD = 0;
     private static final int MAX_COMMENT_WORD_LENGTH = 100;
     private static final int MINI_COMMENT_WORD_LENGTH = 2;
+
+    @Autowired
+    private VideoProducedDao videoProducedDao;
+    @Autowired
+    private VideoClassDao videoClassDao;
     @Autowired
     private ApiService apiService;
     @Autowired
@@ -49,6 +54,35 @@ public class VideoService {
     @Autowired
     private VideoPayRecordDao videoPayRecordDao;
 
+    public ResponseData categoryTags(User instance, String ip) {
+        List<VideoProduced> produceds = videoProducedDao.findAllByStatus(1);
+        List<VideoClass> classes = videoClassDao.findAllByStatus(1);
+        JSONObject object = ResponseData.object("produceds", getProduced(produceds));
+        object.put("classes",getClass(classes));
+        return ResponseData.success(object);
+    }
+    private JSONArray getProduced(List<VideoProduced> produceds){
+        JSONArray array = new JSONArray();
+        for (VideoProduced produced: produceds) {
+            if (produced != null){
+                JSONObject object = ResponseData.object("id", produced.getId());
+                object.put("words",produced.getName());
+                array.add(object);
+            }
+        }
+        return array;
+    }
+    private JSONArray getClass(List<VideoClass> classes){
+        JSONArray array = new JSONArray();
+        for (VideoClass videoClass: classes) {
+            if (videoClass != null){
+                JSONObject object = ResponseData.object("id", videoClass.getId());
+                object.put("words",videoClass.getName());
+                array.add(object);
+            }
+        }
+        return array;
+    }
     public ResponseData player(long id, User user, String ip) {
 //        System.out.println(user);
         if (user == null) {
@@ -304,5 +338,9 @@ public class VideoService {
         }
         videoCommentLikeDao.delete(like);
         return ResponseData.success(ResponseData.object("like", false));
+    }
+
+    public ResponseData categoryList(long first, long second, long last, User instance, String ip) {
+        return ResponseData.success();
     }
 }
