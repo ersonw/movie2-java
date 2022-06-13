@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -24,6 +25,12 @@ public class VideoService {
     private static int VIDEO_AD = 0;
     private static final int MAX_COMMENT_WORD_LENGTH = 100;
     private static final int MINI_COMMENT_WORD_LENGTH = 2;
+
+    private static final int SORT_BY_ALL = 0;
+    private static final int SORT_BY_NEW = 1;
+    private static final int SORT_BY_HOT = 2;
+    private static final int SORT_BY_LIKE = 3;
+    private static final int SORT_BY_COMMENT = 4;
 
     @Autowired
     private VideoProducedDao videoProducedDao;
@@ -253,6 +260,25 @@ public class VideoService {
         }
         return array;
     }
+    public JSONObject getVideo(Video video) {
+        JSONObject json = new JSONObject();
+        json.put("id", video.getId());
+        json.put("title", video.getTitle());
+        json.put("vodContent", video.getVodContent());
+        json.put("picThumb", video.getPicThumb());
+        json.put("vodDuration",video.getVodDuration());
+        json.put("plays", video.getPlays()+ videoPlayDao.countAllByVideoId(video.getId()));
+        json.put("likes", video.getLikes()+ videoLikeDao.countAllByVideoId(video.getId()));
+        json.put("price", 0);
+        VideoPay pay = videoPayDao.findAllByVideoId(video.getId());
+        if (pay != null) {
+            json.put("pay", true);
+            json.put("price", pay.getAmount());
+        }else {
+            json.put("pay", apiService.getVideoConfigBool("VideoPay"));
+        }
+        return json;
+    }
     public ResponseData anytime(User user, String ip) {
         Pageable pageable = PageRequest.of(VIDEO_ANY_TIME, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.findAllByStatus(1, pageable);
@@ -263,7 +289,7 @@ public class VideoService {
         }
         JSONArray array = new JSONArray();
         for (Video video : videoPage.getContent()) {
-            array.add(searchService.getVideo(video));
+            array.add(getVideo(video));
         }
         JSONObject object = ResponseData.object("list",array);
         List<Publicize> publicizes = publicizeDao.findAllByPageAndStatus(1,1);
@@ -340,7 +366,65 @@ public class VideoService {
         return ResponseData.success(ResponseData.object("like", false));
     }
 
-    public ResponseData categoryList(long first, long second, long last, User instance, String ip) {
-        return ResponseData.success();
+    public ResponseData categoryList(int first, long second, long last,int page, User user, String ip) {
+//        log.error("first:{} second:{} last:{} page:{}",first,second,last,page);
+        if(first < 0) first = 0;
+        if(second < 0) second = 0;
+        if(last < 0) last = 0;
+        page--;
+        if(page < 0) page = 0;
+        JSONObject json = new JSONObject();
+        switch (first) {
+            case SORT_BY_ALL:
+            case SORT_BY_NEW:
+                json = getSortByAll(second,last,page);
+                break;
+            case SORT_BY_HOT:
+                json = getSortByHot(second,last,page);
+                break;
+        }
+        return ResponseData.success(json);
     }
+    private JSONObject getSortByHot(long second, long last, int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Video> videoPage;
+        if(second == 0 && last == 0){
+            videoPage = videoDao.getVideoByStatus(1,pageable);
+        }else if(last == 0){
+            videoPage = videoDao.getVideoByProduced(second,pageable);
+        }else if(second == 0){
+            videoPage = videoDao.getVideoByVodClass(last,pageable);
+        }else {
+            videoPage = videoDao.getVideoByVodClassAndProduced(last,second,pageable);
+        }
+        return getVideoObject(videoPage);
+    }
+    private JSONObject getSortByAll(long second, long last, int page){
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Video> videoPage;
+        if(second == 0 && last == 0){
+            videoPage = videoDao.findAllByStatus(1,pageable);
+        }else if(last == 0){
+            videoPage = videoDao.getAllByProduced(second,pageable);
+        }else if(second == 0){
+            videoPage = videoDao.findAllByVodClassAndStatus(last,1,pageable);
+        }else {
+            videoPage = videoDao.getAllByVodClassAndProduced(last,second,pageable);
+        }
+        return getVideoObject(videoPage);
+    }
+    private JSONObject getVideoObject(Page<Video> videoPage) {
+        JSONObject object = new JSONObject();
+        object.put("total",videoPage.getTotalPages());
+        JSONArray array = new JSONArray();
+        for (Video v: videoPage.getContent()) {
+            if(v != null) {
+                array.add(getVideo(v));
+            }
+        }
+        object.put("list",array);
+        return object;
+    }
+
+
 }
