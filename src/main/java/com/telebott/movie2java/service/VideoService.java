@@ -32,6 +32,8 @@ public class VideoService {
     private static final int SORT_BY_LIKE = 3;
     private static final int SORT_BY_COMMENT = 4;
 
+    private static int VIDEO_CONCENTRATION_PAGE = 0;
+
     @Autowired
     private VideoProducedDao videoProducedDao;
     @Autowired
@@ -60,8 +62,12 @@ public class VideoService {
     private VideoPayDao videoPayDao;
     @Autowired
     private VideoPayRecordDao videoPayRecordDao;
+    @Autowired
+    private  VideoConcentrationListDao videoConcentrationListDao;
+    @Autowired
+    private VideoConcentrationDao videoConcentrationDao;
 
-    public ResponseData categoryTags(User instance, String ip) {
+    public ResponseData categoryTags(User user, String ip) {
         List<VideoProduced> produceds = videoProducedDao.findAllByStatus(1);
         List<VideoClass> classes = videoClassDao.findAllByStatus(1);
         JSONObject object = ResponseData.object("produceds", getProduced(produceds));
@@ -111,10 +117,11 @@ public class VideoService {
             scale.setUpdateTime(System.currentTimeMillis());
             scale.setVideoId(id);
         }
-        if (scale.getVideoTime() >= video.getVodDuration()){
+        if (scale.getVideoTime() >= (video.getVodDuration()-20)){
             scale.setVideoTime(0);
             scale.setUpdateTime(System.currentTimeMillis());
         }
+//        System.out.printf((video.getVodDuration()-scale.getVideoTime())+"");
         videoScaleDao.saveAndFlush(scale);
         VideoPlay play = new VideoPlay();
         play.setAddTime(System.currentTimeMillis());
@@ -426,5 +433,50 @@ public class VideoService {
         return object;
     }
 
+    private Page<Video> getVideo(long concentrationId){
+        Pageable pageable = PageRequest.of(VIDEO_CONCENTRATION_PAGE, 6, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Video> videoPage = videoDao.getVideoByConcentrations(concentrationId,pageable);
+        if(videoPage.getTotalPages() > VIDEO_CONCENTRATION_PAGE){
+            VIDEO_CONCENTRATION_PAGE++;
+            return videoPage;
+        }else{
+            VIDEO_CONCENTRATION_PAGE = 0;
+            return getVideo(concentrationId);
+        }
+    }
+    public ResponseData concentrations(User user, String ip) {
+        List<VideoConcentrationList> concentrationLists= videoConcentrationListDao.getAllByGroup();
+        JSONArray jsonArray= new JSONArray();
+        for (VideoConcentrationList concentrationList: concentrationLists) {
+            if(concentrationList != null) {
+                VideoConcentration concentration = videoConcentrationDao.findAllById(concentrationList.getConcentrationId());
+                if(concentration != null){
+                    Page<Video> videoPage = getVideo(concentrationList.getConcentrationId());
+                    if(videoPage.getContent().size() > 0) {
+                        JSONArray array = new JSONArray();
+                        for (Video video: videoPage.getContent()) {
+                            array.add(getVideo(video));
+                        }
+                        JSONObject json = ResponseData.object("videos", array);
+                        json.put("id", concentration.getId());
+                        json.put("name", concentration.getName());
+                        jsonArray.add(json);
+                    }
+                }
+            }
+        }
+        return ResponseData.success(ResponseData.object("list", jsonArray));
+    }
 
+    public ResponseData concentrationsAnytime(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("id must be greater than 1");
+        VideoConcentration concentration = videoConcentrationDao.findAllById(id);
+        if (concentration == null) return ResponseData.error("concentration not found");
+        Page<Video> videoPage = getVideo(id);
+        JSONArray array = new JSONArray();
+        for (Video video: videoPage.getContent()) {
+            array.add(getVideo(video));
+        }
+        return ResponseData.success(ResponseData.object("list", array));
+    }
 }

@@ -85,5 +85,16 @@ public class VideoControl {
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.categoryList(first,second,last,page, User.getInstance(user), ip);
     }
+    @GetMapping("/concentrations")
+    public ResponseData concentrations(@RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.concentrations(User.getInstance(user), ip);
+    }
+    @GetMapping("/concentrations/anytime/{id}")
+    public ResponseData concentrationsAnytime(@PathVariable long id,
+                                              @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.concentrationsAnytime(id,User.getInstance(user), ip);
+    }
 
 }
