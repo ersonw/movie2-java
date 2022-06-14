@@ -139,7 +139,7 @@ public class VideoService {
         }
         VideoPay pay = videoPayDao.findAllByVideoId(id);
         if (pay != null) {
-            object.put("pay", videoPayRecordDao.findAllByUserId(user.getId()) != null);
+            object.put("pay", videoPayRecordDao.findAllByUserIdAndPayId(user.getId(),pay.getId()) != null);
             object.put("price", pay.getAmount());
         }else {
             object.put("pay", !apiService.getVideoConfigBool("VideoPay"));
@@ -478,5 +478,47 @@ public class VideoService {
             array.add(getVideo(video));
         }
         return ResponseData.success(ResponseData.object("list", array));
+    }
+    public ResponseData concentrations(long id,int page, User user, String ip) {
+        if (id < 1) return ResponseData.error("id must be greater than 1");
+        VideoConcentration concentration = videoConcentrationDao.findAllById(id);
+        if (concentration == null) return ResponseData.error("concentration not found");
+        page--;
+        if(page < 0) page= 0;
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Video> videoPage = videoDao.getVideoByConcentrations(id,pageable);
+        JSONArray array = new JSONArray();
+        for (Video video: videoPage.getContent()) {
+            array.add(getVideo(video));
+        }
+        return ResponseData.success(ResponseData.object("list", array));
+    }
+
+    public ResponseData membership(int page, User user, String ip) {
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Video> videoPage = videoDao.getVideoByPay(pageable);
+        JSONArray array = new JSONArray();
+        for (Video video: videoPage.getContent()) {
+            array.add(getVideo(video));
+        }
+        JSONObject object = ResponseData.object("list", array);
+        object.put("total", videoPage.getTotalPages());
+        return ResponseData.success(object);
+    }
+
+    public ResponseData diamond(int page, User user, String ip) {
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Video> videoPage = videoDao.getVideoByPay(1,pageable);
+        JSONArray array = new JSONArray();
+        for (Video video: videoPage.getContent()) {
+            array.add(getVideo(video));
+        }
+        JSONObject object = ResponseData.object("list", array);
+        object.put("total", videoPage.getTotalPages());
+        return ResponseData.success(object);
     }
 }

@@ -96,5 +96,23 @@ public class VideoControl {
                                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.concentrationsAnytime(id,User.getInstance(user), ip);
     }
-
+    @GetMapping("/concentrations/{id}/{page}")
+    public ResponseData concentrations(@PathVariable long id,
+                                       @PathVariable int page,
+                                              @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.concentrations(id,page,User.getInstance(user), ip);
+    }
+    @GetMapping("/membership/{page}")
+    public ResponseData membership(@PathVariable int page,
+                                   @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                   @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.membership(page,User.getInstance(user), ip);
+    }
+    @GetMapping("/diamond/{page}")
+    public ResponseData diamond(@PathVariable int page,
+                                   @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                   @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.diamond(page,User.getInstance(user), ip);
+    }
 }
