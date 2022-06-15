@@ -41,7 +41,7 @@ public class VideoService {
     @Autowired
     private ApiService apiService;
     @Autowired
-    private SearchService searchService;
+    private UserService userService;
     @Autowired
     private PublicizeDao publicizeDao;
     @Autowired
@@ -130,17 +130,24 @@ public class VideoService {
         play.setIp(ip);
         videoPlayDao.saveAndFlush(play);
         JSONObject object = new JSONObject();
-
+        object.put("member", userService.isMembership(user.getId()));
         object.put("seek", scale.getVideoTime());
         object.put("price", 0);
+        object.put("total", 0);
         object.put("trial", video.getTrial());
         if (video.getTrial() == 0){
             object.put("trial", apiService.getVideoConfigLong("VideoTrial"));
         }
         VideoPay pay = videoPayDao.findAllByVideoId(id);
         if (pay != null) {
-            object.put("pay", videoPayRecordDao.findAllByUserIdAndPayId(user.getId(),pay.getId()) != null);
+            boolean isPay = videoPayRecordDao.findAllByUserIdAndPayId(user.getId(),pay.getId()) != null;
+            object.put("pay", isPay);
             object.put("price", pay.getAmount());
+            object.put("total", pay.getAmount());
+            long percent = apiService.getVideoConfigLong("VideoPayLess");
+            if(percent > 0) {
+                object.put("total", pay.getAmount() - (pay.getAmount() / percent));
+            }
         }else {
             object.put("pay", !apiService.getVideoConfigBool("VideoPay"));
         }

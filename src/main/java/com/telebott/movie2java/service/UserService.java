@@ -30,8 +30,14 @@ public class UserService {
     private UserDeviceRecordDao deviceRecordDao;
     @Autowired
     private UserFailLoginRecordDao failLoginRecordDao;
+    @Autowired
+    private MembershipExpiredDao membershipExpiredDao;
 
     private static long FAIL_LOGIN_TIMES = 6;
+
+    public boolean isMembership(long userId) {
+        return userDao.getAllByMembership(userId,System.currentTimeMillis()) != null;
+    }
     private long checkFailLogin(long userId){
         List<UserFailLoginRecord> records = failLoginRecordDao.checkUserToday(userId, TimeUtil.getTodayZero());
         return FAIL_LOGIN_TIMES - records.size();
