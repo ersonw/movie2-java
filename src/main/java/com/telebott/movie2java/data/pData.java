@@ -40,6 +40,8 @@ public  class pData  {
     @ApiModelProperty(hidden = true)
     private String ip;
     @ApiModelProperty(hidden = true)
+    private boolean isWeb;
+    @ApiModelProperty(hidden = true)
     private String user;
     public User getUser() {
         JSONObject jsonObject = JSONObject.parseObject(user);

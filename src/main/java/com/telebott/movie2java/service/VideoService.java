@@ -96,8 +96,8 @@ public class VideoService {
         }
         return array;
     }
-    public ResponseData player(long id, User user, String ip) {
-//        System.out.println(user);
+    public ResponseData player(long id, User user, String ip,boolean isWeb) {
+        System.out.println(isWeb);
         if (user == null) {
             return ResponseData.success(ResponseData.object("error", "login"));
         }
@@ -149,7 +149,11 @@ public class VideoService {
                 object.put("total", pay.getAmount() - (pay.getAmount() / percent));
             }
         }else {
-            object.put("pay", !apiService.getVideoConfigBool("VideoPay"));
+            if(checkVideoAccess(user.getId(), id)){
+                object.put("pay", true);
+            }else {
+                object.put("pay", !apiService.getVideoConfigBool("VideoPay"));
+            }
         }
         object.put("id", id);
         object.put("picThumb",video.getPicThumb());
@@ -193,7 +197,13 @@ public class VideoService {
         scale.setUpdateTime(System.currentTimeMillis());
         return ResponseData.error();
     }
-
+    public boolean checkVideoAccess(long userId, long videoId){
+        VideoPay pay = videoPayDao.findAllByVideoId(videoId);
+        if (pay != null) {
+            return videoPayRecordDao.findAllByUserIdAndPayId(userId,pay.getId()) != null;
+        }
+        return userService.isMembership(userId);
+    }
     public ResponseData comment(long id, String text, long seek,
                                 long toId , User user, String ip) {
         if (id == 0) return ResponseData.error("You can't find the video with id 0");
@@ -201,6 +211,7 @@ public class VideoService {
         if (video == null) return ResponseData.error("Video not found");
         if (user == null) return ResponseData.success(ResponseData.object("error", "login"));
         if(StringUtils.isEmpty(text)) return ResponseData.error();
+        if(!checkVideoAccess(user.getId(),id)) return ResponseData.error("试看权限暂未开放评论哟～");
         if (text.length() < MINI_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能少于"+MINI_COMMENT_WORD_LENGTH+"个字符");
         if (text.length() > MAX_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能大于"+MAX_COMMENT_WORD_LENGTH+"个字符");
         if (ToolsUtil.filterCommentBlack(text)) return ResponseData.error("禁止发布敏感词语");
@@ -329,6 +340,7 @@ public class VideoService {
         Video video = videoDao.findAllById(id);
         if (video == null) return ResponseData.error("Video not found");
         if (user == null) return ResponseData.error();
+//        if(!checkVideoAccess(user.getId(),id)) return ResponseData.error("试看权限暂未开放点赞哟～");
         VideoLike like = videoLikeDao.findAllByUserIdAndVideoId(user.getId(),id);
         JSONObject object = ResponseData.object("like",false);
         if (like == null){

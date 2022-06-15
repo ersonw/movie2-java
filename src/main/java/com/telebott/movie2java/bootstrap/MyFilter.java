@@ -82,7 +82,8 @@ public class MyFilter implements Filter {
             HttpServletRequest request = (HttpServletRequest) req;
             String contentType = request.getContentType();
 //            System.out.println(contentType);
-//            System.out.println(request.getCharacterEncoding());
+            String userAgent = request.getHeader("User-Agent");
+//            System.out.println(userAgent);
             String token = ((HttpServletRequest) req).getHeader("Token");
             String ip = getIpAddr(request);
             User user = null;
@@ -96,6 +97,7 @@ public class MyFilter implements Filter {
                 Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
                 ParameterRequestWrapper wrapper = new ParameterRequestWrapper(request, parameterMap);
                 wrapper.addParameter("ip", ip);
+                wrapper.addParameter("isWeb", !userAgent.contains("dart:io"));
                 if (user != null){
                     wrapper.addParameter("user", JSONObject.toJSONString(user));
                 }
@@ -117,6 +119,7 @@ public class MyFilter implements Filter {
                             jsStr = new JSONObject();
                         }
                         jsStr.put("ip", ip);
+                        jsStr.put("isWeb", !userAgent.contains("dart:io"));
                         if (user != null) {
                             jsStr.put("user", JSONObject.toJSONString(user));
                         }
@@ -129,6 +132,7 @@ public class MyFilter implements Filter {
                     }else{
                         Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
                         parameterMap.put("ip", new String[]{ip});
+//                        parameterMap.put("isWeb", userAgent.contains("dart:io"));
                         if (user != null) {
                             parameterMap.put("user", new String[]{JSONObject.toJSONString(user)});
                         }

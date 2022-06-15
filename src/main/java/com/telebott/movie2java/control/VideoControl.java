@@ -25,8 +25,9 @@ public class VideoControl {
     @GetMapping("/player/{id}")
     public ResponseData player(@PathVariable long id,
                                      @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                     @RequestParam(value = "isWeb",required = false) @ApiParam(hidden = true) boolean isWeb ,
                                      @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        return service.player(id, User.getInstance(user), ip);
+        return service.player(id, User.getInstance(user), ip,isWeb);
     }
     @GetMapping("/comment/{page}/{id}")
     public ResponseData comment(@PathVariable long id,
