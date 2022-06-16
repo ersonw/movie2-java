@@ -116,4 +116,11 @@ public class VideoControl {
                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.diamond(page,User.getInstance(user), ip);
     }
+    @GetMapping("/rank/{first}/{second}")
+    public ResponseData rank(@PathVariable int first,
+                             @PathVariable long second,
+                             @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                             @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.rank(first,second,User.getInstance(user), ip);
+    }
 }

@@ -30,7 +30,7 @@ public interface VideoDao extends JpaRepository<Video, Long>, CrudRepository<Vid
     Page<Video> getAllByVodClassAndProduced(long vodClass,long producedId,Pageable pageable);
 
 
-    //vodClass produced 并发条件
+    //全部最热
     @Query(value = "SELECT v.*,(v.plays+(SELECT COUNT(*) FROM `video_play` WHERE video_id= v.id)) AS c FROM `video` v WHERE  v.status=:status ORDER BY c DESC", nativeQuery = true)
     Page<Video> getVideoByStatus(int status,Pageable pageable);
     //vodClass produced 并发条件
@@ -50,5 +50,11 @@ public interface VideoDao extends JpaRepository<Video, Long>, CrudRepository<Vid
     Page<Video> getVideoByPay(int status,Pageable pageable);
     @Query(value = "SELECT v1.* FROM (SELECT v.*,(SELECT amount FROM `video_pay` WHERE video_id=v.id) AS amount FROM `video` AS v WHERE  v.status=1) AS v1 WHERE `amount`=0 OR `amount` IS NULL", nativeQuery = true)
     Page<Video> getVideoByPay(Pageable pageable);
+    @Query(value = "SELECT v.*,(v.plays+(SELECT COUNT(*) FROM `video_play` WHERE video_id= v.id AND add_time >:time)) AS c  FROM `video` AS v ORDER BY c DESC", nativeQuery = true)
+    Page<Video> getVideoByRank(long time,Pageable pageable);
+    @Query(value = "SELECT v.*,(v.plays+(SELECT COUNT(*) FROM `video_play` WHERE video_id= v.id AND add_time >:time)) AS c  FROM `video_class` AS vc INNER JOIN `video` v ON v.vod_class=vc.id WHERE vc.id=:vodClass ORDER BY c DESC", nativeQuery = true)
+    Page<Video> getVideoByRank(long time,long vodClass,Pageable pageable);
+    @Query(value = "SELECT (v.plays+(SELECT COUNT(*) FROM `video_play` WHERE video_id= v.id AND add_time >:time)) FROM `video` AS v WHERE v.id=:videoId", nativeQuery = true)
+    long getVideoByRank(long time,long videoId);
 
 }

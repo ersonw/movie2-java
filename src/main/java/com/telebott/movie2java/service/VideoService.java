@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
+import com.telebott.movie2java.util.TimeUtil;
 import com.telebott.movie2java.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -518,13 +519,7 @@ public class VideoService {
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page, 10);
         Page<Video> videoPage = videoDao.getVideoByPay(pageable);
-        JSONArray array = new JSONArray();
-        for (Video video: videoPage.getContent()) {
-            array.add(getVideo(video));
-        }
-        JSONObject object = ResponseData.object("list", array);
-        object.put("total", videoPage.getTotalPages());
-        return ResponseData.success(object);
+        return getResponseVideoList(videoPage);
     }
 
     public ResponseData diamond(int page, User user, String ip) {
@@ -532,12 +527,52 @@ public class VideoService {
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.getVideoByPay(1,pageable);
+        return getResponseVideoList(videoPage);
+    }
+
+    private JSONArray getResponseVideoList(List<Video> videos) {
         JSONArray array = new JSONArray();
-        for (Video video: videoPage.getContent()) {
+        for (Video video: videos) {
             array.add(getVideo(video));
         }
-        JSONObject object = ResponseData.object("list", array);
+        return array;
+    }
+    private ResponseData getResponseVideoList(Page<Video> videoPage) {
+        JSONObject object = ResponseData.object("list", getResponseVideoList(videoPage.getContent()));
         object.put("total", videoPage.getTotalPages());
         return ResponseData.success(object);
+    }
+
+    public ResponseData rank(int first,long second,User user, String ip) {
+        Pageable pageable = PageRequest.of(0, 12);
+        List<Video> videos = new ArrayList<>();
+        long addTime = 0;
+        if (first == 2) {
+            addTime = TimeUtil.getMonthZero();
+        }else if(first == 1) {
+            addTime = TimeUtil.getYearZero();
+        }
+        if (second == 0) {
+            Page<Video> videoPage = videoDao.getVideoByRank(addTime,pageable);
+            videos = videoPage.getContent();
+        }else if (second > 0) {
+            Page<Video> videoPage = videoDao.getVideoByRank(addTime,second,pageable);
+            videos = videoPage.getContent();
+        }else {
+            return ResponseData.error("Invalid video type: "+first);
+        }
+        return getRankVideoList(videos,addTime);
+    }
+
+    private ResponseData getRankVideoList(List<Video> videos, long addTime) {
+        JSONArray array = new JSONArray();
+        for (Video video: videos) {
+            if(video != null) {
+                JSONObject json = getVideo(video);
+                json.put("plays", videoDao.getVideoByRank(addTime,video.getId()));
+                array.add(json);
+            }
+        }
+        return ResponseData.success(ResponseData.object("list", array));
     }
 }
