@@ -22,6 +22,7 @@ public class ShortVideo {
     private String playUrl;
     private long duration;
     private String file;
+    private String ip;
     private int status;
     private long addTime;
     private long updateTime;

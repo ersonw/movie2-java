@@ -34,8 +34,26 @@ public  class pData  {
     private long id;
     @ApiModelProperty(name = "toId", value= "目标ID",required = false)
     private long toId;
+
+    @ApiModelProperty(name = "duration", value= "目标ID",required = false)
+    private long duration;
+
     @ApiModelProperty(name = "text", value= "字符串",required = false)
     private String text;
+
+    @ApiModelProperty(name = "oss", value= "oss配置",required = false)
+    private String oss;
+    public OssConfig getOss() {
+        if (oss != null) return JSONObject.toJavaObject(JSONObject.parseObject(oss),OssConfig.class);
+        return null;
+    }
+
+    @ApiModelProperty(name = "files", value= "文件列表",required = false)
+    private String files;
+    @ApiModelProperty(name = "filePath", value= "文件路径",required = false)
+    private String filePath;
+    @ApiModelProperty(name = "imagePath", value= "图片路径",required = false)
+    private String imagePath;
 
     @ApiModelProperty(hidden = true)
     private String ip;

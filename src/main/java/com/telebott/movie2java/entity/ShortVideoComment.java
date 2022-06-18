@@ -21,4 +21,5 @@ public class ShortVideoComment {
     private long videoId;
     private String text;
     private long addTime;
+    private String ip;
 }

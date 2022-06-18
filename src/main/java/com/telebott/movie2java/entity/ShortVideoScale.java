@@ -21,4 +21,5 @@ public class ShortVideoScale {
     private long videoTime;
     private long addTime;
     private long updateTime;
+    private String ip;
 }

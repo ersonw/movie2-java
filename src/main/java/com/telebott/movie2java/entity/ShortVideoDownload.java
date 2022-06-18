@@ -19,4 +19,5 @@ public class ShortVideoDownload {
     private long userId;
     private long videoId;
     private long addTime;
+    private String ip;
 }

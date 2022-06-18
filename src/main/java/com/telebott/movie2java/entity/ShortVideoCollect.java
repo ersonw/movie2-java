@@ -19,4 +19,5 @@ public class ShortVideoCollect {
     private long userId;
     private long videoId;
     private long addTime;
+    private String ip;
 }

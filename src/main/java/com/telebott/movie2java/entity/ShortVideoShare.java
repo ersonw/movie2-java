@@ -20,4 +20,5 @@ public class ShortVideoShare {
     private long toUserId;
     private long videoId;
     private long addTime;
+    private String ip;
 }

@@ -19,4 +19,5 @@ public class ShortVideoCommentLike {
     private long userId;
     private long commentId;
     private long addTime;
+    private String ip;
 }
