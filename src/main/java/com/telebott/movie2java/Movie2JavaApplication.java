@@ -6,7 +6,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @EnableWebMvc
 @SpringBootApplication
-public class Movie2JavaApplication {
+public class Movie2JavaApplication { 
 
     public static void main(String[] args) {
         SpringApplication.run(Movie2JavaApplication.class, args);
