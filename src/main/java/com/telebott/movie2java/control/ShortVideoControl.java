@@ -2,14 +2,13 @@ package com.telebott.movie2java.control;
 
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.pData;
+import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.ShortVideoService;
 import com.telebott.movie2java.util.ApiGlobalModel;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/shortVideo")
@@ -21,5 +20,12 @@ public class ShortVideoControl {
     @ApiGlobalModel(component = pData.class, value = "filePath,imagePath,text,duration,files")
     public ResponseData upload(@RequestBody pData data){
         return service.upload(data.getText(), data.getFilePath(),data.getImagePath(), data.getDuration(),data.getFiles(), data.getUser(),data.getIp());
+    }
+    @GetMapping("/friend/{id}/{page}")
+    public ResponseData searchResult(@PathVariable long id,
+                                     @PathVariable int page,
+                                     @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.friend(id, page,User.getInstance(user),ip);
     }
 }
