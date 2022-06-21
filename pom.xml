@@ -44,7 +44,11 @@
             <!--                </exclusion>-->
             <!--            </exclusions>-->
         </dependency>
-
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>class-model</artifactId>
+            <version>2.6.1</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

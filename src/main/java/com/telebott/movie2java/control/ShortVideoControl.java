@@ -16,16 +16,24 @@ import org.springframework.web.bind.annotation.*;
 public class ShortVideoControl {
     @Autowired
     private ShortVideoService service;
+
     @PostMapping("/upload")
     @ApiGlobalModel(component = pData.class, value = "filePath,imagePath,text,duration,files")
-    public ResponseData upload(@RequestBody pData data){
-        return service.upload(data.getText(), data.getFilePath(),data.getImagePath(), data.getDuration(),data.getFiles(), data.getUser(),data.getIp());
+    public ResponseData upload(@RequestBody pData data) {
+        return service.upload(data.getText(), data.getFilePath(), data.getImagePath(), data.getDuration(), data.getFiles(), data.getUser(), data.getIp());
     }
+
     @GetMapping("/friend/{id}/{page}")
     public ResponseData searchResult(@PathVariable long id,
                                      @PathVariable int page,
-                                     @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
-                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        return service.friend(id, page,User.getInstance(user),ip);
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.friend(id, page, User.getInstance(user), ip);
+    }
+
+    @GetMapping("test")
+    public ResponseData test() {
+        service.test();
+        return ResponseData.success("test");
     }
 }

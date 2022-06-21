@@ -30,7 +30,7 @@ public class OssConfig {
         this.type = TYPE_UPLOAD_OSS_MINIO;
         enableTrace = false;
     }
-    public OssConfig getOssConfig(String str) {
+    public static OssConfig getOssConfig(String str) {
         if (str != null)return JSONObject.toJavaObject(JSONObject.parseObject(str),OssConfig.class);
         return null;
     }

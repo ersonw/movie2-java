@@ -62,6 +62,8 @@ public class ShortVideoService {
         return shortVideoPpvods.isEmpty() ? null : shortVideoPpvods.get(0).getVal();
     }
     public ResponseData upload(String text, String filePath, String imagePath, long duration,String files, User user, String ip) {
+//        System.out.printf(files);
+//        return ResponseData.error("files must be specified");
         if (text != null && text.length() > MAX_TITLE_LENGTH) return  ResponseData.error("MAX_TITLE_LENGTH must be greater than title length");
         if (user == null) return ResponseData.error("user must be specified");
         if (imagePath == null) return ResponseData.error("imagePath must be specified");
@@ -101,12 +103,15 @@ public class ShortVideoService {
         if(config.getPort() != null){
             endPoint = endPoint+":"+config.getPort();
         }
+//        log.error("endPoint:{} AccessKey:{} SecretKey:{}",endPoint,config.getAccessKey(),config.getSecretKey());
         switch (config.getType()){
             case OssConfig.TYPE_UPLOAD_OSS_MINIO:
                 try {
                     MinioClient minioClient = new MinioClient(endPoint, config.getAccessKey(), config.getSecretKey());
-                    ObjectStat objectStat = minioClient.statObject(config.getBucket(), path);
-                    System.out.println(objectStat);
+//                    ObjectStat objectStat = minioClient.statObject(config.getBucket(), path);
+//                    System.out.println(objectStat);
+//                    System.out.printf(minioClient.getObjectUrl(config.getBucket(),path));
+                    return minioClient.getObjectUrl(config.getBucket(),path);
                 } catch (InvalidPortException | InvalidEndpointException | InvalidBucketNameException |
                          InsufficientDataException | XmlPullParserException | ErrorResponseException |
                          NoSuchAlgorithmException | IOException | NoResponseException | InvalidKeyException |
@@ -117,9 +122,22 @@ public class ShortVideoService {
         }
         return null;
     }
-
+    public JSONObject getShortVideo(ShortVideo video){
+        if (video == null) return null;
+        JSONObject object = new JSONObject();
+        object.put("id",video.getId());
+        object.put("pic",video.getPic());
+        object.put("playUrl",video.getPlayUrl());
+        object.put("title",video.getTitle());
+    }
     public ResponseData friend(long id,int page, User user, String ip) {
         JSONArray arry = new JSONArray();
         return ResponseData.success(ResponseData.object("list",arry));
+    }
+
+    public void test() {
+        List<ShortVideo> shortVideos = shortVideoDao.findAll();
+        ShortVideoFile file = new ShortVideoFile(shortVideos.get(0).getFile());
+        getOssUrl(file.getFilePath(),OssConfig.getOssConfig(file.getOssConfig()));
     }
 }
