@@ -129,6 +129,7 @@ public class ShortVideoService {
         object.put("pic",video.getPic());
         object.put("playUrl",video.getPlayUrl());
         object.put("title",video.getTitle());
+        return  object;
     }
     public ResponseData friend(long id,int page, User user, String ip) {
         JSONArray arry = new JSONArray();

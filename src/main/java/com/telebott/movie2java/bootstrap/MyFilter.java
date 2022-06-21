@@ -86,6 +86,7 @@ public class MyFilter implements Filter {
 //            System.out.println(userAgent);
             String token = ((HttpServletRequest) req).getHeader("Token");
             String ip = getIpAddr(request);
+            System.out.printf(ip+"\n");
             User user = null;
             if (StringUtils.isNotEmpty(token)){
                 user = authDao.findUserByToken(token);
@@ -97,7 +98,7 @@ public class MyFilter implements Filter {
                 Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
                 ParameterRequestWrapper wrapper = new ParameterRequestWrapper(request, parameterMap);
                 wrapper.addParameter("ip", ip);
-                wrapper.addParameter("isWeb", !userAgent.contains("dart:io"));
+                wrapper.addParameter("isWeb", userAgent != null && !userAgent.contains("dart:io"));
                 if (user != null){
                     wrapper.addParameter("user", JSONObject.toJSONString(user));
                 }
@@ -119,7 +120,7 @@ public class MyFilter implements Filter {
                             jsStr = new JSONObject();
                         }
                         jsStr.put("ip", ip);
-                        jsStr.put("isWeb", !userAgent.contains("dart:io"));
+                        jsStr.put("isWeb", userAgent != null && !userAgent.contains("dart:io"));
                         if (user != null) {
                             jsStr.put("user", JSONObject.toJSONString(user));
                         }
