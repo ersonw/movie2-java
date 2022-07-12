@@ -11,7 +11,12 @@ import io.minio.MinioClient;
 import io.minio.ObjectStat;
 import io.minio.errors.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -47,6 +52,8 @@ public class ShortVideoService {
     private ShortVideoScaleDao shortVideoScaleDao;
     @Autowired
     private ShortVideoShareDao shortVideoShareDao;
+    @Autowired
+    private UserDao userDao;
     @Autowired
     private UserFollowDao userFollowDao;
     public boolean getShortVideoConfigBool(String name){
@@ -122,18 +129,84 @@ public class ShortVideoService {
         }
         return null;
     }
-    public JSONObject getShortVideo(ShortVideo video){
+    public JSONObject getComment(ShortVideoComment comment, long userId){
+        JSONObject o = new JSONObject();
+        o.put("id", comment.getId());
+        o.put("text", comment.getText());
+        o.put("addTime", comment.getAddTime());
+        o.put("userId", comment.getUserId());
+        User user = userDao.findAllById(comment.getUserId());
+        if (user != null) {
+            o.put("avatar", user.getAvatar());
+            o.put("nickname", user.getNickname());
+        }
+        o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
+        o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()) != null);
+        o.put("reply", getComments(comment.getVideoId(), userId, comment.getId()));
+        return o;
+    }
+    public JSONArray getComments(long videoId, long userId){
+        return getComments(videoId, userId,0);
+    }
+    public JSONArray getComments(long videoId, long userId, long replyId){
+        List<ShortVideoComment> comments = shortVideoCommentDao.findAllByVideoIdAndReplyId(videoId,replyId);
+        JSONArray jsonArray = new JSONArray();
+        for (ShortVideoComment comment : comments) {
+            jsonArray.add(getComment(comment, userId));
+        }
+        return jsonArray;
+    }
+    public JSONObject getShortVideo(ShortVideo video, long userId){
         if (video == null) return null;
         JSONObject object = new JSONObject();
         object.put("id",video.getId());
-        object.put("pic",video.getPic());
-        object.put("playUrl",video.getPlayUrl());
         object.put("title",video.getTitle());
+        ShortVideoFile file = new ShortVideoFile(video.getFile());
+        if(StringUtils.isNotEmpty(video.getPlayUrl())){
+            object.put("playUrl",video.getPlayUrl());
+        }else {
+            object.put("playUrl",getOssUrl(file.getFilePath(),OssConfig.getOssConfig(file.getOssConfig())));
+        }
+        if (StringUtils.isNotEmpty(video.getPic())){
+            object.put("pic",video.getPic());
+        }else {
+            object.put("pic",getOssUrl(file.getImagePath(),OssConfig.getOssConfig(file.getOssConfig())));
+        }
+        object.put("addTime",video.getAddTime());
+
+        object.put("likes",shortVideoLikeDao.countAllByVideoId(video.getId()));
+        object.put("like",shortVideoLikeDao.findAllByUserIdAndVideoId(userId,video.getId()) != null);
+
+        object.put("comments",getComments(video.getId(),userId));
+        object.put("collects",shortVideoCollectDao.countAllByVideoId(video.getId()));
+        object.put("forward", userFollowDao.findAllByUserIdAndToUserId(userId, video.getUserId()) != null);
+
+        User user = userDao.findAllById(video.getUserId());
+        if (user != null){
+            object.put("avatar",user.getAvatar());
+            object.put("nickname",user.getNickname());
+        }
+        object.put("userId",video.getUserId());
         return  object;
     }
     public ResponseData friend(long id,int page, User user, String ip) {
+        if(user == null) return ResponseData.error("");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC,"id"));
+        Page<ShortVideo> videoPage;
+        if (id == 0){
+            videoPage = shortVideoDao.getAllByForwards(user.getId(), pageable);
+        }else {
+            videoPage = shortVideoDao.getAllByForwards(user.getId(), pageable);
+        }
+        JSONObject object = ResponseData.object("total",videoPage.getTotalPages());
         JSONArray arry = new JSONArray();
-        return ResponseData.success(ResponseData.object("list",arry));
+        for (ShortVideo video : videoPage.getContent()) {
+            arry.add(getShortVideo(video, user.getId()));
+        }
+        object.put("list",arry);
+        return ResponseData.success(object);
     }
 
     public void test() {

@@ -9,4 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface ShortVideoLikeDao extends JpaRepository<ShortVideoLike, Long>, CrudRepository<ShortVideoLike, Long> {
+    Long countAllByVideoId(long videoId);
+    ShortVideoLike findAllByUserIdAndVideoId(long userId, long videoId);
 }

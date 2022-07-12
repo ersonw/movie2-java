@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@WebFilter(filterName = "myFilter", urlPatterns = "/")
-@Order(10000)
+@WebFilter(filterName = "myFilter", urlPatterns = {"/api/*"})
+//@Order(10000)
 public class MyFilter implements Filter {
     @Autowired
     private AuthDao authDao;
@@ -86,7 +86,7 @@ public class MyFilter implements Filter {
 //            System.out.println(userAgent);
             String token = ((HttpServletRequest) req).getHeader("Token");
             String ip = getIpAddr(request);
-            System.out.printf(ip+"\n");
+//            System.out.printf(ip+"\n");
             User user = null;
             if (StringUtils.isNotEmpty(token)){
                 user = authDao.findUserByToken(token);

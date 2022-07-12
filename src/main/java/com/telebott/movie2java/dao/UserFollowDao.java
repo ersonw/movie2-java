@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface UserFollowDao extends JpaRepository<UserFollow, Long>, CrudRepository<UserFollow, Long> {
+    UserFollow findAllByUserIdAndToUserId(Long userId, Long toUserId);
 }
