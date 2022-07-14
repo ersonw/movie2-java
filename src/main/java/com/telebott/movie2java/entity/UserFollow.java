@@ -13,10 +13,18 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class UserFollow {
+    public UserFollow() {}
+    public UserFollow(long userId, long toUserId, String ip) {
+        this.userId = userId;
+        this.toUserId = toUserId;
+        this.ip = ip;
+        this.addTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;
     private long userId;
     private long toUserId;
+    private String ip;
     private long addTime;
 }

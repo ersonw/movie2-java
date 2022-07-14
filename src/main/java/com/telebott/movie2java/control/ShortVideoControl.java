@@ -34,6 +34,30 @@ public class ShortVideoControl {
                                      @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.concentration(page, User.getInstance(user), ip);
     }
+    @GetMapping("/like/{id}")
+    public ResponseData like(@PathVariable long id,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.like(id, User.getInstance(user), ip);
+    }
+    @GetMapping("/unlike/{id}")
+    public ResponseData unlike(@PathVariable long id,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.unlike(id, User.getInstance(user), ip);
+    }
+    @GetMapping("/follow/{id}")
+    public ResponseData follow(@PathVariable long id,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.follow(id, User.getInstance(user), ip);
+    }
+    @GetMapping("/unfollow/{id}")
+    public ResponseData unfollow(@PathVariable long id,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.unfollow(id, User.getInstance(user), ip);
+    }
     @GetMapping("/friend/{id}/{page}")
     public ResponseData friend(@PathVariable long id,
                                      @PathVariable int page,

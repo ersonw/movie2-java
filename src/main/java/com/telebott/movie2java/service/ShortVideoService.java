@@ -222,7 +222,7 @@ public class ShortVideoService {
             JSONObject json = getShortVideo(video, user.getId());
             if (json != null) arry.add(json);
         }
-        object = ResponseData.object("total",arry.size());
+//        object = ResponseData.object("total",arry.size());
         object.put("list",arry);
         return ResponseData.success(object);
     }
@@ -241,17 +241,18 @@ public class ShortVideoService {
         if (video == null) return ResponseData.error("");
         if (seek > (video.getDuration() - 6)) seek = 0;
         long time = System.currentTimeMillis() - (1000 * 60 * 30);
-        ShortVideoPlay play = shortVideoPlayDao.findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(video.getId(), user.getId(),time);
-        if (play == null){
-            play = new ShortVideoPlay(video.getId(), user.getId(),ip);
+        List<ShortVideoPlay> plays = shortVideoPlayDao.findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(video.getId(), user.getId(),time);
+        if (plays.size() == 0){
+            ShortVideoPlay play = new ShortVideoPlay(video.getId(), user.getId(),ip);
             shortVideoPlayDao.saveAndFlush(play);
         }
-        ShortVideoScale scale = shortVideoScaleDao.findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(video.getId(), user.getId(),time);
-        if (scale == null){
-            scale = new ShortVideoScale(user.getId(), video.getId(),seek,ip);
+        List<ShortVideoScale> scales = shortVideoScaleDao.findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(video.getId(), user.getId(),time);
+        if (scales.size() == 0){
+            ShortVideoScale scale = new ShortVideoScale(user.getId(), video.getId(),seek,ip);
+            scales.add(scale);
         }
-        scale.setVideoTime(seek);
-        shortVideoScaleDao.saveAndFlush(scale);
+        scales.get(0).setVideoTime(seek);
+        shortVideoScaleDao.saveAndFlush(scales.get(0));
         return ResponseData.success("");
     }
 
@@ -273,8 +274,44 @@ public class ShortVideoService {
             JSONObject json = getShortVideo(video, user.getId());
             if (json != null) arry.add(json);
         }
-        object = ResponseData.object("total",arry.size());
+//        object = ResponseData.object("total",arry.size());
         object.put("list",arry);
         return ResponseData.success(object);
+    }
+
+    public ResponseData like(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        ShortVideoLike like = shortVideoLikeDao.findAllByUserIdAndVideoId(user.getId(), id);
+        if (like!=null) return ResponseData.success("");
+        like = new ShortVideoLike(user.getId(), id,ip);
+        shortVideoLikeDao.saveAndFlush(like);
+        return ResponseData.success(ResponseData.object("state", true));
+    }
+    public ResponseData unlike(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        ShortVideoLike like = shortVideoLikeDao.findAllByUserIdAndVideoId(user.getId(), id);
+        if (like==null) return ResponseData.success("");
+        shortVideoLikeDao.delete(like);
+        return ResponseData.success(ResponseData.object("state", true));
+    }
+
+    public ResponseData follow(long uid, User user, String ip) {
+        if (uid < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        UserFollow follow = userFollowDao.findAllByUserIdAndToUserId(user.getId(), uid);
+        if (follow!=null) return ResponseData.success("");
+        follow = new UserFollow(user.getId(), uid,ip);
+        userFollowDao.saveAndFlush(follow);
+        return ResponseData.success(ResponseData.object("state", true));
+    }
+    public ResponseData unfollow(long uid, User user, String ip) {
+        if (uid < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        UserFollow follow = userFollowDao.findAllByUserIdAndToUserId(user.getId(), uid);
+        if (follow==null) return ResponseData.success("");
+        userFollowDao.delete(follow);
+        return ResponseData.success(ResponseData.object("state", true));
     }
 }
