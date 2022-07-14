@@ -207,7 +207,7 @@ public class ShortVideoService {
         Page<ShortVideo> videoPage;
         if (id == 0){
             videoPage = shortVideoDao.getAllByForwards(user.getId(), pageable);
-            if (videoPage.getContent().size() == 0){
+            if (page > videoPage.getTotalPages()){
                 page = page - videoPage.getTotalPages();
                 if (page < 0) page = 0;
                 pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC,"id"));
@@ -262,7 +262,7 @@ public class ShortVideoService {
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page, 10);
         Page<ShortVideo> videoPage = shortVideoDao.getAllVideos(user.getId(),pageable);
-        if (videoPage.getContent().size() == 0){
+        if (page > videoPage.getTotalPages()){
             page = page - videoPage.getTotalPages();
             if (page < 0) page = 0;
             pageable = PageRequest.of(page, 10);
