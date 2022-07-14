@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface ShortVideoScaleDao extends JpaRepository<ShortVideoScale, Long>, CrudRepository<ShortVideoScale, Long> {
+    ShortVideoScale findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(Long videoId, Long userId, long time);
 }

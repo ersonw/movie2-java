@@ -118,6 +118,9 @@ public class ShortVideoService {
 //                    ObjectStat objectStat = minioClient.statObject(config.getBucket(), path);
 //                    System.out.println(objectStat);
 //                    System.out.printf(minioClient.getObjectUrl(config.getBucket(),path));
+                    ObjectStat stat = minioClient.statObject(config.getBucket(),path);
+//                    System.out.printf("length:%d\n",stat.length());
+//                    if ()
                     return minioClient.getObjectUrl(config.getBucket(),path);
                 } catch (InvalidPortException | InvalidEndpointException | InvalidBucketNameException |
                          InsufficientDataException | XmlPullParserException | ErrorResponseException |
@@ -165,12 +168,16 @@ public class ShortVideoService {
         if(StringUtils.isNotEmpty(video.getPlayUrl())){
             object.put("playUrl",video.getPlayUrl());
         }else {
-            object.put("playUrl",getOssUrl(file.getFilePath(),OssConfig.getOssConfig(file.getOssConfig())));
+            String url = getOssUrl(file.getFilePath(),OssConfig.getOssConfig(file.getOssConfig()));
+            if (url == null) return null;
+            object.put("playUrl",url);
         }
         if (StringUtils.isNotEmpty(video.getPic())){
             object.put("pic",video.getPic());
         }else {
-            object.put("pic",getOssUrl(file.getImagePath(),OssConfig.getOssConfig(file.getOssConfig())));
+            String url = getOssUrl(file.getImagePath(),OssConfig.getOssConfig(file.getOssConfig()));
+//            if (url != null) return null;
+            object.put("pic",url);
         }
         object.put("addTime",video.getAddTime());
 
@@ -178,8 +185,11 @@ public class ShortVideoService {
         object.put("like",shortVideoLikeDao.findAllByUserIdAndVideoId(userId,video.getId()) != null);
 
         object.put("comments",getComments(video.getId(),userId));
+        object.put("comment",shortVideoCommentDao.countAllByVideoId(video.getId()));
         object.put("collects",shortVideoCollectDao.countAllByVideoId(video.getId()));
-        object.put("forward", userFollowDao.findAllByUserIdAndToUserId(userId, video.getUserId()) != null);
+        object.put("follow", userFollowDao.findAllByUserIdAndToUserId(userId, video.getUserId()) != null);
+        object.put("forwards", shortVideoShareDao.countAllByVideoId(video.getId()));
+        object.put("forward", video.getForward() == 1);
 
         User user = userDao.findAllById(video.getUserId());
         if (user != null){
@@ -197,14 +207,22 @@ public class ShortVideoService {
         Page<ShortVideo> videoPage;
         if (id == 0){
             videoPage = shortVideoDao.getAllByForwards(user.getId(), pageable);
+            if (videoPage.getContent().size() == 0){
+                page = page - videoPage.getTotalPages();
+                if (page < 0) page = 0;
+                pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC,"id"));
+                videoPage = shortVideoDao.getAllByForward(user.getId(), pageable);
+            }
         }else {
-            videoPage = shortVideoDao.getAllByForwards(user.getId(), pageable);
+            videoPage = shortVideoDao.getAllByUser(user.getId(), pageable);
         }
         JSONObject object = ResponseData.object("total",videoPage.getTotalPages());
         JSONArray arry = new JSONArray();
         for (ShortVideo video : videoPage.getContent()) {
-            arry.add(getShortVideo(video, user.getId()));
+            JSONObject json = getShortVideo(video, user.getId());
+            if (json != null) arry.add(json);
         }
+        object = ResponseData.object("total",arry.size());
         object.put("list",arry);
         return ResponseData.success(object);
     }
@@ -213,5 +231,50 @@ public class ShortVideoService {
         List<ShortVideo> shortVideos = shortVideoDao.findAll();
         ShortVideoFile file = new ShortVideoFile(shortVideos.get(0).getFile());
         getOssUrl(file.getFilePath(),OssConfig.getOssConfig(file.getOssConfig()));
+    }
+
+    public ResponseData heartbeat(long id, long seek, User user, String ip) {
+        if (seek < 0) seek = 0;
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        ShortVideo video = shortVideoDao.findAllById(id);
+        if (video == null) return ResponseData.error("");
+        if (seek > (video.getDuration() - 6)) seek = 0;
+        long time = System.currentTimeMillis() - (1000 * 60 * 30);
+        ShortVideoPlay play = shortVideoPlayDao.findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(video.getId(), user.getId(),time);
+        if (play == null){
+            play = new ShortVideoPlay(video.getId(), user.getId(),ip);
+            shortVideoPlayDao.saveAndFlush(play);
+        }
+        ShortVideoScale scale = shortVideoScaleDao.findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(video.getId(), user.getId(),time);
+        if (scale == null){
+            scale = new ShortVideoScale(user.getId(), video.getId(),seek,ip);
+        }
+        scale.setVideoTime(seek);
+        shortVideoScaleDao.saveAndFlush(scale);
+        return ResponseData.success("");
+    }
+
+    public ResponseData concentration(int page, User user, String ip) {
+        if(user == null) return ResponseData.error("");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<ShortVideo> videoPage = shortVideoDao.getAllVideos(user.getId(),pageable);
+        if (videoPage.getContent().size() == 0){
+            page = page - videoPage.getTotalPages();
+            if (page < 0) page = 0;
+            pageable = PageRequest.of(page, 10);
+            videoPage = shortVideoDao.getAllVideos(pageable);
+        }
+        JSONObject object = ResponseData.object("total",videoPage.getTotalPages());
+        JSONArray arry = new JSONArray();
+        for (ShortVideo video : videoPage.getContent()) {
+            JSONObject json = getShortVideo(video, user.getId());
+            if (json != null) arry.add(json);
+        }
+        object = ResponseData.object("total",arry.size());
+        object.put("list",arry);
+        return ResponseData.success(object);
     }
 }

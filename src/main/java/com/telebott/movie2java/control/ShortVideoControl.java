@@ -22,9 +22,20 @@ public class ShortVideoControl {
     public ResponseData upload(@RequestBody pData data) {
         return service.upload(data.getText(), data.getFilePath(), data.getImagePath(), data.getDuration(), data.getFiles(), data.getUser(), data.getIp());
     }
+    @PostMapping("/heartbeat")
+    @ApiGlobalModel(component = pData.class, value = "id,seek")
+    public ResponseData heartbeat(@RequestBody pData data) {
+        return service.heartbeat(data.getId(),data.getSeek(), data.getUser(), data.getIp());
+    }
 
+    @GetMapping("/concentration/{page}")
+    public ResponseData concentration(@PathVariable int page,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.concentration(page, User.getInstance(user), ip);
+    }
     @GetMapping("/friend/{id}/{page}")
-    public ResponseData searchResult(@PathVariable long id,
+    public ResponseData friend(@PathVariable long id,
                                      @PathVariable int page,
                                      @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
                                      @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {

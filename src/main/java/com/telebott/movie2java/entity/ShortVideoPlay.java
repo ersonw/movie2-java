@@ -13,6 +13,13 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class ShortVideoPlay {
+    public ShortVideoPlay() {}
+    public ShortVideoPlay(long videoId, long userId, String ip) {
+        this.videoId = videoId;
+        this.userId = userId;
+        this.ip = ip;
+        this.addTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;

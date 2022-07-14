@@ -13,6 +13,15 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class ShortVideoScale {
+    public ShortVideoScale(){}
+    public ShortVideoScale(long userId,long videoId, long videoTime,String ip){
+        this.userId = userId;
+        this.videoId = videoId;
+        this.videoTime = videoTime;
+        this.ip = ip;
+        this.addTime = System.currentTimeMillis();
+        this.updateTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;
