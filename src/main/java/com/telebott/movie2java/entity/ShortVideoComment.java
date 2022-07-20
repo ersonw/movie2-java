@@ -13,6 +13,14 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class ShortVideoComment {
+    public ShortVideoComment(){}
+    public ShortVideoComment(long replyId, long userId,long videoId, String text, String ip){
+        this.replyId = replyId;
+        this.userId = userId;
+        this.text = text;
+        this.ip = ip;
+        this.addTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;
@@ -20,6 +28,7 @@ public class ShortVideoComment {
     private long userId;
     private long videoId;
     private String text;
+    private int status=1;
     private long addTime;
     private String ip;
 }

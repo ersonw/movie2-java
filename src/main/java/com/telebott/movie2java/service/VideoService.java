@@ -459,9 +459,11 @@ public class VideoService {
         if(videoPage.getTotalPages() > VIDEO_CONCENTRATION_PAGE){
             VIDEO_CONCENTRATION_PAGE++;
             return videoPage;
-        }else{
+        }else if (videoPage.getTotalElements() > 0){
             VIDEO_CONCENTRATION_PAGE = 0;
             return getVideo(concentrationId);
+        }else {
+            return videoPage;
         }
     }
     public ResponseData concentrations(User user, String ip) {

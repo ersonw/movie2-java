@@ -65,7 +65,25 @@ public class ShortVideoControl {
                                      @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.friend(id, page, User.getInstance(user), ip);
     }
-
+    @GetMapping("/comments/{id}/{page}")
+    public ResponseData comments(@PathVariable long id,
+                                     @PathVariable int page,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.comments(id, page, User.getInstance(user), ip);
+    }
+    @GetMapping("/comment/{id}/{page}")
+    public ResponseData comment(@PathVariable long id,
+                                     @PathVariable int page,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.commentChildren(id, page, User.getInstance(user), ip);
+    }
+    @PostMapping("/comment")
+    @ApiGlobalModel(component = pData.class, value = "id,text,toId")
+    public ResponseData comments(@RequestBody pData data) {
+        return service.comment(data.getId(),data.getText(),data.getToId(), data.getUser(), data.getIp());
+    }
     @GetMapping("test")
     public ResponseData test() {
         service.test();

@@ -7,6 +7,7 @@ import com.telebott.movie2java.data.OssConfig;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.ShortVideoFile;
 import com.telebott.movie2java.entity.*;
+import com.telebott.movie2java.util.ToolsUtil;
 import io.minio.MinioClient;
 import io.minio.ObjectStat;
 import io.minio.errors.*;
@@ -29,6 +30,8 @@ import java.util.List;
 @Service
 public class ShortVideoService {
     private static final int MAX_TITLE_LENGTH = 100;
+    private static final int MAX_COMMENT_WORD_LENGTH = 100;
+    private static final int MINI_COMMENT_WORD_LENGTH = 2;
 
     @Autowired
     private ShortVideoDao shortVideoDao;
@@ -83,7 +86,13 @@ public class ShortVideoService {
         video.setUserId(user.getId());
         video.setDuration(duration);
         video.setIp(ip);
-        video.setStatus(0);
+        video.setStatus(1);
+        if (getShortVideoConfigBool("auditUpload")){
+            video.setStatus(0);
+        }
+        if (getShortVideoConfigBool("forward")){
+            video.setForward(1);
+        }
         if(filePath.startsWith("http")){
             video.setPlayUrl(filePath);
         }
@@ -132,33 +141,6 @@ public class ShortVideoService {
         }
         return null;
     }
-    public JSONObject getComment(ShortVideoComment comment, long userId){
-        JSONObject o = new JSONObject();
-        o.put("id", comment.getId());
-        o.put("text", comment.getText());
-        o.put("addTime", comment.getAddTime());
-        o.put("userId", comment.getUserId());
-        User user = userDao.findAllById(comment.getUserId());
-        if (user != null) {
-            o.put("avatar", user.getAvatar());
-            o.put("nickname", user.getNickname());
-        }
-        o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
-        o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()) != null);
-        o.put("reply", getComments(comment.getVideoId(), userId, comment.getId()));
-        return o;
-    }
-    public JSONArray getComments(long videoId, long userId){
-        return getComments(videoId, userId,0);
-    }
-    public JSONArray getComments(long videoId, long userId, long replyId){
-        List<ShortVideoComment> comments = shortVideoCommentDao.findAllByVideoIdAndReplyId(videoId,replyId);
-        JSONArray jsonArray = new JSONArray();
-        for (ShortVideoComment comment : comments) {
-            jsonArray.add(getComment(comment, userId));
-        }
-        return jsonArray;
-    }
     public JSONObject getShortVideo(ShortVideo video, long userId){
         if (video == null) return null;
         JSONObject object = new JSONObject();
@@ -184,8 +166,8 @@ public class ShortVideoService {
         object.put("likes",shortVideoLikeDao.countAllByVideoId(video.getId()));
         object.put("like",shortVideoLikeDao.findAllByUserIdAndVideoId(userId,video.getId()) != null);
 
-        object.put("comments",getComments(video.getId(),userId));
-        object.put("comment",shortVideoCommentDao.countAllByVideoId(video.getId()));
+//        object.put("comments",getComments(video.getId(),userId));
+        object.put("comments",shortVideoCommentDao.countAllByVideoId(video.getId()));
         object.put("collects",shortVideoCollectDao.countAllByVideoId(video.getId()));
         object.put("follow", userFollowDao.findAllByUserIdAndToUserId(userId, video.getUserId()) != null);
         object.put("forwards", shortVideoShareDao.countAllByVideoId(video.getId()));
@@ -258,17 +240,22 @@ public class ShortVideoService {
     }
 
     public ResponseData concentration(int page, User user, String ip) {
-        if(user == null) return ResponseData.error("");
+
         page--;
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page, 10);
-        Page<ShortVideo> videoPage = shortVideoDao.getAllVideos(user.getId(),pageable);
-//        if (page > videoPage.getTotalPages()){
-        if (videoPage.getContent().size() == 0){
-            page = page - videoPage.getTotalPages();
-            if (page < 0) page = 0;
-            pageable = PageRequest.of(page, 10);
+        Page<ShortVideo> videoPage;
+        if(user == null) {
             videoPage = shortVideoDao.getAllVideos(pageable);
+        }else {
+            videoPage = shortVideoDao.getAllVideos(user.getId(),pageable);
+//        if (page > videoPage.getTotalPages()){
+            if (videoPage.getContent().size() == 0){
+                page = page - videoPage.getTotalPages();
+                if (page < 0) page = 0;
+                pageable = PageRequest.of(page, 10);
+                videoPage = shortVideoDao.getAllVideos(pageable);
+            }
         }
         JSONObject object = ResponseData.object("total",videoPage.getTotalPages());
         JSONArray arry = new JSONArray();
@@ -315,5 +302,93 @@ public class ShortVideoService {
         if (follow==null) return ResponseData.success("");
         userFollowDao.delete(follow);
         return ResponseData.success(ResponseData.object("state", true));
+    }
+    public JSONObject getComment(ShortVideoComment comment, long userId){
+        return getComment(comment, userId, true);
+    }
+    public JSONObject getComment(ShortVideoComment comment, long userId, boolean first){
+        JSONObject o = new JSONObject();
+        o.put("id", comment.getId());
+        o.put("text", comment.getText());
+        o.put("addTime", comment.getAddTime());
+        o.put("userId", comment.getUserId());
+        User user = userDao.findAllById(comment.getUserId());
+        if (user != null) {
+            o.put("avatar", user.getAvatar());
+            o.put("nickname", user.getNickname());
+        }
+        o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
+        o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()) != null);
+        if (first){
+            o.put("reply", getCommentChildren(comment.getId(), userId));
+        }
+        return o;
+    }
+    public JSONObject getCommentChildren(long commentId, long userId){
+        return getCommentChildren(commentId, userId,1);
+    }
+    public JSONObject getCommentChildren(long commentId, long userId, int page){
+        page--;
+        if (page < 0) page= 0;
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllByReplyId(commentId,pageable);
+        JSONObject json = ResponseData.object("total",commentPage.getTotalPages());
+        json.put("count", shortVideoCommentDao.countAllByReplyId(commentId));
+        JSONArray array = new JSONArray();
+        for (ShortVideoComment comment : commentPage.getContent()){
+            array.add(getComment(comment, userId,false));
+        }
+        json.put("list", array);
+        return json;
+    }
+    public ResponseData comments(long id, int page, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        ShortVideo video = shortVideoDao.findAllById(id);
+        if (video==null) return ResponseData.error("");
+        page--;
+        if (page < 0) page= 0;
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllComments(pageable);
+
+//        if (user == null){
+//
+//        }
+        JSONObject json = ResponseData.object("total",commentPage.getTotalPages());
+        json.put("count", shortVideoCommentDao.countAllByVideoId(id));
+        JSONArray array = new JSONArray();
+        for (ShortVideoComment comment : commentPage.getContent()){
+            array.add(getComment(comment, user ==null?0:user.getId()));
+        }
+        json.put("list", array);
+        return ResponseData.success(json);
+    }
+
+    public ResponseData comment(long id, String text, long toId, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("用户未登录不可评论！");
+        if (toId > 0){
+            User u = userDao.findAllById(toId);
+            if (u == null) return ResponseData.error("回复用户不存在！");
+        }else {
+            toId = 0;
+        }
+        if (text.length() < MINI_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能少于"+MINI_COMMENT_WORD_LENGTH+"个字符");
+        if (text.length() > MAX_COMMENT_WORD_LENGTH) return ResponseData.error("评论或者回复不能大于"+MAX_COMMENT_WORD_LENGTH+"个字符");
+        if (ToolsUtil.filterCommentBlack(text)) return ResponseData.error("禁止发布敏感词语");
+        ShortVideo video = shortVideoDao.findAllById(id);
+        if (video==null) return ResponseData.error("评论视频已被下架或者删除！");
+        ShortVideoComment comment = new ShortVideoComment(toId, user.getId(), id,text,ip);
+        if (getShortVideoConfigBool("auditComment")){
+            comment.setStatus(0);
+        }
+        shortVideoCommentDao.saveAndFlush(comment);
+        return ResponseData.success(getComment(comment, user.getId()));
+    }
+
+    public ResponseData commentChildren(long id, int page, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        ShortVideo video = shortVideoDao.findAllById(id);
+        if (video==null) return ResponseData.error("");
+        return ResponseData.success(getCommentChildren(user !=null ? user.getId() :0,page));
     }
 }

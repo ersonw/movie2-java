@@ -23,7 +23,7 @@ public class ShortVideo {
     private long duration;
     private String file;
     private String ip;
-    private int forward = 1;
+    private int forward;
     private int status;
     private long addTime;
     private long updateTime;
