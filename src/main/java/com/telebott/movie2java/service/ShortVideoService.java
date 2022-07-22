@@ -167,7 +167,7 @@ public class ShortVideoService {
         object.put("like",shortVideoLikeDao.findAllByUserIdAndVideoId(userId,video.getId()) != null);
 
 //        object.put("comments",getComments(video.getId(),userId));
-        object.put("comments",shortVideoCommentDao.countAllByVideoId(video.getId()));
+        object.put("comments",shortVideoCommentDao.countAllByVideoIdAndStatus(video.getId(),1));
         object.put("collects",shortVideoCollectDao.countAllByVideoId(video.getId()));
         object.put("follow", userFollowDao.findAllByUserIdAndToUserId(userId, video.getUserId()) != null);
         object.put("forwards", shortVideoShareDao.countAllByVideoId(video.getId()));
@@ -312,13 +312,14 @@ public class ShortVideoService {
         o.put("text", comment.getText());
         o.put("addTime", comment.getAddTime());
         o.put("userId", comment.getUserId());
+        o.put("pin", comment.getPin() == 1);
         User user = userDao.findAllById(comment.getUserId());
         if (user != null) {
             o.put("avatar", user.getAvatar());
             o.put("nickname", user.getNickname());
         }
         o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
-        o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()) != null);
+        o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()).size() > 0);
         if (first){
             o.put("reply", getCommentChildren(comment.getId(), userId));
         }
@@ -333,7 +334,7 @@ public class ShortVideoService {
         Pageable pageable = PageRequest.of(page, 10);
         Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllByReplyId(commentId,pageable);
         JSONObject json = ResponseData.object("total",commentPage.getTotalPages());
-        json.put("count", shortVideoCommentDao.countAllByReplyId(commentId));
+        json.put("count", shortVideoCommentDao.countAllByReplyIdAndStatus(commentId,1));
         JSONArray array = new JSONArray();
         for (ShortVideoComment comment : commentPage.getContent()){
             array.add(getComment(comment, userId,false));
@@ -354,7 +355,7 @@ public class ShortVideoService {
 //
 //        }
         JSONObject json = ResponseData.object("total",commentPage.getTotalPages());
-        json.put("count", shortVideoCommentDao.countAllByVideoId(id));
+        json.put("count", shortVideoCommentDao.countAllByVideoIdAndStatus(id,1));
         JSONArray array = new JSONArray();
         for (ShortVideoComment comment : commentPage.getContent()){
             array.add(getComment(comment, user ==null?0:user.getId()));
@@ -377,7 +378,7 @@ public class ShortVideoService {
         if (ToolsUtil.filterCommentBlack(text)) return ResponseData.error("禁止发布敏感词语");
         ShortVideo video = shortVideoDao.findAllById(id);
         if (video==null) return ResponseData.error("评论视频已被下架或者删除！");
-        ShortVideoComment comment = new ShortVideoComment(toId, user.getId(), id,text,ip);
+        ShortVideoComment comment = new ShortVideoComment(toId, user.getId(), video.getId(),text,ip);
         if (getShortVideoConfigBool("auditComment")){
             comment.setStatus(0);
         }
@@ -390,5 +391,23 @@ public class ShortVideoService {
         ShortVideo video = shortVideoDao.findAllById(id);
         if (video==null) return ResponseData.error("");
         return ResponseData.success(getCommentChildren(user !=null ? user.getId() :0,page));
+    }
+
+    public ResponseData commentLike(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        List<ShortVideoCommentLike> likes = shortVideoCommentLikeDao.findAllByUserIdAndCommentId(user.getId(), id);
+        if (likes.size()>0) return ResponseData.success("");
+        ShortVideoCommentLike like = new ShortVideoCommentLike(user.getId(), id,ip);
+        shortVideoCommentLikeDao.saveAndFlush(like);
+        return ResponseData.success(ResponseData.object("state", true));
+    }
+
+    public ResponseData commentUnlike(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        List<ShortVideoCommentLike> likes = shortVideoCommentLikeDao.findAllByUserIdAndCommentId(user.getId(), id);
+        shortVideoCommentLikeDao.deleteAll(likes);
+        return ResponseData.success(ResponseData.object("state", true));
     }
 }

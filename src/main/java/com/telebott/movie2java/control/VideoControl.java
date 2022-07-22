@@ -37,12 +37,12 @@ public class VideoControl {
         return service.comment(id,page, User.getInstance(user), ip);
     }
     @PostMapping("/comment")
-    @ApiGlobalModel(component = pData.class, value = "toId,id,text,seek")
+    @ApiGlobalModel(component = pData.class, value = "toId,text,seek,id")
     public ResponseData comment(@RequestBody pData data){
         return service.comment(data.getId(), data.getText(),data.getSeek(),data.getToId(), data.getUser(),data.getIp());
     }
     @GetMapping("/comment/delete/{id}")
-    @ApiGlobalModel(component = pData.class, value = "toId,id,text,seek")
+    @ApiGlobalModel(component = pData.class, value = "toId,text,seek,id")
     public ResponseData commentDelete(@PathVariable long id,
                                 @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){

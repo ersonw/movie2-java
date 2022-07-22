@@ -16,10 +16,10 @@ import java.util.List;
 public interface ShortVideoCommentDao extends JpaRepository<ShortVideoComment, Long>, CrudRepository<ShortVideoComment, Long> {
     List<ShortVideoComment> findAllByVideoIdAndReplyId(long videoId, long replyId);
     Page<ShortVideoComment> findAllByReplyId(long replyId,Pageable pageable);
-    Long countAllByReplyId(long replyId);
-    Long countAllByVideoId(long videoId);
-    @Query(value = "SELECT *,(SELECT COUNT(*) FROM short_video_comment_like WHERE comment_id = svc.id) AS c FROM `short_video_comment` AS svc WHERE 1 ORDER BY c DESC",nativeQuery = true)
+    Long countAllByReplyIdAndStatus(long replyId, int status);
+    Long countAllByVideoIdAndStatus(long videoId, int status);
+    @Query(value = "SELECT *,(SELECT COUNT(*) FROM short_video_comment_like WHERE comment_id = svc.id) AS c FROM `short_video_comment` AS svc WHERE status=1 ORDER BY c DESC",nativeQuery = true)
     Page<ShortVideoComment> getAllComments(Pageable pageable);
-    @Query(value = "SELECT *,(SELECT COUNT(*) FROM `short_video_comment_like` WHERE `comment_id` = svc.id) AS c FROM `short_video_comment` AS svc LEFT JOIN `short_video_comment` AS svc2 ON svc2.reply_id= svc.id WHERE svc.reply_id =:replyId  ORDER BY c DESC",nativeQuery = true)
+    @Query(value = "SELECT *,(SELECT COUNT(*) FROM `short_video_comment_like` WHERE `comment_id` = svc.id) AS c FROM `short_video_comment` AS svc LEFT JOIN `short_video_comment` AS svc2 ON svc2.reply_id= svc.id WHERE svc.reply_id =:replyId and svc.status=1  ORDER BY c DESC",nativeQuery = true)
     Page<ShortVideoComment> getAllByReplyId(long replyId,Pageable pageable);
 }

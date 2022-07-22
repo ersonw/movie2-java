@@ -6,9 +6,11 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional
 @Repository
 public interface ShortVideoCommentLikeDao extends JpaRepository<ShortVideoCommentLike, Long>, CrudRepository<ShortVideoCommentLike, Long> {
     long countAllByCommentId(long commentId);
-    ShortVideoCommentLike findAllByUserIdAndCommentId(long userId, long commentId);
+    List<ShortVideoCommentLike> findAllByUserIdAndCommentId(long userId, long commentId);
 }

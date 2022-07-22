@@ -17,6 +17,7 @@ public class ShortVideoComment {
     public ShortVideoComment(long replyId, long userId,long videoId, String text, String ip){
         this.replyId = replyId;
         this.userId = userId;
+        this.videoId = videoId;
         this.text = text;
         this.ip = ip;
         this.addTime = System.currentTimeMillis();
@@ -29,6 +30,7 @@ public class ShortVideoComment {
     private long videoId;
     private String text;
     private int status=1;
+    private int pin=0;
     private long addTime;
     private String ip;
 }

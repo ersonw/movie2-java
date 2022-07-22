@@ -16,6 +16,7 @@ public class ShortVideo {
     @Id
     @GeneratedValue
     private long id;
+    private long formId;
     private String title;
     private long userId;
     private String pic;
