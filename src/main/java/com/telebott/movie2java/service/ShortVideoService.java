@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -304,9 +305,6 @@ public class ShortVideoService {
         return ResponseData.success(ResponseData.object("state", true));
     }
     public JSONObject getComment(ShortVideoComment comment, long userId){
-        return getComment(comment, userId, true);
-    }
-    public JSONObject getComment(ShortVideoComment comment, long userId, boolean first){
         JSONObject o = new JSONObject();
         o.put("id", comment.getId());
         o.put("text", comment.getText());
@@ -320,13 +318,10 @@ public class ShortVideoService {
         }
         o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
         o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()).size() > 0);
-        if (first){
-//            o.put("reply", getCommentChildren(comment.getId(), userId));
-            o.put("reply", shortVideoCommentDao.countAllByReplyIdAndStatus(comment.getId(),1));
-        }
+        o.put("reply", shortVideoCommentDao.countAllByReplyIdAndStatus(comment.getId(),1));
         return o;
     }
-    public JSONObject getCommentChild(ShortVideoComment comment, long userId){
+    public JSONObject getCommentChild(ShortVideoComment comment, long userId, long ownerId){
         JSONObject o = new JSONObject();
         o.put("id", comment.getId());
         o.put("text", comment.getText());
@@ -340,7 +335,7 @@ public class ShortVideoService {
         }
         o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
         o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()).size() > 0);
-        if(comment.getReplyId() > 0){
+        if(comment.getReplyId() > 0 && comment.getReplyId() != ownerId){
             ShortVideoComment c = shortVideoCommentDao.findAllById(comment.getReplyId());
             if(c != null){
                 User u = userDao.findAllById(c.getUserId());
@@ -350,23 +345,6 @@ public class ShortVideoService {
             }
         }
         return o;
-    }
-    public JSONObject getCommentChildren(long commentId, long userId){
-        return getCommentChildren(commentId, userId,1);
-    }
-    public JSONObject getCommentChildren(long commentId, long userId, int page){
-        page--;
-        if (page < 0) page= 0;
-        Pageable pageable = PageRequest.of(page, 3);
-        Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllByReplyId(commentId,pageable);
-        JSONObject json = ResponseData.object("total",commentPage.getTotalPages());
-        json.put("count", shortVideoCommentDao.countAllByReplyIdAndStatus(commentId,1));
-        JSONArray array = new JSONArray();
-        for (ShortVideoComment comment : commentPage.getContent()){
-            array.add(getCommentChild(comment, userId));
-        }
-        json.put("list", array);
-        return json;
     }
     public ResponseData comments(long id, int page, User user, String ip) {
         if (id < 1) return ResponseData.error("");
@@ -415,8 +393,19 @@ public class ShortVideoService {
     public ResponseData commentChildren(long id, int page, User user, String ip) {
         if (id < 1) return ResponseData.error("");
         ShortVideoComment comment = shortVideoCommentDao.findAllById(id);
-        if (comment==null) return ResponseData.error("");
-        return ResponseData.success(getCommentChildren(comment.getId(),user !=null ? user.getId() :0,page));
+        if (comment==null || comment.getStatus() != 1) return ResponseData.error("");
+        page--;
+        if (page < 0) page= 0;
+        Pageable pageable = PageRequest.of(page, 3);
+        Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllByReplyId(id,pageable);
+        JSONObject json = ResponseData.object("total",commentPage.getTotalPages());
+        json.put("count", shortVideoCommentDao.countAllByReplyIdAndStatus(id,1));
+        JSONArray array = new JSONArray();
+        for (ShortVideoComment c : commentPage.getContent()){
+            array.add(getCommentChild(c, user!=null?user.getId():0, id));
+        }
+        json.put("list", array);
+        return ResponseData.success(json);
     }
 
     public ResponseData commentLike(long id, User user, String ip) {
