@@ -321,7 +321,33 @@ public class ShortVideoService {
         o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
         o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()).size() > 0);
         if (first){
-            o.put("reply", getCommentChildren(comment.getId(), userId));
+//            o.put("reply", getCommentChildren(comment.getId(), userId));
+            o.put("reply", shortVideoCommentDao.countAllByReplyIdAndStatus(comment.getId(),1));
+        }
+        return o;
+    }
+    public JSONObject getCommentChild(ShortVideoComment comment, long userId){
+        JSONObject o = new JSONObject();
+        o.put("id", comment.getId());
+        o.put("text", comment.getText());
+        o.put("addTime", comment.getAddTime());
+        o.put("userId", comment.getUserId());
+        o.put("pin", comment.getPin() == 1);
+        User user = userDao.findAllById(comment.getUserId());
+        if (user != null) {
+            o.put("avatar", user.getAvatar());
+            o.put("nickname", user.getNickname());
+        }
+        o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
+        o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()).size() > 0);
+        if(comment.getReplyId() > 0){
+            ShortVideoComment c = shortVideoCommentDao.findAllById(comment.getReplyId());
+            if(c != null){
+                User u = userDao.findAllById(c.getUserId());
+                if(u != null){
+                    o.put("replyUser",u.getNickname());
+                }
+            }
         }
         return o;
     }
@@ -331,13 +357,13 @@ public class ShortVideoService {
     public JSONObject getCommentChildren(long commentId, long userId, int page){
         page--;
         if (page < 0) page= 0;
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 3);
         Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllByReplyId(commentId,pageable);
         JSONObject json = ResponseData.object("total",commentPage.getTotalPages());
         json.put("count", shortVideoCommentDao.countAllByReplyIdAndStatus(commentId,1));
         JSONArray array = new JSONArray();
         for (ShortVideoComment comment : commentPage.getContent()){
-            array.add(getComment(comment, userId,false));
+            array.add(getCommentChild(comment, userId));
         }
         json.put("list", array);
         return json;
@@ -388,9 +414,9 @@ public class ShortVideoService {
 
     public ResponseData commentChildren(long id, int page, User user, String ip) {
         if (id < 1) return ResponseData.error("");
-        ShortVideo video = shortVideoDao.findAllById(id);
-        if (video==null) return ResponseData.error("");
-        return ResponseData.success(getCommentChildren(user !=null ? user.getId() :0,page));
+        ShortVideoComment comment = shortVideoCommentDao.findAllById(id);
+        if (comment==null) return ResponseData.error("");
+        return ResponseData.success(getCommentChildren(comment.getId(),user !=null ? user.getId() :0,page));
     }
 
     public ResponseData commentLike(long id, User user, String ip) {

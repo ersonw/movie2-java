@@ -72,8 +72,8 @@ public class ShortVideoControl {
                                      @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.comments(id, page, User.getInstance(user), ip);
     }
-    @GetMapping("/comment/{id}/{page}")
-    public ResponseData comment(@PathVariable long id,
+    @GetMapping("/comment/children/{id}/{page}")
+    public ResponseData commentChildren(@PathVariable long id,
                                      @PathVariable int page,
                                      @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
                                      @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
