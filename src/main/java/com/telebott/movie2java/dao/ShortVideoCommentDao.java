@@ -30,7 +30,7 @@ public interface ShortVideoCommentDao extends JpaRepository<ShortVideoComment, L
             "(SELECT svc.* \n" +
             " FROM `short_video_comment` AS svc \n" +
             " INNER JOIN `short_video_comment` AS svc1 ON svc1.reply_id =1 \n" +
-            " INNER JOIN `short_video_comment` AS svc2 ON svc2.reply_id= svc1.id WHERE  svc.status=1) AS s \n" +
+            " INNER JOIN `short_video_comment` AS svc2 ON svc2.reply_id= svc1.id WHERE  svc.status=:replyId AND svc.id <> :replyId) AS s \n" +
             " ORDER BY c,s.pin DESC",nativeQuery = true)
     Page<ShortVideoComment> getAllByReplyId(long replyId,Pageable pageable);
 }
