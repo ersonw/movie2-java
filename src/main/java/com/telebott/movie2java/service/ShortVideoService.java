@@ -372,8 +372,10 @@ public class ShortVideoService {
         if (id < 1) return ResponseData.error("");
         if (user == null) return ResponseData.error("用户未登录不可评论！");
         if (toId > 0){
-            User u = userDao.findAllById(toId);
-            if (u == null) return ResponseData.error("回复用户不存在！");
+//            User u = userDao.findAllById(toId);
+//            if (u == null) return ResponseData.error("回复用户不存在！");
+            ShortVideoComment comment = shortVideoCommentDao.findAllById(toId);
+            if (comment == null|| comment.getStatus() != 1) return ResponseData.error("评论已被删除！");
         }else {
             toId = 0;
         }
