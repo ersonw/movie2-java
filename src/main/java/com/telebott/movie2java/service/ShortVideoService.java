@@ -57,6 +57,8 @@ public class ShortVideoService {
     @Autowired
     private ShortVideoShareDao shortVideoShareDao;
     @Autowired
+    private ShortVideoCommentReportDao shortVideoCommentReportDao;
+    @Autowired
     private UserDao userDao;
     @Autowired
     private UserFollowDao userFollowDao;
@@ -318,7 +320,7 @@ public class ShortVideoService {
         }
         o.put("likes", shortVideoCommentLikeDao.countAllByCommentId(comment.getId()));
         o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()).size() > 0);
-        o.put("reply", shortVideoCommentDao.countAllByReplyIdAndStatus(comment.getId(),1));
+        o.put("reply", shortVideoCommentDao.countAllByReply(comment.getId()));
         return o;
     }
     public JSONObject getCommentChild(ShortVideoComment comment, long userId, long ownerId){
@@ -337,7 +339,7 @@ public class ShortVideoService {
         o.put("like", shortVideoCommentLikeDao.findAllByUserIdAndCommentId(userId,comment.getId()).size() > 0);
         if(comment.getReplyId() > 0 && comment.getReplyId() != ownerId){
             ShortVideoComment c = shortVideoCommentDao.findAllById(comment.getReplyId());
-            if(c != null){
+            if(c != null && c.getUserId() != comment.getUserId()){
                 User u = userDao.findAllById(c.getUserId());
                 if(u != null){
                     o.put("replyUser",u.getNickname());
@@ -426,5 +428,54 @@ public class ShortVideoService {
         List<ShortVideoCommentLike> likes = shortVideoCommentLikeDao.findAllByUserIdAndCommentId(user.getId(), id);
         shortVideoCommentLikeDao.deleteAll(likes);
         return ResponseData.success(ResponseData.object("state", true));
+    }
+
+    public ResponseData commentDelete(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if(user == null) return ResponseData.error("");
+        ShortVideoComment comment = shortVideoCommentDao.findAllById(id);
+        if(comment == null) return ResponseData.error("评论已被删除！");
+        ShortVideo video = shortVideoDao.findAllById(comment.getVideoId());
+        if(video == null) return ResponseData.error("");
+        if(comment.getUserId() != user.getId() && user.getId() != video.getUserId()) return ResponseData.error("");
+        shortVideoCommentDao.deleteAllByLike(comment.getId());
+        shortVideoCommentDao.deleteAllByReport(comment.getId());
+        shortVideoCommentDao.deleteAllByComment(comment.getId());
+        return ResponseData.success(ResponseData.object("state", true));
+    }
+
+    public ResponseData commentReport(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if(user == null) return ResponseData.error("");
+        ShortVideoComment comment = shortVideoCommentDao.findAllById(id);
+        if(comment == null || comment.getStatus() != 1) return ResponseData.error("评论已被删除！");
+        long count = shortVideoCommentReportDao.countAllByCommentIdAndState(comment.getId(),0);
+        if (count > 3){
+            comment.setStatus(2);
+            shortVideoCommentDao.save(comment);
+        }
+        shortVideoCommentReportDao.save(new ShortVideoCommentReport(comment.getId(),ip));
+        return ResponseData.success(ResponseData.object("state",true));
+    }
+
+    public ResponseData commentPin(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if(user == null) return ResponseData.error("");
+        ShortVideoComment comment = shortVideoCommentDao.findAllById(id);
+        if(comment == null || comment.getStatus() != 1) return ResponseData.error("评论已被删除！");
+        if(comment.getPin() == 1) return ResponseData.success("置顶成功！");
+        comment.setPin(1);
+        shortVideoCommentDao.save(comment);
+        return ResponseData.success(ResponseData.object("state",true));
+    }
+    public ResponseData commentUnpin(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if(user == null) return ResponseData.error("");
+        ShortVideoComment comment = shortVideoCommentDao.findAllById(id);
+        if(comment == null || comment.getStatus() != 1) return ResponseData.error("评论已被删除！");
+        if(comment.getPin() == 0) return ResponseData.success("取消置顶成功！");
+        comment.setPin(0);
+        shortVideoCommentDao.save(comment);
+        return ResponseData.success(ResponseData.object("state",true));
     }
 }

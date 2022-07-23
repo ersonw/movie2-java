@@ -90,6 +90,30 @@ public class ShortVideoControl {
                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.commentLike(id, User.getInstance(user), ip);
     }
+    @GetMapping("/comment/delete/{id}")
+    public ResponseData commentDelete(@PathVariable long id,
+                               @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.commentDelete(id, User.getInstance(user), ip);
+    }
+    @GetMapping("/comment/report/{id}")
+    public ResponseData commentReport(@PathVariable long id,
+                               @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.commentReport(id, User.getInstance(user), ip);
+    }
+    @GetMapping("/comment/pin/{id}")
+    public ResponseData commentPin(@PathVariable long id,
+                               @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.commentPin(id, User.getInstance(user), ip);
+    }
+    @GetMapping("/comment/unpin/{id}")
+    public ResponseData commentUnpin(@PathVariable long id,
+                               @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.commentUnpin(id, User.getInstance(user), ip);
+    }
     @GetMapping("/comment/unlike/{id}")
     public ResponseData commentUnlike(@PathVariable long id,
                                @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
