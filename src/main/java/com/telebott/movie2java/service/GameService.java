@@ -6,6 +6,7 @@ import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.util.TimeUtil;
+import com.telebott.movie2java.util.UrlUtil;
 import com.telebott.movie2java.util.WaLiUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -162,11 +163,11 @@ public class GameService {
     public String getImageSmall(Game game) {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
         if (StringUtils.isNotEmpty(game.getImage()) && game.getImage().startsWith("http")) return game.getImage();
-        return getConfig("ImageDomain") + "/game/gameicon-200x200/200-200-0." + game.getGameId() + "." + game.getName() + ".png";
+        return getConfig("ImageDomain") + "/game/gameicon-200x200/200-200-0." + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
     }
     public String getImage(Game game) {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
         if (StringUtils.isNotEmpty(game.getImage()) && game.getImage().startsWith("http")) return game.getImage();
-        return getConfig("ImageDomain") + "/game/gameicon-600400-square/600-400-0." + game.getGameId() + "." + game.getName() + ".png";
+        return getConfig("ImageDomain") + "/game/gameicon-600400-square/600-400-0." + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
     }
 }
