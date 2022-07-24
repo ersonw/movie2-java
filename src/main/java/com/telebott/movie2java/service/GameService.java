@@ -163,11 +163,11 @@ public class GameService {
     public String getImageSmall(Game game) {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
         if (StringUtils.isNotEmpty(game.getImage()) && game.getImage().startsWith("http")) return game.getImage();
-        return getConfig("ImageDomain") + "/game/gameicon-200x200/200-200-0." + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
+        return getConfig("ImageDomain") + "/game/gameicon-200x200/200-200-" + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
     }
     public String getImage(Game game) {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
         if (StringUtils.isNotEmpty(game.getImage()) && game.getImage().startsWith("http")) return game.getImage();
-        return getConfig("ImageDomain") + "/game/gameicon-600400-square/600-400-0." + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
+        return getConfig("ImageDomain") + "/game/gameicon-600400-square/600-400-" + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
     }
 }
