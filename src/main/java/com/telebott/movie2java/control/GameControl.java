@@ -42,9 +42,19 @@ public class GameControl {
     public ResponseData enterGame(@RequestBody pData data) {
         return service.enterGame(data.getId(), data.getUser(), data.getIp());
     }
+    @GetMapping("/test")
+    public ResponseData test(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                  @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.test(User.getInstance(user), ip);
+    }
     @GetMapping("/list")
     public ResponseData list(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
                                   @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.list(User.getInstance(user), ip);
+    }
+    @GetMapping("/records")
+    public ResponseData records(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                  @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.records(User.getInstance(user), ip);
     }
 }

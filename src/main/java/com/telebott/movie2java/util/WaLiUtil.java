@@ -10,6 +10,7 @@ import com.telebott.movie2java.entity.Game;
 import com.telebott.movie2java.entity.GameWater;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.GameService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -31,15 +32,19 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Time;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Configurable
 @Component
+@Slf4j
 public class WaLiUtil {
     private static WaLiUtil self;
     private static final int TIME_OUT = 30;
     public static final String TRANSFER_V2 = "transferV2";
-    public static final String QUERY_ORDER_V2 = "queryOrderV2";
+    public static final String TRANSFER_V3 = "transferV3";
+    public static final String QUERY_ORDER_V3 = "queryOrderV3";
     public static final String GET_AGENT_BALANCE = "getAgentBalance";
     public static final String REGISTER = "register";
     public static final String ENTER_GAME = "enterGame";
@@ -69,6 +74,7 @@ public class WaLiUtil {
             @Override
             public void run() {
                 getRecords();
+                log.info("_timersRecords:{}", TimeUtil.getNowDate());
             }
         }, 1000,1000 * 60 * 10);
     }
@@ -140,10 +146,13 @@ public class WaLiUtil {
         getRecords(TimeUtil._getTime(-35),TimeUtil._getTime(-2));
     }
     public static boolean tranfer(long id, long balance) {
+        return tranferV3(id,balance);
+    }
+    public static boolean tranferV3(long id, long balance) {
         String p = "uid="+prefix+id+"&credit="+(balance / 100d)+"&orderId="+agentId+"_"+TimeUtil._getOrderNo()+"_"+prefix+ id;
         Map<String, String> map = _getMaps(p);
-        String result = sendGet(apiUrl+"/"+TRANSFER_V2,map);
-//        System.out.println(result);
+        String result = sendGet(apiUrl+"/"+TRANSFER_V3,map);
+        System.out.println(result);
         if (result != null && result.startsWith("{")){
             wData data = JSONObject.toJavaObject(JSONObject.parseObject(result),wData.class);
             if (data != null) {
@@ -160,9 +169,30 @@ public class WaLiUtil {
         }
         return false;
     }
-
+    public static boolean tranferV2(long id, long balance) {
+        String p = "uid="+prefix+id+"&credit="+(balance / 100d)+"&orderId="+agentId+"_"+TimeUtil._getOrderNo()+"_"+prefix+ id;
+        Map<String, String> map = _getMaps(p);
+        String result = sendGet(apiUrl+"/"+TRANSFER_V2,map);
+        System.out.println(result);
+        if (result != null && result.startsWith("{")){
+            wData data = JSONObject.toJavaObject(JSONObject.parseObject(result),wData.class);
+            if (data != null) {
+                if (data.getCode() == 0){
+                    if (data.getObject().getInteger("status") == 1){
+                        return true;
+                    }else{
+                        System.out.println("UID:"+id+" 上分失败! 金额"+ (balance / 100d));
+                    }
+                }else{
+                    handlerError(data.getMsg());
+                }
+            }
+        }
+        return false;
+    }
     @PostConstruct
     public void init(){
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.of("+8")));
         self = this;
         rest();
     }
@@ -366,7 +396,7 @@ public class WaLiUtil {
         map.put("p",p);
         map.put("k",k);
         String result = sendGet(apiUrl+"/"+ENTER_GAME,map);
-        System.out.println(result);
+//        System.out.println(result);
         if (result != null && result.startsWith("{")){
             wData data = JSONObject.toJavaObject(JSONObject.parseObject(result),wData.class);
             if (data != null) {

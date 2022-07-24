@@ -139,24 +139,35 @@ public class GameService {
     public ResponseData enterGame(long id, User user, String ip) {
         if (id < 0) return ResponseData.error("");
         if (user == null) return ResponseData.error("");
-        Game game = gameDao.findAllById(id);
-        if (game == null) return ResponseData.error("");
-        if(game.getStatus() != 1) return ResponseData.error("游戏【"+game.getName()+"】已被下架，暂不能游玩!");
-//        String url = WaLiUtil.enterGame(user.getId(), game.getGameId());
-        WaLiUtil.enterGame(user.getId(), game.getGameId());
-        return ResponseData.success("");
+        if(id == 0){
+            return ResponseData.success(WaLiUtil.enterGame(user.getId(), 0));
+        }else {
+            Game game = gameDao.findAllById(id);
+            if (game == null) return ResponseData.error("");
+            if(game.getStatus() != 1) return ResponseData.error("游戏【"+game.getName()+"】已被下架，暂不能游玩!");
+            return ResponseData.success(WaLiUtil.enterGame(user.getId(), game.getGameId()));
+        }
     }
-
+    public JSONObject getGame(Game game) {
+        return getGame(game, true);
+    }
+    public JSONObject getGame(Game game, boolean small) {
+        JSONObject object = new JSONObject();
+        object.put("name", game.getName());
+        if (small){
+            object.put("image", getImageSmall(game));
+        }else {
+            object.put("image", getImage(game));
+        }
+        object.put("id", game.getId());
+        return object;
+    }
     public ResponseData list(User user, String ip) {
         if (user == null) return ResponseData.error("");
         List<Game> games = gameDao.findAllByStatus(1);
         JSONArray array = new JSONArray();
         for (Game game : games) {
-            JSONObject object = new JSONObject();
-            object.put("name", game.getName());
-            object.put("image", getImageSmall(game));
-            object.put("id", game.getId());
-            array.add(object);
+            array.add(getGame(game));
         }
         return ResponseData.success(ResponseData.object("list", array));
     }
@@ -169,5 +180,24 @@ public class GameService {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
         if (StringUtils.isNotEmpty(game.getImage()) && game.getImage().startsWith("http")) return game.getImage();
         return getConfig("ImageDomain") + "/game/gameicon-600400-square/600-400-" + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
+    }
+
+    public ResponseData records(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        List<GameWater> waters = gameWaterDao.getAllByUser(user.getId());
+        JSONArray array = new JSONArray();
+        for (GameWater w: waters) {
+            Game game = gameDao.findAllById(w.getGameId());
+            if (game != null){
+                array.add(getGame(game,false));
+            }
+        }
+        return ResponseData.success(ResponseData.object("list", array));
+    }
+
+    public ResponseData test(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if(!WaLiUtil.tranfer(user.getId(), 10000)) return ResponseData.error("上分失败");
+        return ResponseData.success("上分成功");
     }
 }
