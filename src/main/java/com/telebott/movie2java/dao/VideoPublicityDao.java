@@ -1,6 +1,6 @@
 package com.telebott.movie2java.dao;
 
-import com.telebott.movie2java.entity.GameConfig;
+import com.telebott.movie2java.entity.VideoPublicity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -10,6 +10,7 @@ import java.util.List;
 
 @Transactional
 @Repository
-public interface GameConfigDao extends JpaRepository<GameConfig, Long>, CrudRepository<GameConfig, Long> {
-    List<GameConfig> findAllByName(String name);
+public interface VideoPublicityDao extends JpaRepository<VideoPublicity, Long>, CrudRepository<VideoPublicity, Long> {
+    List<VideoPublicity> findAllByStatus(int status);
+    VideoPublicity findAllById(long id);
 }

@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface GameWaterDao extends JpaRepository<GameWater, Long>, CrudRepository<GameWater, Long> {
+    GameWater findAllByRecordId(String s);
 }

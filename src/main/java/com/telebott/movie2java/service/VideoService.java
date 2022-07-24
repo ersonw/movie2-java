@@ -68,6 +68,10 @@ public class VideoService {
     @Autowired
     private VideoConcentrationDao videoConcentrationDao;
 
+    @Autowired
+    private VideoPublicityReportDao videoPublicityReportDao;
+    @Autowired
+    private VideoPublicityDao videoPublicityDao;
     public ResponseData categoryTags(User user, String ip) {
         List<VideoProduced> produceds = videoProducedDao.findAllByStatus(1);
         List<VideoClass> classes = videoClassDao.findAllByStatus(1);
@@ -576,5 +580,28 @@ public class VideoService {
             }
         }
         return ResponseData.success(ResponseData.object("list", array));
+    }
+    public ResponseData publicity(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        List<VideoPublicity> publicities = videoPublicityDao.findAllByStatus(1);
+        JSONArray array = new JSONArray();
+        for (VideoPublicity publicity : publicities) {
+            JSONObject json = new JSONObject();
+            json.put("id", publicity.getId());
+            json.put("image", publicity.getPic());
+            json.put("url", publicity.getUrl());
+            json.put("type", publicity.getType());
+            array.add(json);
+        }
+        return ResponseData.success(ResponseData.object("list", array));
+    }
+
+    public ResponseData publicityReport(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        VideoPublicity videoPublicity = videoPublicityDao.findAllById(id);
+        if (videoPublicity == null) return ResponseData.error("");
+        videoPublicityReportDao.save(new VideoPublicityReport(videoPublicity.getId(), user.getId(), ip));
+        return ResponseData.success("");
     }
 }

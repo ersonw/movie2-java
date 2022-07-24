@@ -123,4 +123,15 @@ public class VideoControl {
                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.rank(first,second,User.getInstance(user), ip);
     }
+    @GetMapping("/publicity")
+    public ResponseData publicity(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                  @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.publicity(User.getInstance(user), ip);
+    }
+    @GetMapping("/publicity/report/{id}")
+    public ResponseData publicityReport(@PathVariable long id,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                        @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.publicityReport(id,User.getInstance(user), ip);
+    }
 }

@@ -34,7 +34,10 @@ public class TimeUtil {
         }
         return builder.toString();
     }
-
+    public static String _getTime(int m){
+        LocalDateTime ld = (LocalDateTime.now()).plusMinutes(m);
+        return format(ld,"yyyyMMddHHmmss");
+    }
     public static String timeToString(long time) {
         return timeToString(time, 10);
     }

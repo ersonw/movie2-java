@@ -18,7 +18,7 @@ public class Game {
     private long id;
     private String name;
     private String image;
-    private long gameId;
+    private int gameId;
     private int status;
     private long addTime;
     private long updateTime;
