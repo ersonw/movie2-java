@@ -13,6 +13,9 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class GameWater {
+    public GameWater() {
+        this.addTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;

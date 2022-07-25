@@ -2,11 +2,13 @@ package com.telebott.movie2java.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.GameDao;
+import com.telebott.movie2java.dao.GameScrollDao;
 import com.telebott.movie2java.dao.GameWaterDao;
 import com.telebott.movie2java.dao.UserDao;
 import com.telebott.movie2java.data.wData;
 import com.telebott.movie2java.data.wRecord;
 import com.telebott.movie2java.entity.Game;
+import com.telebott.movie2java.entity.GameScroll;
 import com.telebott.movie2java.entity.GameWater;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.GameService;
@@ -62,6 +64,8 @@ public class WaLiUtil {
     private UserDao userDao;
     @Autowired
     private GameDao gameDao;
+    @Autowired
+    private GameScrollDao gameScrollDao;
 
     static String apiUrl;
     static String agentId;
@@ -100,6 +104,7 @@ public class WaLiUtil {
         List<String> recordIds = record.getRecordId();
         List<String> detailUrls = record.getDetailUrl();
         List<GameWater> recordsList = new ArrayList<>();
+        List<GameScroll> scrolls = new ArrayList<>();
         for (int i=0; i< uids.size(); i++) {
             if (i < games.size() && i < profits.size() &&
                     i < balances.size() && i < validBets.size() &&
@@ -122,9 +127,19 @@ public class WaLiUtil {
                         records.setDetailUrl(detailUrls.get(i));
                     }
                     recordsList.add(records);
+                    if (records.getProfit() < 0){
+                        GameScroll scroll = new GameScroll();
+                        scroll.setAddTime(System.currentTimeMillis());
+                        scroll.setName(user.getNickname());
+                        scroll.setGame(game.getName());
+//                        scroll.setAmount((new Double(Double.parseDouble(profits.get(i)) * 100).longValue()));
+                        scroll.setAmount(-(new Double(Double.parseDouble(profits.get(i)) * 100).longValue()));
+                        scrolls.add(scroll);
+                    }
                 }
             }
         }
+        self.gameScrollDao.saveAllAndFlush(scrolls);
         self.gameWaterDao.saveAllAndFlush(recordsList);
     }
     private static void getRecords(String from, String until){

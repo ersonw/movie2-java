@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -79,7 +80,7 @@ public class GameService {
         List<GameScroll> scrolls = new ArrayList<>();
         int total = 0;
         if (user != null) {
-            Pageable pageable = PageRequest.of(INDEX_OF_SCROLL, MINI_OF_SCROLL);
+            Pageable pageable = PageRequest.of(INDEX_OF_SCROLL, MINI_OF_SCROLL, Sort.by(Sort.Direction.DESC,"id"));
             Page<GameScroll> scrollPage = gameScrollDao.findAllByAddTimeGreaterThanEqual(TimeUtil.getTodayZero(), pageable);
             if (scrollPage.getContent().size() > 0) {
                 scrolls.addAll(scrollPage.getContent());
@@ -91,7 +92,7 @@ public class GameService {
                 int limit = MINI_OF_SCROLL - scrollPage.getContent().size();
                 if (page < 0) page = 0;
                 if (limit < 1) limit = 1;
-                pageable = PageRequest.of(page, limit);
+                pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"id"));
                 scrollPage = gameScrollDao.findAll(pageable);
                 if (scrollPage.getContent().size() > 0) {
                     scrolls.addAll(scrollPage.getContent());
