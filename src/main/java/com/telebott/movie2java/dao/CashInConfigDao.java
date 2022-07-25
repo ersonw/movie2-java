@@ -11,5 +11,8 @@ import java.util.List;
 @Transactional
 @Repository
 public interface CashInConfigDao extends JpaRepository<CashInConfig, Long>, CrudRepository<CashInConfig, Long> {
+    List<CashInConfig> findAllByMchIdAndStatus(String mchId,int status);
     List<CashInConfig> findAllByMchId(String mchId);
+    CashInConfig findAllById(Long mchId);
+    List<CashInConfig> findAllByStatus(int status);
 }

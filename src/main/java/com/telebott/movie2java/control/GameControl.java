@@ -57,4 +57,15 @@ public class GameControl {
                                   @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.records(User.getInstance(user), ip);
     }
+    @GetMapping("/buttons")
+    public ResponseData buttons(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                  @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.buttons(User.getInstance(user), ip);
+    }
+    @GetMapping("/button/{id}")
+    public ResponseData button(@PathVariable long id,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                        @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.button(id,User.getInstance(user), ip);
+    }
 }

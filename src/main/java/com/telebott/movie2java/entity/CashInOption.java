@@ -16,12 +16,9 @@ public class CashInOption {
     @Id
     @GeneratedValue
     private long id;
-    private String title;
-    private long configId;
-    private long sortId;
-    private int game;
-    private long mini;
-    private long max;
+    private String name;
+    private String icon;
+    private String code;
     private int status;
     private long addTime;
     private long updateTime;

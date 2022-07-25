@@ -17,9 +17,10 @@ public class GameButton {
     @GeneratedValue
     private long id;
     private long amount;
-    private double less;
-    private long gift;
-    private long giftType;
+    private long price;
+    private int less;
+    private long cashInId;
+    private int status;
     private long addTime;
     private long updateTime;
 }

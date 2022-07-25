@@ -39,7 +39,7 @@ public class ResponseData {
         this.data = data;
     }
     public static ResponseData success() {
-        return new ResponseData("OK");
+        return new ResponseData("");
     }
     public static ResponseData success(JSONObject data) {
         return new ResponseData(data);

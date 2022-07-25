@@ -25,6 +25,7 @@ import java.util.List;
 public class GameService {
     private static int INDEX_OF_SCROLL = 0;
     private static int MINI_OF_SCROLL = 12;
+    private static int INDEX_OF_CASH_IN = 0;
     @Autowired
     private UserDao userDao;
     @Autowired
@@ -47,6 +48,12 @@ public class GameService {
     private GamePublicityDao gamePublicityDao;
     @Autowired
     private GamePublicityReportDao gamePublicityReportDao;
+    @Autowired
+    private CashInOrderDao cashInOrderDao;
+    @Autowired
+    private CashInConfigDao cashInConfigDao;
+    @Autowired
+    private CashInOptionDao cashInOptionDao;
 
     public boolean getConfigBool(String name) {
         return getConfigLong(name) > 0;
@@ -170,7 +177,7 @@ public class GameService {
         for (Game game : games) {
             array.add(getGame(game));
         }
-        return ResponseData.success(ResponseData.object("list", array));
+        return ResponseData.success(array);
     }
     public String getImageSmall(Game game) {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
@@ -193,12 +200,75 @@ public class GameService {
                 array.add(getGame(game,false));
             }
         }
-        return ResponseData.success(ResponseData.object("list", array));
+        return ResponseData.success(array);
     }
 
     public ResponseData test(User user, String ip) {
         if (user == null) return ResponseData.error("");
         if(!WaLiUtil.tranfer(user.getId(), 10000)) return ResponseData.error("上分失败");
         return ResponseData.success("上分成功");
+    }
+
+    public ResponseData buttons(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        List<GameButton> buttons = gameButtonDao.getAllButtons();
+        JSONArray array = new JSONArray();
+        for (GameButton b: buttons) {
+            JSONObject object = new JSONObject();
+            object.put("id", b.getId());
+            object.put("amount", b.getAmount());
+//            object.put("price", String.format("%.2f",b.getPrice() / 100D));
+            object.put("price", b.getPrice());
+            object.put("less", b.getLess() == 1);
+            array.add(object);
+        }
+        return ResponseData.success(array);
+    }
+    public ResponseData button(long id, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("");
+        GameButton button = gameButtonDao.findAllById(id);
+        if (button == null) return ResponseData.error("按钮已被禁用，请刷新重试！");
+        List<CashInOption> options = new ArrayList<>();
+        if(button.getCashInId() > 0){
+            CashInConfig config = cashInConfigDao.findAllById(button.getCashInId());
+            options = getAllowed(config);
+        }else {
+            List<CashInConfig> configs = cashInConfigDao.findAllByStatus(1);
+            System.out.printf("length:%d",configs.size());
+            if (configs.size() > 0){
+                if(INDEX_OF_CASH_IN >= configs.size()){
+                    INDEX_OF_CASH_IN = 0;
+                }
+                options = getAllowed(configs.get(INDEX_OF_CASH_IN));
+                INDEX_OF_CASH_IN++;
+            }else {
+                options = new ArrayList<>();
+            }
+        }
+        JSONArray array = new JSONArray();
+        for (CashInOption option : options) {
+            JSONObject object = new JSONObject();
+            object.put("id", option.getId());
+            object.put("name", option.getName());
+            object.put("icon", option.getIcon());
+            array.add(object);
+        }
+        return ResponseData.success(array);
+    }
+    public List<CashInOption> getAllowed(CashInConfig config){
+        List<CashInOption> options = cashInOptionDao.findAllByStatus(1);
+        if (config != null && StringUtils.isNotEmpty(config.getAllowed())){
+            String[] allowed = config.getAllowed().split(",");
+            options = new ArrayList<>();
+            for (String s : allowed) {
+                List<CashInOption> o = cashInOptionDao.findAllByStatusAndName(1, s);
+//                    List<CashInOption> o = cashInOptionDao.findAllByStatusAndCode(1, s);
+                if (o.size() > 0) {
+                    options.add(o.get(0));
+                }
+            }
+        }
+        return options;
     }
 }

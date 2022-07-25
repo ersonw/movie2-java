@@ -23,6 +23,8 @@ public class CashInConfig {
     private String callbackUrl;
     private String notifyUrl;
     private String errorUrl;
+    private String allowed;
+    private int status;
     private long addTime;
     private long updateTime;
 }
