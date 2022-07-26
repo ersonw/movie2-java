@@ -1,5 +1,6 @@
 package com.telebott.movie2java.util;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.FilterWordsDao;
 import com.telebott.movie2java.entity.FilterWords;
@@ -17,6 +18,7 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
@@ -45,6 +47,28 @@ public class ToolsUtil {
     private static List<FilterWords> filterWords;
     public static final int TIME_OUT = 30;
     public static final int MAX_Black = 3;
+
+    public static ModelAndView errorHtml(String msg){
+        ModelAndView error = new ModelAndView("payHtml/error");
+        error.addObject("msg",msg);
+        return error;
+    }
+    public static ModelAndView postHtml(String url, JSONObject params){
+        ModelAndView post = new ModelAndView("payHtml/post");
+        post.addObject("url",url);
+        post.addObject("params",params);
+        return post;
+    }
+    public static ModelAndView getHtml(String url){
+        ModelAndView post = new ModelAndView("payHtml/get");
+        post.addObject("url",url);
+        return post;
+    }
+    public static ModelAndView waitHtml(){
+        ModelAndView post = new ModelAndView("payHtml/wait");
+//        post.addObject("url",url);
+        return post;
+    }
     @PostConstruct
     public void init(){
         self = this;

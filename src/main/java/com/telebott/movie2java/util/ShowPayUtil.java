@@ -35,7 +35,7 @@ public class ShowPayUtil {
             Map<String, String> data = new HashMap<>();
             data.put("mchid", mchid);//商户号
 //            data.put("total_fee", String.valueOf(total_fee));//金额单位分
-            data.put("total_fee", String.valueOf(showPayOrders.getAmount()));//金额单位分
+//            data.put("total_fee", String.valueOf(showPayOrders.getAmount()));//金额单位分
             data.put("out_trade_no", showPayOrders.getOrderNo());//用户自定义订单号
             data.put("callback_url", showPay.getCallbackUrl());//支付成功同步跳转地址
             data.put("notify_url", showPay.getNotifyUrl());//支付成功异步通知地址

@@ -19,8 +19,6 @@ public class GameOrder {
     private String orderNo;
     private long userId;
     private long amount;
-    private long buttonId;
-    private int status;
+    private long price;
     private long addTime;
-    private long updateTime;
 }

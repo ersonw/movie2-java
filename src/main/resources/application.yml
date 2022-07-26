@@ -12,8 +12,9 @@ spring:
   main:
     allow-bean-definition-overriding: true
   thymeleaf:
-    prefix: classpath:/static/
-    mode: LEGACYHTML5
+    #    prefix: /static/
+    prefix: classpath:/
+    cache: false
   web:
     resources:
       static-locations:  classpath:/static/

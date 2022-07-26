@@ -15,4 +15,6 @@ public interface CashInConfigDao extends JpaRepository<CashInConfig, Long>, Crud
     List<CashInConfig> findAllByMchId(String mchId);
     CashInConfig findAllById(Long mchId);
     List<CashInConfig> findAllByStatus(int status);
+    List<CashInConfig> findAllByAllowedLike(String allowed);
+    List<CashInConfig> findAllByAllowedLikeAndStatus(String allowed,int status);
 }

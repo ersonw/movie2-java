@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>支付跳转中....</title>
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/qrcode.js"></script>
+</head>
+<body onload="_get()">
+<form th:action="${url}" method="post">
+    <input th:each="item,stat:${params}" type="hidden" th:name="${stat.current.key}" th:value="${stat.current.value}">
+    <button type="submit" id="a0001" hidden>正在跳转...</button>
+</form>
+<div id="qrcode" style="width:30vw; height:30vw; margin-top:15px;"></div>
+
+<script type="text/javascript">
+    function _get(){
+        if (isWeChat()){
+            window.document.getElementById("a0001").click();
+        }else {
+            var url = window.location.href;
+            // window.location.href = 'weixin://dl/businessWebview/link/'+url;
+            // window.location.href = 'weixin://dl/businessWebview/link/?appid=wx707c5fa91ef0a58c&url='+url;
+            var qrcode = new QRCode(document.getElementById("qrcode"));
+            qrcode.makeCode(url);
+        }
+    }
+    function isWeChat() {
+        let ua = window.navigator.userAgent.toLowerCase();
+        return ua.match(/MicroMessenger/i) == "micromessenger"; // 判定为true则是微信浏览器，false则不是
+    }
+</script>
+</body>
+</html>

@@ -87,6 +87,13 @@ public class MyFilter implements Filter {
             String token = ((HttpServletRequest) req).getHeader("Token");
             String ip = getIpAddr(request);
 //            System.out.printf(ip+"\n");
+            String serverName = request.getServerName();//返回服务器的主机名
+            String serverPort = String.valueOf(request.getServerPort());//返回服务器的端口号
+            String uri = request.getRequestURI();//返回请求行中的资源名称
+            String url = request.getRequestURL().toString();//获得客户端发送请求的完整url
+            String schema = request.getScheme();
+            String query = request.getQueryString();
+//            System.out.printf(schema+"\n");
             User user = null;
             if (StringUtils.isNotEmpty(token)){
                 user = authDao.findUserByToken(token);
@@ -99,6 +106,12 @@ public class MyFilter implements Filter {
                 ParameterRequestWrapper wrapper = new ParameterRequestWrapper(request, parameterMap);
                 wrapper.addParameter("ip", ip);
                 wrapper.addParameter("isWeb", userAgent != null && !userAgent.contains("dart:io"));
+                wrapper.addParameter("serverName", serverName);
+                wrapper.addParameter("serverPort", String.valueOf(serverPort));
+                wrapper.addParameter("uri", uri);
+                wrapper.addParameter("url", url);
+                wrapper.addParameter("schema", schema);
+                wrapper.addParameter("query", query);
                 if (user != null){
                     wrapper.addParameter("user", JSONObject.toJSONString(user));
                 }
@@ -121,6 +134,11 @@ public class MyFilter implements Filter {
                         }
                         jsStr.put("ip", ip);
                         jsStr.put("isWeb", userAgent != null && !userAgent.contains("dart:io"));
+                        jsStr.put("serverName", serverName);
+                        jsStr.put("serverPort", serverPort);
+                        jsStr.put("uri", uri);
+                        jsStr.put("url", url);
+                        jsStr.put("schema", schema);
                         if (user != null) {
                             jsStr.put("user", JSONObject.toJSONString(user));
                         }
@@ -134,6 +152,11 @@ public class MyFilter implements Filter {
                         Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
                         parameterMap.put("ip", new String[]{ip});
 //                        parameterMap.put("isWeb", userAgent.contains("dart:io"));
+                        parameterMap.put("serverName", new String[]{serverName});
+                        parameterMap.put("serverPort", new String[]{String.valueOf(serverPort)});
+                        parameterMap.put("uri", new String[]{uri});
+                        parameterMap.put("url", new String[]{url});
+                        parameterMap.put("schema", new String[]{schema});
                         if (user != null) {
                             parameterMap.put("user", new String[]{JSONObject.toJSONString(user)});
                         }

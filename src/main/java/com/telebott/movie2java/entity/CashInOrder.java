@@ -18,9 +18,8 @@ public class CashInOrder {
     private long id;
     private String orderId;
     private String orderNo;
-    private long orderType;
+    private int orderType;
     private String tradeNo;
-    private long amount;
     private String totalFee;
     private int status;
     private long addTime;

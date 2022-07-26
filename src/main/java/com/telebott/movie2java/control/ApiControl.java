@@ -11,6 +11,7 @@ import io.lettuce.core.dynamic.annotation.Param;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +41,33 @@ public class ApiControl {
 //        }
         return service.handlerYzm(YzmData.getInstance(yzmData), passwd);
     }
+    @ApiIgnore
+    @GetMapping("/ePayNotify")
+    public String ePayNotify(@ModelAttribute EPayNotify ePayNotify){
+        return service.ePayNotify(ePayNotify);
+    }
+    @ApiIgnore
+    @GetMapping("/ePayReturn")
+    public ModelAndView ePayReturn(@ModelAttribute EPayNotify ePayNotify,
+                                   @RequestParam(value = "url") @ApiParam(hidden = true) String url,
+                                   @RequestParam(value = "query") @ApiParam(hidden = true) String query,
+                                   @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        System.out.printf("ePayReturn:%s?%s ip:%s\n", url,query, ip);
+        return service.ePayReturn(ePayNotify);
+    }
+    @GetMapping("/payment")
+    public ModelAndView payment(@RequestParam(value = "orderId") String orderId,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        System.out.printf("payment:%s ip:%s\n", orderId, ip);
+        return service.payment(orderId, ip);
+    }
+    @GetMapping("/payment/{orderId}")
+    public ModelAndView paymentOrderId(@PathVariable String orderId,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        System.out.printf("paymentOrderId:%s ip:%s\n", orderId, ip);
+        return service.payment(orderId, ip);
+    }
+
     @ApiIgnore
     @PostMapping("/toPayNotify")
     public String toPayNotify(@RequestBody ToPayNotify payNotify) {

@@ -2,6 +2,7 @@ package com.telebott.movie2java.dao;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.telebott.movie2java.data.EPayData;
 import com.telebott.movie2java.data.SearchData;
 import com.telebott.movie2java.data.SmsCode;
 import com.telebott.movie2java.entity.User;
@@ -19,6 +20,34 @@ public class AuthDao {
     @Autowired
     RedisTemplate redisTemplate;
     private static final Timer timer = new Timer();
+    public void pushOrder(EPayData data){
+        EPayData object = findOrderByOrderId(data.getOut_trade_no());
+        if (object != null){
+            popOrder(object);
+        }
+        redisTemplate.opsForSet().add("orders",JSONObject.toJSONString(data));
+    }
+    public EPayData findOrderByOrderId(String orderId){
+        Set orders = redisTemplate.opsForSet().members("orders");
+        if (orders != null){
+            for (Object o: orders) {
+                JSONObject jsonObject = JSONObject.parseObject(o.toString());
+                if (orderId.equals(jsonObject.get("out_trade_no"))){
+                    return JSONObject.toJavaObject(jsonObject,EPayData.class);
+                }
+            }
+        }
+        return null;
+    }
+    public void popOrder(EPayData data){
+        redisTemplate.opsForSet().remove("orders" ,JSONObject.toJSONString(data));
+    }
+    public void popOrderById(String orderId){
+        EPayData object = findOrderByOrderId(orderId);
+        if (object != null){
+            popOrder(object);
+        }
+    }
     public void pushSearch(SearchData data){
         SearchData object = findSearch(data.getId());
         if (object != null){

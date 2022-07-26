@@ -1,20 +1,20 @@
 package com.telebott.movie2java.service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.*;
 import com.telebott.movie2java.entity.*;
-import com.telebott.movie2java.util.ShowPayUtil;
-import com.telebott.movie2java.util.TimeUtil;
-import com.telebott.movie2java.util.ToolsUtil;
-import com.telebott.movie2java.util.UrlUtil;
+import com.telebott.movie2java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -27,16 +27,14 @@ public class ApiService {
     @Autowired
     private VideoPpvodDao videoPpvodDao;
     @Autowired
-    private VideoPlayDao videoPlayDao;
-    @Autowired
-    private VideoLikeDao videoLikeDao;
-
-    @Autowired
     private CashInConfigDao cashInConfigDao;
     @Autowired
     private CashInOrderDao cashInOrderDao;
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private AuthDao authDao;
+
 
     public String getVideoConfig(String name){
         List<VideoPpvod> ppvods = videoPpvodDao.findAllByName(name);
@@ -147,5 +145,55 @@ public class ApiService {
         order.setTotalFee(payNotify.getTotal_fee());
         if (!orderService.handlerToPayNotify(order)) return "fail";
         return "success";
+    }
+    public String ePayNotify(EPayNotify ePayNotify) {
+//        System.out.printf("%s\n",ePayNotify);
+        if(ePayNotify.getPid() == 0) return "error";
+        List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(),1);
+        if (configs.size() == 0) return "fail";
+        boolean verify = ePayNotify.isSign(configs.get(0).getSecretKey());
+        System.out.printf(verify ? "效验成功！\n": "效验失败!\n");
+        if(verify && ePayNotify.getTrade_status().equals("TRADE_SUCCESS")){
+            EPayData data = authDao.findOrderByOrderId(ePayNotify.getOut_trade_no());
+            if (data != null) {
+                authDao.pushOrder(data);
+            }
+            CashInOrder cOrder = cashInOrderDao.findAllByOrderNo(ePayNotify.getOut_trade_no());
+            if (cOrder != null && cOrder.getStatus() != 1) {
+                cOrder.setUpdateTime(System.currentTimeMillis());
+                cOrder.setTradeNo(ePayNotify.getTrade_no());
+                cOrder.setStatus(1);
+                cOrder.setTotalFee(ePayNotify.getMoney());
+                if(EPayUtil.handlerOrder(cOrder)) {
+                    cashInOrderDao.saveAndFlush(cOrder);
+                    return "success";
+                }
+            }
+        }
+        return "error";
+    }
+
+    public ModelAndView ePayReturn(EPayNotify ePayNotify) {
+        List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(),1);
+        if (configs.size() == 0) return ToolsUtil.errorHtml("fail");
+        boolean verify = ePayNotify.isSign(configs.get(0).getSecretKey());
+        return ToolsUtil.errorHtml(verify ? "效验成功！": "效验失败!");
+    }
+
+    public ModelAndView payment(String orderId, String ip) {
+        EPayData data = authDao.findOrderByOrderId(orderId);
+        if (data == null) return ToolsUtil.errorHtml("订单号不存在!");
+        JSONObject params = EPayData.getObject(data);
+//        params.put("pid", data.getPid());
+//        params.put("out_trade_no", data.getOut_trade_no());
+//        params.put("type", data.getType());
+//        params.put("notify_url", data.getNotify_url());
+//        params.put("return_url", data.getReturn_url());
+//        params.put("money", data.getMoney());
+//        params.put("name", data.getName());
+//        params.put("sitename", data.getSitename());
+        params.put("sign_type", data.getSign_type());
+        params.put("sign", data.getSign());
+        return ToolsUtil.postHtml(data.getUrl(), params);
     }
 }

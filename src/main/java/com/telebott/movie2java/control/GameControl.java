@@ -68,4 +68,9 @@ public class GameControl {
                                         @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.button(id,User.getInstance(user), ip);
     }
+    @PostMapping("/payment")
+    @ApiGlobalModel(component = pData.class, value = "toId,id")
+    public ResponseData payment(@RequestBody pData data) {
+        return service.payment(data.getId(),data.getToId(),data.getSchema(),data.getServerName(),data.getServerPort(), data.getUser(), data.getIp());
+    }
 }

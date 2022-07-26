@@ -14,4 +14,5 @@ public interface CashInOptionDao extends JpaRepository<CashInOption, Long>, Crud
     List<CashInOption> findAllByStatusAndCode(int status, String code);
     List<CashInOption> findAllByStatusAndName(int status, String name);
     List<CashInOption> findAllByStatus(int status);
+    CashInOption findAllById(Long id);
 }

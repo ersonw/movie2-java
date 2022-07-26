@@ -3,8 +3,10 @@ package com.telebott.movie2java.service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
+import com.telebott.movie2java.data.EPayData;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
+import com.telebott.movie2java.util.EPayUtil;
 import com.telebott.movie2java.util.TimeUtil;
 import com.telebott.movie2java.util.UrlUtil;
 import com.telebott.movie2java.util.WaLiUtil;
@@ -54,6 +56,8 @@ public class GameService {
     private CashInConfigDao cashInConfigDao;
     @Autowired
     private CashInOptionDao cashInOptionDao;
+    @Autowired
+    private AuthDao authDao;
 
     public boolean getConfigBool(String name) {
         return getConfigLong(name) > 0;
@@ -232,10 +236,10 @@ public class GameService {
         List<CashInOption> options = new ArrayList<>();
         if(button.getCashInId() > 0){
             CashInConfig config = cashInConfigDao.findAllById(button.getCashInId());
-            options = getAllowed(config);
+            if(config != null && config.getStatus() == 1) options = getAllowed(config);
         }else {
             List<CashInConfig> configs = cashInConfigDao.findAllByStatus(1);
-            System.out.printf("length:%d",configs.size());
+//            System.out.printf("length:%d",configs.size());
             if (configs.size() > 0){
                 if(INDEX_OF_CASH_IN >= configs.size()){
                     INDEX_OF_CASH_IN = 0;
@@ -270,5 +274,72 @@ public class GameService {
             }
         }
         return options;
+    }
+
+    public ResponseData payment(long id, long toId, String schema, String serverName, int serverPort, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("");
+        if (toId < 1) return ResponseData.error("");
+        GameButton button = gameButtonDao.findAllById(id);
+        if (button == null || button.getStatus() != 1) return ResponseData.error("按钮已被禁用，请刷新重试！");
+        CashInOption option = cashInOptionDao.findAllById(toId);
+        if (option == null) return ResponseData.error("支付方式不可用，请刷新重试！");
+        CashInConfig config = null;
+        if(button.getCashInId() > 0){
+            config = cashInConfigDao.findAllById(button.getCashInId());
+            if (config == null || config.getStatus() != 1) {
+                return ResponseData.error("通道已被禁用，请刷新重试！");
+            }
+        }else {
+            List<CashInConfig> configs = cashInConfigDao.findAllByAllowedLikeAndStatus("%"+option.getName()+"%",1);
+            if (configs.size() > 0) {
+                config = configs.get(0);
+            }
+        }
+        if (config == null) return ResponseData.error("支付方式不可用，请刷新重试！");
+        GameOrder order = new GameOrder();
+        order.setUserId(user.getId());
+        order.setOrderNo(TimeUtil._getTime(0));
+        order.setAmount(button.getAmount());
+        order.setPrice(button.getPrice() * 100);
+        order.setAddTime(System.currentTimeMillis());
+
+        CashInOrder cashInOrder = new CashInOrder();
+        cashInOrder.setOrderNo(order.getOrderNo());
+        cashInOrder.setOrderType(EPayUtil.GAME_ORDER);
+        cashInOrder.setAddTime(System.currentTimeMillis());
+        cashInOrder.setUpdateTime(System.currentTimeMillis());
+
+        EPayData data = new EPayData();
+        data.setMoney(String.format("%.2f",order.getPrice() / 100D));
+        data.setPid(config.getMchId());
+        data.setType(option.getCode());
+        data.setOut_trade_no(order.getOrderNo());
+        data.setNotify_url(config.getNotifyUrl());
+        data.setReturn_url(config.getCallbackUrl());
+        data.setSign(data.getSign(config.getSecretKey()));
+        data.setUrl(config.getDomain());
+        StringBuilder sb = new StringBuilder(schema).append("://").append(serverName);
+        if (serverPort != 80 && serverPort != 443){
+            sb.append(":").append(serverPort);
+        }
+        sb.append("/api/payment/").append(data.getOut_trade_no());
+        authDao.pushOrder(data);
+        gameOrderDao.saveAndFlush(order);
+        cashInOrderDao.saveAndFlush(cashInOrder);
+        System.out.printf("%s\n",sb.toString());
+        return ResponseData.success(ResponseData.object("url",sb.toString()));
+    }
+    public boolean handlerOrder(String orderId){
+        GameOrder order = gameOrderDao.findAllByOrderNo(orderId);
+        if (order == null) return false;
+        User user = userDao.findAllById(order.getUserId());
+        if (user == null) return false;
+        GameFunds fund = new GameFunds(user.getId(), order.getAmount() * 100, "在线充值");
+        if (WaLiUtil.tranfer(user.getId(),fund.getAmount())){
+            gameFundsDao.saveAndFlush(fund);
+            return true;
+        }
+        return false;
     }
 }
