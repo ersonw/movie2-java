@@ -68,6 +68,18 @@ public class GameControl {
                                         @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.button(id,User.getInstance(user), ip);
     }
+    @GetMapping("/order/{page}")
+    public ResponseData order(@PathVariable int page,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                        @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.order(page,User.getInstance(user), ip);
+    }
+    @GetMapping("/fund/{page}")
+    public ResponseData fund(@PathVariable int page,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                        @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.fund(page,User.getInstance(user), ip);
+    }
     @PostMapping("/payment")
     @ApiGlobalModel(component = pData.class, value = "toId,id")
     public ResponseData payment(@RequestBody pData data) {

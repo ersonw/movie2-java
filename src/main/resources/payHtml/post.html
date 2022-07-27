@@ -15,15 +15,15 @@
 
 <script type="text/javascript">
     function _get(){
-        if (isWeChat()){
+        // if (isWeChat()){
             window.document.getElementById("a0001").click();
-        }else {
-            var url = window.location.href;
+        // }else {
+        //     var url = window.location.href;
             // window.location.href = 'weixin://dl/businessWebview/link/'+url;
             // window.location.href = 'weixin://dl/businessWebview/link/?appid=wx707c5fa91ef0a58c&url='+url;
-            var qrcode = new QRCode(document.getElementById("qrcode"));
-            qrcode.makeCode(url);
-        }
+            // var qrcode = new QRCode(document.getElementById("qrcode"));
+            // qrcode.makeCode(url);
+        // }
     }
     function isWeChat() {
         let ua = window.navigator.userAgent.toLowerCase();

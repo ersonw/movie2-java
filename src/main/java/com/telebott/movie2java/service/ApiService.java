@@ -148,7 +148,7 @@ public class ApiService {
     }
     public String ePayNotify(EPayNotify ePayNotify) {
 //        System.out.printf("%s\n",ePayNotify);
-        if(ePayNotify.getPid() == 0) return "error";
+        if(ePayNotify.getPid() == 0) return "fail";
         List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(),1);
         if (configs.size() == 0) return "fail";
         boolean verify = ePayNotify.isSign(configs.get(0).getSecretKey());
@@ -170,14 +170,21 @@ public class ApiService {
                 }
             }
         }
-        return "error";
+        return "fail";
     }
 
     public ModelAndView ePayReturn(EPayNotify ePayNotify) {
         List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(),1);
         if (configs.size() == 0) return ToolsUtil.errorHtml("fail");
         boolean verify = ePayNotify.isSign(configs.get(0).getSecretKey());
-        return ToolsUtil.errorHtml(verify ? "效验成功！": "效验失败!");
+//        return ToolsUtil.errorHtml(verify ? "效验成功！": "效验失败!");
+        if(!verify){
+            return ToolsUtil.errorHtml("数据效验失败!");
+        }
+        if (!ePayNotify.getTrade_status().equals("TRADE_SUCCESS")){
+            return ToolsUtil.waitHtml();
+        }
+        return ToolsUtil.getHtml("weixin://dl/businessWebview/link/");
     }
 
     public ModelAndView payment(String orderId, String ip) {

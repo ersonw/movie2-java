@@ -305,6 +305,7 @@ public class GameService {
         order.setAddTime(System.currentTimeMillis());
 
         CashInOrder cashInOrder = new CashInOrder();
+        cashInOrder.setType(option.getId());
         cashInOrder.setOrderNo(order.getOrderNo());
         cashInOrder.setOrderType(EPayUtil.GAME_ORDER);
         cashInOrder.setAddTime(System.currentTimeMillis());
@@ -341,5 +342,55 @@ public class GameService {
             return true;
         }
         return false;
+    }
+
+    public ResponseData order(int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12,Sort.by(Sort.Direction.DESC,"id"));
+        Page<CashInOrder> orderPage = cashInOrderDao.getAllByGame(user.getId(),pageable);
+        JSONArray array = new JSONArray();
+        for (CashInOrder order : orderPage.getContent()){
+            GameOrder gameOrder = gameOrderDao.findAllByOrderNo(order.getOrderNo());
+            CashInOption option = cashInOptionDao.findAllById(order.getType());
+            JSONObject json = new JSONObject();
+            if (option != null){
+                json.put("type",option.getName());
+                json.put("icon",option.getIcon());
+            }
+            json.put("id", order.getId());
+            json.put("amount", gameOrder.getAmount());
+            json.put("orderNo", order.getOrderNo());
+            json.put("status", order.getStatus() == 1);
+            json.put("addTime", order.getAddTime());
+            json.put("updateTime", order.getUpdateTime());
+            array.add(json);
+        }
+//        System.out.printf("array%s\n", array);
+        JSONObject json = ResponseData.object("list",array);
+        json.put("total",orderPage.getTotalPages());
+        return ResponseData.success(json);
+    }
+
+    public ResponseData fund(int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12,Sort.by(Sort.Direction.DESC,"id"));
+        Page<GameFunds> fundsPage = gameFundsDao.findAllByUserId(user.getId(), pageable);
+        JSONArray array = new JSONArray();
+        for (GameFunds funds : fundsPage.getContent()){
+            JSONObject json = new JSONObject();
+            json.put("id", funds.getId());
+            json.put("amount", funds.getAmount());
+            json.put("addTime", funds.getAddTime());
+            json.put("text", funds.getText());
+            array.add(json);
+        }
+//        System.out.printf("array%s\n", array);
+        JSONObject json = ResponseData.object("list",array);
+        json.put("total",fundsPage.getTotalPages());
+        return ResponseData.success(json);
     }
 }
