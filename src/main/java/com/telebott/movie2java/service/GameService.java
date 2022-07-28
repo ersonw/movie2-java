@@ -426,8 +426,10 @@ public class GameService {
         long freezeBalance = gameOutOrderDao.getAllByFreezeBalance(user.getId());
         if (freezeBalance < 0) freezeBalance = - freezeBalance;
         JSONObject json = ResponseData.object("balance", WaLiUtil.getBalance(user.getId()));
-        json.put("wBalance", new Double(String.format("%.2f", wBalance / 100D)));
-        json.put("freezeBalance", new Double(String.format("%.2f", freezeBalance / 100D)));
+//        json.put("wBalance", new Double(String.format("%.2f", wBalance / 100D)));
+//        json.put("freezeBalance", new Double(String.format("%.2f", freezeBalance / 100D)));
+        json.put("wBalance", new Double(wBalance));
+        json.put("freezeBalance", new Double(freezeBalance));
         return ResponseData.success(json);
     }
 
@@ -495,8 +497,60 @@ public class GameService {
         GameOutCard outCard = gameOutCardDao.findAllByUserIdAndCard(user.getId(), card);
         if (outCard != null) return ResponseData.error("卡号已重复添加！");
         if (StringUtils.isEmpty(name) || StringUtils.isEmpty(bank) || StringUtils.isEmpty(card)) return ResponseData.error("名字/银行/卡号 必填！");
-        outCard = new GameOutCard(name, bank, card, address,ip);
+        outCard = new GameOutCard(user.getId(), name, bank, card, address,ip);
         gameOutCardDao.saveAndFlush(outCard);
         return ResponseData.success(ResponseData.object("card",getCard(outCard)));
+    }
+
+    public ResponseData cashOutSetDefault(long id, User user, String ip) {
+        return ResponseData.success();
+    }
+
+    public ResponseData cashOutRemoveCard(long id, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("");
+        GameOutCard outCard = gameOutCardDao.findAllByIdAndUserId(id, user.getId());
+        if (outCard == null) return ResponseData.error("收款方式未定义！");
+        gameOutCardDao.delete(outCard);
+        return ResponseData.success(ResponseData.object("state",true));
+    }
+
+    public ResponseData cashOut(long id, long amount, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("未选择收款方式");
+        GameOutCard outCard = gameOutCardDao.findAllByIdAndUserId(id, user.getId());
+        if (outCard == null) return ResponseData.error("收款方式未定义！");
+        double balance = WaLiUtil.getBalance(user.getId());
+        if (amount > balance) return ResponseData.error("余额不足！");
+        double mini = getOutConfigDouble("mini");
+        if (amount < mini) return ResponseData.error("单笔最小提现金额为 "+mini);
+        double max = getOutConfigDouble("max");
+        if (amount > max) return ResponseData.error("单笔最大提现金额为 "+max);
+        double fee = getOutConfigDouble("fee");
+        double rate = getOutConfigDouble("rate");
+        Double _fee = amount * rate + fee;
+        if(_fee > _fee.longValue()){
+            _fee = new Double(_fee.longValue() + 1+"");
+        }
+        _fee = new Double(_fee.longValue()+"");
+        Double _amount = amount - _fee;
+        GameOutOrder order = new GameOutOrder();
+        order.setUserId(user.getId());
+        order.setOrderNo(TimeUtil._getTime(0));
+        order.setAddTime(System.currentTimeMillis());
+        order.setUpdateTime(System.currentTimeMillis());
+        order.setStatus(0);
+        order.setAmount(amount);
+        order.setTotalFee(_amount);
+        order.setFee(_fee);
+        order.setName(outCard.getName());
+        order.setBank(outCard.getBank());
+        order.setCard(outCard.getCard());
+        order.setAddress(outCard.getAddress());
+        GameFunds fund = new GameFunds(user.getId(), -(order.getAmount() * 100), "手动提现");
+        if(!WaLiUtil.tranfer(user.getId(), -(order.getAmount() * 100))) return ResponseData.error("提现失败，详情联系在线客服！");
+        gameOutOrderDao.saveAndFlush(order);
+        gameFundsDao.saveAndFlush(fund);
+        return ResponseData.success(ResponseData.object("state",true));
     }
 }

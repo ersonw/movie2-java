@@ -48,6 +48,10 @@ public  class pData  {
     private String card;
     @ApiModelProperty(name = "address", value= "地址",required = false)
     private String address;
+    @ApiModelProperty(name = "amount", value= "数量",required = false)
+    private long amount;
+    @ApiModelProperty(name = "price", value= "金额",required = false)
+    private double price;
 
     @ApiModelProperty(name = "oss", value= "oss配置",required = false)
     private String oss;

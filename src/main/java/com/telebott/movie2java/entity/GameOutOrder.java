@@ -19,7 +19,8 @@ public class GameOutOrder {
     private String orderNo;
     private long userId;
     private long amount;
-    private long totalFee;
+    private double totalFee;
+    private double fee;
     private String name;
     private String bank;
     private String card;

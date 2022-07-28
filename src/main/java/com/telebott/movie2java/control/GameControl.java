@@ -101,6 +101,23 @@ public class GameControl {
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.cashOutGetCards(page,User.getInstance(user), ip);
     }
+    @GetMapping("/cashOut/setDefault/{id}")
+    public ResponseData cashOutSetDefault(@PathVariable long id,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.cashOutSetDefault(id,User.getInstance(user), ip);
+    }
+    @GetMapping("/cashOut/removeCard/{id}")
+    public ResponseData cashOutRemoveCard(@PathVariable long id,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.cashOutRemoveCard(id,User.getInstance(user), ip);
+    }
+    @PostMapping("/cashOut")
+    @ApiGlobalModel(component = pData.class, value = "amount,id")
+    public ResponseData cashOut(@RequestBody pData data) {
+        return service.cashOut(data.getId(),data.getAmount(), data.getUser(), data.getIp());
+    }
     @PostMapping("/cashOut/editCard")
     @ApiGlobalModel(component = pData.class, value = "name,bank,card,address,id")
     public ResponseData cashOutEditCard(@RequestBody pData data) {

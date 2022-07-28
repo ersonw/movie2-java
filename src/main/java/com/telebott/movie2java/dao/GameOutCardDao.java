@@ -14,6 +14,7 @@ import java.util.List;
 @Repository
 public interface GameOutCardDao extends JpaRepository<GameOutCard, Long>, CrudRepository<GameOutCard, Long> {
     GameOutCard findAllById(long id);
+    GameOutCard findAllByIdAndUserId(long id,long userId);
     GameOutCard findAllByUserIdAndCard(long userId, String card);
     Page<GameOutCard> findAllByUserId(long userId, Pageable pageable);
     List<GameOutCard> findAllByUserId(long userId);

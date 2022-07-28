@@ -14,13 +14,15 @@ import javax.persistence.*;
 @ToString(includeFieldNames = true)
 public class GameOutCard {
     public GameOutCard() {}
-    public GameOutCard(String name, String bank, String card, String address, String addIp) {
+    public GameOutCard(long userId,String name, String bank, String card, String address, String addIp) {
+        this.userId = userId;
         this.name = name;
         this.bank = bank;
         this.card = card;
         this.address = address;
         this.addIp = addIp;
         this.addTime = System.currentTimeMillis();
+        this.updateTime = System.currentTimeMillis();
     }
     @Id
     @GeneratedValue
