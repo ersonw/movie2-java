@@ -85,4 +85,30 @@ public class GameControl {
     public ResponseData payment(@RequestBody pData data) {
         return service.payment(data.getId(),data.getToId(),data.getSchema(),data.getServerName(),data.getServerPort(), data.getUser(), data.getIp());
     }
+    @GetMapping("/cashOut/getBalance")
+    public ResponseData cashOutGetBalance(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.cashOutGetBalance(User.getInstance(user), ip);
+    }
+    @GetMapping("/cashOut/getConfig")
+    public ResponseData cashOutGetConfig(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.cashOutGetConfig(User.getInstance(user), ip);
+    }
+    @GetMapping("/cashOut/getCards/{page}")
+    public ResponseData cashOutGetCards(@PathVariable int page,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.cashOutGetCards(page,User.getInstance(user), ip);
+    }
+    @PostMapping("/cashOut/editCard")
+    @ApiGlobalModel(component = pData.class, value = "name,bank,card,address,id")
+    public ResponseData cashOutEditCard(@RequestBody pData data) {
+        return service.cashOutEditCard(data.getId(),data.getName(),data.getBank(),data.getCard(),data.getAddress(), data.getUser(), data.getIp());
+    }
+    @PostMapping("/cashOut/addCard")
+    @ApiGlobalModel(component = pData.class, value = "name,bank,card,address")
+    public ResponseData cashOutAddCard(@RequestBody pData data) {
+        return service.cashOutAddCard(data.getName(),data.getBank(),data.getCard(),data.getAddress(), data.getUser(), data.getIp());
+    }
 }

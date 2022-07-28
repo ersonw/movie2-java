@@ -58,7 +58,32 @@ public class GameService {
     private CashInOptionDao cashInOptionDao;
     @Autowired
     private AuthDao authDao;
+    @Autowired
+    private GameOutConfigDao gameOutConfigDao;
+    @Autowired
+    private GameOutCardDao gameOutCardDao;
+    @Autowired
+    private GameOutOrderDao gameOutOrderDao;
 
+    public boolean getOutConfigBool(String name) {
+        return getOutConfigLong(name) > 0;
+    }
+
+    public long getOutConfigLong(String name) {
+        String value = getOutConfig(name);
+        if (value == null) return 0;
+        return Long.parseLong(value);
+    }
+    public double getOutConfigDouble(String name) {
+        String value = getOutConfig(name);
+        if (value == null) return 0D;
+        return Double.parseDouble(value);
+    }
+
+    public String getOutConfig(String name) {
+        List<GameOutConfig> configs = gameOutConfigDao.findAllByName(name);
+        return configs.isEmpty() ? null : configs.get(0).getVal();
+    }
     public boolean getConfigBool(String name) {
         return getConfigLong(name) > 0;
     }
@@ -392,5 +417,86 @@ public class GameService {
         JSONObject json = ResponseData.object("list",array);
         json.put("total",fundsPage.getTotalPages());
         return ResponseData.success(json);
+    }
+
+    public ResponseData cashOutGetBalance(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        long wBalance = gameOutOrderDao.getAllBywBalance(user.getId());
+        if (wBalance < 0) wBalance = - wBalance;
+        long freezeBalance = gameOutOrderDao.getAllByFreezeBalance(user.getId());
+        if (freezeBalance < 0) freezeBalance = - freezeBalance;
+        JSONObject json = ResponseData.object("balance", WaLiUtil.getBalance(user.getId()));
+        json.put("wBalance", new Double(String.format("%.2f", wBalance / 100D)));
+        json.put("freezeBalance", new Double(String.format("%.2f", freezeBalance / 100D)));
+        return ResponseData.success(json);
+    }
+
+    public ResponseData cashOutGetConfig(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+//        List<GameOutCard> cards = gameOutCardDao.findAllByUserId(user.getId());
+//        JSONArray array = new JSONArray();
+//        for (GameOutCard card : cards) {
+//            JSONObject object = new JSONObject();
+//            object.put("id", card.getId());
+//            object.put("bank", card.getBank());
+//            object.put("card", card.getCard());
+//            array.add(object);
+//        }
+        JSONObject json = ResponseData.object("mini", getOutConfigDouble("mini"));
+        json.put("max", getOutConfigDouble("max"));
+        json.put("fee", getOutConfigDouble("fee"));
+        json.put("rate", getOutConfigDouble("rate"));
+//        json.put("cards", array);
+        return ResponseData.success(json);
+    }
+    public JSONObject getCard(GameOutCard card) {
+        JSONObject object = new JSONObject();
+        object.put("id", card.getId());
+        object.put("name", card.getName());
+        object.put("bank", card.getBank());
+        object.put("card", card.getCard());
+        object.put("address", card.getAddress());
+        object.put("addTime", card.getAddTime());
+        object.put("updateTime", card.getUpdateTime());
+        return object;
+    }
+    public ResponseData cashOutGetCards(int page,User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12,Sort.by(Sort.Direction.DESC,"id"));
+        Page<GameOutCard> cardPage = gameOutCardDao.findAllByUserId(user.getId(),pageable);
+        JSONArray array = new JSONArray();
+        for (GameOutCard card : cardPage.getContent()) {
+            array.add(getCard(card));
+        }
+        JSONObject json = ResponseData.object("list",array);
+        json.put("total", cardPage.getTotalPages());
+        return ResponseData.success(json);
+    }
+
+    public ResponseData cashOutEditCard(long id, String name, String bank, String card, String address, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("");
+        GameOutCard outCard = gameOutCardDao.findAllById(id);
+        if (outCard == null) return ResponseData.error("");
+        if(StringUtils.isNotEmpty(name)) outCard.setName(name);
+        if(StringUtils.isNotEmpty(bank)) outCard.setBank(bank);
+        if(StringUtils.isNotEmpty(card)) outCard.setCard(card);
+        if(StringUtils.isNotEmpty(address)) outCard.setAddress(address);
+        outCard.setUpdateIp(ip);
+        outCard.setUpdateTime(System.currentTimeMillis());
+        gameOutCardDao.saveAndFlush(outCard);
+        return ResponseData.success(ResponseData.object("card",getCard(outCard)));
+    }
+
+    public ResponseData cashOutAddCard(String name, String bank, String card, String address, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        GameOutCard outCard = gameOutCardDao.findAllByUserIdAndCard(user.getId(), card);
+        if (outCard != null) return ResponseData.error("卡号已重复添加！");
+        if (StringUtils.isEmpty(name) || StringUtils.isEmpty(bank) || StringUtils.isEmpty(card)) return ResponseData.error("名字/银行/卡号 必填！");
+        outCard = new GameOutCard(name, bank, card, address,ip);
+        gameOutCardDao.saveAndFlush(outCard);
+        return ResponseData.success(ResponseData.object("card",getCard(outCard)));
     }
 }

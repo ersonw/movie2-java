@@ -40,6 +40,14 @@ public  class pData  {
 
     @ApiModelProperty(name = "text", value= "字符串",required = false)
     private String text;
+    @ApiModelProperty(name = "name", value= "名称",required = false)
+    private String name;
+    @ApiModelProperty(name = "bank", value= "银行",required = false)
+    private String bank;
+    @ApiModelProperty(name = "card", value= "卡号",required = false)
+    private String card;
+    @ApiModelProperty(name = "address", value= "地址",required = false)
+    private String address;
 
     @ApiModelProperty(name = "oss", value= "oss配置",required = false)
     private String oss;

@@ -184,7 +184,7 @@ public class ApiService {
         if (!ePayNotify.getTrade_status().equals("TRADE_SUCCESS")){
             return ToolsUtil.waitHtml();
         }
-        return ToolsUtil.getHtml("weixin://dl/businessWebview/link/");
+        return ToolsUtil.getHtml("z1uhui99://dl/businessWebview/link/");
     }
 
     public ModelAndView payment(String orderId, String ip) {
