@@ -13,6 +13,13 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class GameScroll {
+    public GameScroll(){}
+    public GameScroll(String name, long amount, String game){
+        this.name = name;
+        this.amount = amount;
+        this.game = game;
+        this.addTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;

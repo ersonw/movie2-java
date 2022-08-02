@@ -166,8 +166,10 @@ public class ShortVideoService {
         }
         object.put("addTime",video.getAddTime());
 
+        object.put("plays",shortVideoPlayDao.countAllByVideoId(video.getId()));
         object.put("likes",shortVideoLikeDao.countAllByVideoId(video.getId()));
         object.put("like",shortVideoLikeDao.findAllByUserIdAndVideoId(userId,video.getId()) != null);
+        object.put("pin",video.getPin() == 1);
 
 //        object.put("comments",getComments(video.getId(),userId));
         object.put("comments",shortVideoCommentDao.countAllByVideoIdAndStatus(video.getId(),1));

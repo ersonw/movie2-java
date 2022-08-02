@@ -104,7 +104,11 @@ public class GameService {
         for (GameScroll scroll : scrolls) {
             JSONObject json = new JSONObject();
             json.put("text2", scroll.getName());
-            json.put("text3", "在游戏【" + scroll.getGame() + "】中赢得了");
+            if(scroll.getGame().contains("提现")){
+                json.put("text3", "兴高采烈地提走了一桶金 ");
+            }else {
+                json.put("text3", "在游戏【" + scroll.getGame() + "】中赢得了");
+            }
             json.put("text4", String.format("%.2f", scroll.getAmount() / 100D));
             json.put("text5", "元");
             array.add(json);
@@ -551,6 +555,32 @@ public class GameService {
         if(!WaLiUtil.tranfer(user.getId(), -(order.getAmount() * 100))) return ResponseData.error("提现失败，详情联系在线客服！");
         gameOutOrderDao.saveAndFlush(order);
         gameFundsDao.saveAndFlush(fund);
+        gameScrollDao.saveAndFlush(new GameScroll(user.getNickname(),order.getAmount() * 100,"手动提现"));
         return ResponseData.success(ResponseData.object("state",true));
+    }
+
+    public ResponseData cashOutRecords(int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12,Sort.by(Sort.Direction.DESC,"id"));
+        Page<GameOutOrder> orderPage = gameOutOrderDao.findAllByUserId(user.getId(),pageable);
+        JSONArray array = new JSONArray();
+        for (GameOutOrder order : orderPage.getContent()) {
+            JSONObject obj = new JSONObject();
+            obj.put("id",order.getId());
+            obj.put("amount",order.getAmount());
+            obj.put("totalFee",order.getTotalFee());
+            obj.put("fee", -order.getFee());
+            obj.put("orderNo",order.getOrderNo());
+            obj.put("status",order.getStatus());
+            obj.put("addTime",order.getAddTime());
+            obj.put("updateTime",order.getUpdateTime());
+            array.add(obj);
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("list",array);
+        jsonObject.put("total",orderPage.getTotalPages());
+        return ResponseData.success(jsonObject);
     }
 }

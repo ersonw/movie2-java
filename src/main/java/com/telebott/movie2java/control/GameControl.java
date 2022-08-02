@@ -101,6 +101,12 @@ public class GameControl {
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.cashOutGetCards(page,User.getInstance(user), ip);
     }
+    @GetMapping("/cashOut/records/{page}")
+    public ResponseData cashOutRecords(@PathVariable int page,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.cashOutRecords(page,User.getInstance(user), ip);
+    }
     @GetMapping("/cashOut/setDefault/{id}")
     public ResponseData cashOutSetDefault(@PathVariable long id,
                                         @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,

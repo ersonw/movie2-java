@@ -10,4 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UserFollowDao extends JpaRepository<UserFollow, Long>, CrudRepository<UserFollow, Long> {
     UserFollow findAllByUserIdAndToUserId(Long userId, Long toUserId);
+    Long countAllByUserId(Long userId);
+    Long countAllByToUserId(Long userId);
+    Long countAllByToUserIdAndState(Long userId, int state);
 }

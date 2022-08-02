@@ -25,6 +25,7 @@ public class UserFollow {
     private long id;
     private long userId;
     private long toUserId;
+    private int state;
     private String ip;
     private long addTime;
 }

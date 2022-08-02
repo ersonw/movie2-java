@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.data.RequestData;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.pData;
+import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.UserService;
 import com.telebott.movie2java.util.ApiGlobalModel;
 import com.telebott.movie2java.util.CustomParam;
@@ -45,5 +46,42 @@ public class UserControl {
     public ResponseData registerSms(@PathVariable("phone") String phone,
                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.sendSmsRegister(phone, ip);
+    }
+    @GetMapping("/profile/{id}")
+    public ResponseData profile(@PathVariable("id") long id,
+                                @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.profile(id, User.getUser(user),ip);
+    }
+    @GetMapping("/profile/{id}/video/{page}")
+    public ResponseData profileVideo(@PathVariable("id") long id,
+                                @PathVariable("page") int page,
+                                @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.profileVideo(id,page, User.getUser(user),ip);
+    }
+    @GetMapping("/profile/{id}/video/{page}/like")
+    public ResponseData profileVideoLike(@PathVariable("id") long id,
+                                @PathVariable("page") int page,
+                                @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.profileVideoLike(id,page, User.getUser(user),ip);
+    }
+    @GetMapping("/my/profile")
+    public ResponseData myProfile(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.myProfile(User.getUser(user),ip);
+    }
+    @GetMapping("/my/profile/video/{page}")
+    public ResponseData myProfileVideo(@PathVariable("page") int page,
+                                @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.myProfileVideo(page, User.getUser(user),ip);
+    }
+    @GetMapping("/my/profile/video/{page}/like")
+    public ResponseData myProfileVideoLike(@PathVariable("page") int page,
+                                @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.myProfileVideoLike(page, User.getUser(user),ip);
     }
 }

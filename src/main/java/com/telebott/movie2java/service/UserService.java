@@ -1,5 +1,6 @@
 package com.telebott.movie2java.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.ResponseData;
@@ -8,6 +9,9 @@ import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +36,18 @@ public class UserService {
     private UserFailLoginRecordDao failLoginRecordDao;
     @Autowired
     private MembershipExpiredDao membershipExpiredDao;
+    @Autowired
+    private ShortVideoDao shortVideoDao;
+    @Autowired
+    private UserBalanceCashDao userBalanceCashDao;
+    @Autowired
+    private UserBalanceDiamondDao userBalanceDiamondDao;
+    @Autowired
+    private UserFollowDao userFollowDao;
+    @Autowired
+    private ShortVideoLikeDao shortVideoLikeDao;
+    @Autowired
+    private ShortVideoService shortVideoService;
 
     private static long FAIL_LOGIN_TIMES = 6;
 
@@ -106,8 +122,12 @@ public class UserService {
         object.put("username",user.getUsername());
         object.put("phone",user.getPhone());
         object.put("email",user.getEmail());
+        object.put("member",getMember(user.getId()));
         object.put("level", membershipExperienceDao.countByUserId(user.getId()));
         return object;
+    }
+    public boolean getMember(long userId){
+        return false;
     }
     //改为只能手机注册 增加验证码逻辑 增加发送验证码
     public ResponseData register(String password,String codeId,String code,String ip) {
@@ -130,6 +150,7 @@ public class UserService {
         user.setAddTime(System.currentTimeMillis());
         user.setUpdateTime(user.getAddTime());
         user.setText("本人很懒，不想说话！");
+        user.setUsername(ToolsUtil.getRandom(12));
         userDao.saveAndFlush(user);
 //        return login(username,password,deviceId,platform,ip);
         return ResponseData.success(ResponseData.object("id", user.getId()));
@@ -204,5 +225,114 @@ public class UserService {
             return smsCode.getPhone();
         }
         return null;
+    }
+
+    public ResponseData myProfileVideo(int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12);
+        Page<ShortVideo> videoPage = shortVideoDao.getAllMyVideos(user.getId(),pageable);
+        JSONArray array = new JSONArray();
+        for (ShortVideo video : videoPage.getContent()){
+            array.add(shortVideoService.getShortVideo(video,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", videoPage.getTotalPages());
+        return ResponseData.success(json);
+    }
+    public long getProgressProfile(User user){
+        long progress = 0;
+        if(StringUtils.isNotEmpty(user.getNickname())) progress+=10;
+        if(StringUtils.isNotEmpty(user.getAvatar())) progress+=10;
+        if(StringUtils.isNotEmpty(user.getText())) progress+=10;
+        if(StringUtils.isNotEmpty(user.getUsername())) progress+=10;
+        if(StringUtils.isNotEmpty(user.getPhone())) progress+=10;
+        if(StringUtils.isNotEmpty(user.getEmail())) progress+=10;
+        return progress;
+    }
+    public ResponseData myProfile(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        User profile = userDao.findAllById(user.getId());
+        profile.setToken(user.getToken());
+        authDao.pushUser(profile);
+        JSONObject json = new JSONObject();
+        json.put("user", getUserInfo(profile));
+        json.put("progress", getProgressProfile(profile));
+        json.put("addFriends", userFollowDao.countAllByToUserIdAndState(user.getId(), 0));
+//        json.put("works", getProgressProfile(profile));
+//        json.put("cash", userBalanceCashDao.getAllByBalance(user.getId()));
+//        json.put("diamond", userBalanceDiamondDao.getAllByBalance(user.getId()));
+        json.put("likes", shortVideoLikeDao.getAllByUserId(profile.getId()));
+        json.put("follows", userFollowDao.countAllByUserId(user.getId()));
+        json.put("fans", userFollowDao.countAllByToUserId(user.getId()));
+        return ResponseData.success(json);
+    }
+
+    public ResponseData profileVideo(long id, int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("用户不存在！");
+        User profile = userDao.findAllById(id);
+        if (profile == null) return ResponseData.error("用户不存在！");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12);
+        Page<ShortVideo> videoPage = shortVideoDao.getAllProfileVideos(profile.getId(), pageable);
+        JSONArray array = new JSONArray();
+        for (ShortVideo video : videoPage.getContent()){
+            array.add(shortVideoService.getShortVideo(video,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", videoPage.getTotalPages());
+        return ResponseData.success(json);
+    }
+
+    public ResponseData profile(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("用户不存在！");
+        User profile = userDao.findAllById(id);
+        if (profile == null) return ResponseData.error("用户不存在！");
+        JSONObject json = new JSONObject();
+        json.put("user", getUserInfo(profile));
+        json.put("works", shortVideoDao.countAllByUserIdAndStatus(profile.getId(),1));
+//        json.put("cash", userBalanceCashDao.getAllByBalance(profile.getId()));
+//        json.put("diamond", userBalanceDiamondDao.getAllByBalance(profile.getId()));
+//        json.put("likes", shortVideoLikeDao.countAllByUserId(profile.getId()));
+        json.put("follows", userFollowDao.countAllByUserId(profile.getId()));
+        json.put("follow", userFollowDao.findAllByUserIdAndToUserId(user.getId(), profile.getId()) != null);
+        json.put("fans", userFollowDao.countAllByToUserId(profile.getId()));
+        return ResponseData.success(json);
+    }
+
+    public ResponseData profileVideoLike(long id, int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("用户不存在！");
+        User profile = userDao.findAllById(id);
+        if (profile == null) return ResponseData.error("用户不存在！");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12);
+        Page<ShortVideo> videoPage = shortVideoDao.getAllLikeProfileVideos(profile.getId(), pageable);
+        JSONArray array = new JSONArray();
+        for (ShortVideo video : videoPage.getContent()){
+            array.add(shortVideoService.getShortVideo(video,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", videoPage.getTotalPages());
+        return ResponseData.success(json);
+    }
+
+    public ResponseData myProfileVideoLike(int page, User user, String ip) {
+        if (user == null) return ResponseData.error("未登录！");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,12);
+        Page<ShortVideo> videoPage = shortVideoDao.getAllLikeProfileVideos(user.getId(), pageable);
+        JSONArray array = new JSONArray();
+        for (ShortVideo video : videoPage.getContent()){
+            array.add(shortVideoService.getShortVideo(video,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", videoPage.getTotalPages());
+        return ResponseData.success(json);
     }
 }

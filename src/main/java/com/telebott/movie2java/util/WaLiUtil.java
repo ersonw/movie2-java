@@ -128,13 +128,14 @@ public class WaLiUtil {
                     }
                     recordsList.add(records);
                     if (records.getProfit() < 0){
-                        GameScroll scroll = new GameScroll();
-                        scroll.setAddTime(System.currentTimeMillis());
-                        scroll.setName(user.getNickname());
-                        scroll.setGame(game.getName());
-//                        scroll.setAmount((new Double(Double.parseDouble(profits.get(i)) * 100).longValue()));
-                        scroll.setAmount(-(new Double(Double.parseDouble(profits.get(i)) * 100).longValue()));
-                        scrolls.add(scroll);
+//                        GameScroll scroll = new GameScroll();
+//                        scroll.setAddTime(System.currentTimeMillis());
+//                        scroll.setName(user.getNickname());
+//                        scroll.setGame(game.getName());
+////                        scroll.setAmount((new Double(Double.parseDouble(profits.get(i)) * 100).longValue()));
+//                        scroll.setAmount(-(new Double(Double.parseDouble(profits.get(i)) * 100).longValue()));
+//                        scrolls.add(scroll);
+                        scrolls.add(new GameScroll(user.getNickname(),-(new Double(Double.parseDouble(profits.get(i)) * 100).longValue()), game.getName()));
                     }
                 }
             }

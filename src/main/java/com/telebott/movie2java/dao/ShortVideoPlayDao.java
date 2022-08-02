@@ -12,4 +12,6 @@ import java.util.List;
 @Repository
 public interface ShortVideoPlayDao extends JpaRepository<ShortVideoPlay, Long>, CrudRepository<ShortVideoPlay, Long> {
     List<ShortVideoPlay> findAllByVideoIdAndUserIdAndAddTimeGreaterThanEqual(Long videoId, Long userId, long time);
+
+    Long countAllByVideoId(long id);
 }

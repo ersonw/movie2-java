@@ -36,4 +36,8 @@ public class User {
         JSONObject object = JSONObject.parseObject(s);
         return JSONObject.toJavaObject(object, User.class);
     }
+    public static User getUser(String s){
+        JSONObject object = JSONObject.parseObject(s);
+        return JSONObject.toJavaObject(object, User.class);
+    }
 }
