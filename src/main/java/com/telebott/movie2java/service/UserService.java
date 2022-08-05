@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -293,7 +294,8 @@ public class UserService {
         if (profile == null) return ResponseData.error("用户不存在！");
         JSONObject json = new JSONObject();
         json.put("user", getUserInfo(profile));
-        json.put("works", shortVideoDao.countAllByUserIdAndStatus(profile.getId(),1));
+        json.put("likes", shortVideoLikeDao.getAllByUserId(profile.getId()));
+//        json.put("works", shortVideoDao.countAllByUserIdAndStatus(profile.getId(),1));
 //        json.put("cash", userBalanceCashDao.getAllByBalance(profile.getId()));
 //        json.put("diamond", userBalanceDiamondDao.getAllByBalance(profile.getId()));
 //        json.put("likes", shortVideoLikeDao.countAllByUserId(profile.getId()));
@@ -334,5 +336,184 @@ public class UserService {
         JSONObject json = ResponseData.object("list", array);
         json.put("total", videoPage.getTotalPages());
         return ResponseData.success(json);
+    }
+    public JSONObject getUserFans(UserFollow userFollow, long userId){
+        JSONObject object = new JSONObject();
+        User user = userDao.findAllById(userFollow.getUserId());
+        if (user == null) return object;
+        object.put("id", user.getId());
+        object.put("avatar", user.getAvatar());
+        object.put("nickname", user.getNickname());
+        object.put("fans", userFollowDao.countAllByToUserId(user.getId()));
+        object.put("followed", userFollowDao.findAllByUserIdAndToUserId(user.getId(),userId) != null);
+        if(user.getId() == userId){
+            object.put("follow", true);
+        }else {
+            object.put("follow", userFollowDao.findAllByUserIdAndToUserId(userId, user.getId()) != null);
+        }
+        return object;
+    }
+    public JSONObject getUserFollow(UserFollow userFollow, long userId){
+        JSONObject object = new JSONObject();
+        User user = userDao.findAllById(userFollow.getToUserId());
+        if (user == null) return object;
+        object.put("id", user.getId());
+        object.put("avatar", user.getAvatar());
+        object.put("nickname", user.getNickname());
+        object.put("fans", userFollowDao.countAllByToUserId(user.getId()));
+        object.put("followed", userFollowDao.findAllByUserIdAndToUserId(user.getId(),userId) != null);
+        if(user.getId() == userId){
+            object.put("follow", true);
+        }else {
+            object.put("follow", userFollowDao.findAllByUserIdAndToUserId(userId, user.getId()) != null);
+        }
+        return object;
+    }
+    public ResponseData follows(long id, int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("用户不存在！");
+        User profile = userDao.findAllById(id);
+        if (profile == null) return ResponseData.error("用户不存在！");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,24, Sort.by(Sort.Direction.DESC,"id"));
+        Page<UserFollow> follows = userFollowDao.findAllByUserId(profile.getId(), pageable);
+        JSONArray array = new JSONArray();
+        for (UserFollow follow : follows) {
+            array.add(getUserFollow(follow,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", follows.getTotalPages());
+        return ResponseData.success(json);
+    }
+
+    public ResponseData fans(long id, int page, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("用户不存在！");
+        User profile = userDao.findAllById(id);
+        if (profile == null) return ResponseData.error("用户不存在！");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,24, Sort.by(Sort.Direction.DESC,"id"));
+        Page<UserFollow> fans = userFollowDao.findAllByToUserId(profile.getId(), pageable);
+        JSONArray array = new JSONArray();
+        for (UserFollow follow : fans) {
+            array.add(getUserFans(follow,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", fans.getTotalPages());
+        return ResponseData.success(json);
+    }
+
+    public ResponseData followsSearch(long id, int page, String text, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("用户不存在！");
+        if (StringUtils.isEmpty(text)) return ResponseData.error();
+        User profile = userDao.findAllById(id);
+        if (profile == null) return ResponseData.error("用户不存在！");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,24, Sort.by(Sort.Direction.DESC,"id"));
+        Page<UserFollow> follows = userFollowDao.getAllByUserId(profile.getId(),"%"+text+"%",pageable);
+        JSONArray array = new JSONArray();
+        for (UserFollow follow : follows) {
+            array.add(getUserFollow(follow,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", follows.getTotalPages());
+        System.out.printf("%s\n", json);
+        return ResponseData.success(json);
+    }
+
+    public ResponseData fansSearch(long id, int page, String text, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (id < 1) return ResponseData.error("用户不存在！");
+        if (StringUtils.isEmpty(text)) return ResponseData.error();
+        User profile = userDao.findAllById(id);
+        if (profile == null) return ResponseData.error("用户不存在！");
+        page--;
+        if (page < 0) page = 0;
+        Pageable pageable = PageRequest.of(page,24, Sort.by(Sort.Direction.DESC,"id"));
+        Page<UserFollow> fans = userFollowDao.getAllByToUserId(profile.getId(),"%"+text+"%",pageable);
+        JSONArray array = new JSONArray();
+        for (UserFollow follow : fans) {
+            array.add(getUserFans(follow,user.getId()));
+        }
+        JSONObject json = ResponseData.object("list", array);
+        json.put("total", fans.getTotalPages());
+        return ResponseData.success(json);
+    }
+
+    public ResponseData userLoginSms(String phone, String ip) {
+        if (!MobileRegularExp.isMobileNumber(phone)){
+            return ResponseData.fail("手机号码格式错误！");
+        }
+        User user = userDao.findByPhone(phone);
+        if (user == null){
+            return ResponseData.fail("手机号未注册，请先注册哟！");
+        }
+        if (!checkSmsMax(phone)){
+            return ResponseData.fail("今日短信发送已达上限！");
+        }
+        long last = checkSmsLast(phone);
+        if (last > 0){
+            return ResponseData.fail("操作过于频繁，请在"+last+"秒后重试！");
+        }
+        SmsCode code= _getCode(phone);
+        if (code == null){
+            code = new SmsCode(phone);
+            authDao.removeByPhone(phone);
+            authDao.pushCode(code);
+        }
+        SmsRecord smsRecord = new SmsRecord();
+        smsRecord.setIp(ip);
+        smsRecord.setCode(code.getCode());
+        smsRecord.setPhone(code.getPhone());
+        smsRecord.setStatus(0);
+        smsRecord.setAddTime(System.currentTimeMillis());
+        smsRecordDao.saveAndFlush(smsRecord);
+        if (SmsBaoUtil.sendSmsCode(code)){
+            smsRecord.setStatus(1);
+            smsRecordDao.saveAndFlush(smsRecord);
+            return ResponseData.success(ResponseData.object("id", code.getId()));
+        }
+        authDao.popCode(code);
+        return ResponseData.fail("短信发送失败，请联系管理员!");
+    }
+
+    public ResponseData userLoginPhone(String codeId, String code, String deviceId, String platform,String ip) {
+        String phone = verifyCode(codeId,code);
+        if (phone == null){
+            return ResponseData.error("验证码不正确！");
+        }
+        User user = userDao.findByPhone(phone);
+        if (user == null) {
+            return ResponseData.error("手机号未注册！");
+        }
+        user.setToken(ToolsUtil.getToken());
+        UserLoginRecord loginRecord = new UserLoginRecord();
+        loginRecord.setUserId(user.getId());
+        loginRecord.setDeviceId(deviceId);
+        loginRecord.setPlatform(platform);
+        loginRecord.setAddTime(System.currentTimeMillis());
+        loginRecord.setIp(ip);
+        loginRecordDao.saveAndFlush(loginRecord);
+        UserDeviceRecord deviceRecord = null;
+        if (StringUtils.isNotEmpty(deviceId)){
+            deviceRecord = deviceRecordDao.findAllByUserIdAndDeviceId(user.getId(),deviceId);
+        }else {
+            deviceRecord = deviceRecordDao.findAllByUserId(user.getId());
+        }
+        if (deviceRecord == null){
+            deviceRecord = new UserDeviceRecord();
+            deviceRecord.setDeviceId(deviceId);
+            deviceRecord.setPlatform(platform);
+            deviceRecord.setUserId(user.getId());
+        }
+        deviceRecord.setIp(ip);
+        deviceRecord.setAddTime(System.currentTimeMillis());
+        deviceRecordDao.saveAndFlush(deviceRecord);
+        authDao.pushUser(user);
+        return ResponseData.success(getUserInfo(user));
     }
 }

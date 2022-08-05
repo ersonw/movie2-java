@@ -294,6 +294,7 @@ public class ShortVideoService {
     public ResponseData follow(long uid, User user, String ip) {
         if (uid < 1) return ResponseData.error("");
         if (user == null) return ResponseData.error("");
+        if(uid == user.getId()) return ResponseData.success("不能自己关注自己哦");
         UserFollow follow = userFollowDao.findAllByUserIdAndToUserId(user.getId(), uid);
         if (follow!=null) return ResponseData.success("");
         follow = new UserFollow(user.getId(), uid,ip);
@@ -303,6 +304,7 @@ public class ShortVideoService {
     public ResponseData unfollow(long uid, User user, String ip) {
         if (uid < 1) return ResponseData.error("");
         if (user == null) return ResponseData.error("");
+        if(uid == user.getId()) return ResponseData.success("不能自己关注自己哦");
         UserFollow follow = userFollowDao.findAllByUserIdAndToUserId(user.getId(), uid);
         if (follow==null) return ResponseData.success("");
         userFollowDao.delete(follow);

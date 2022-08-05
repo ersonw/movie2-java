@@ -30,6 +30,20 @@ public class UserControl {
         }
         return service.login(data.getUsername(),data.getPassword(), data.getDeviceId(), data.getPlatform(),data.getIp());
     }
+    @GetMapping("/login/sms/{phone}")
+    public ResponseData userLoginSms(@PathVariable("phone") String phone,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.userLoginSms(phone, ip);
+    }
+    @PostMapping("/login/phone")
+    @ApiGlobalModel(component = pData.class, value = "codeId,code,deviceId,platform")
+    public ResponseData userLoginPhone(@RequestBody pData data){
+        if (StringUtils.isEmpty(data.getCodeId())){
+            return ResponseData.error("验证码必填!");
+        }
+        return service.userLoginPhone(data.getCodeId(), data.getCode(), data.getDeviceId(), data.getPlatform(),data.getIp());
+//        return ResponseData.fail();
+    }
     @PostMapping("/register")
     @ApiGlobalModel(component = pData.class, value = "password,codeId,code")
     public ResponseData register(@RequestBody pData data){
@@ -42,6 +56,7 @@ public class UserControl {
         return service.register(data.getPassword(), data.getCodeId(), data.getCode(), data.getIp());
 //        return ResponseData.fail();
     }
+
     @GetMapping("/register/sms/{phone}")
     public ResponseData registerSms(@PathVariable("phone") String phone,
                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
@@ -83,5 +98,35 @@ public class UserControl {
                                 @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.myProfileVideoLike(page, User.getUser(user),ip);
+    }
+    @GetMapping("/follow/{id}/{page}")
+    public ResponseData follows(@PathVariable("page") int page,
+                                       @PathVariable("id") long id,
+                                       @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                       @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.follows(id,page, User.getUser(user),ip);
+    }
+    @GetMapping("/fans/{id}/{page}")
+    public ResponseData fans(@PathVariable("page") int page,
+                                       @PathVariable("id") long id,
+                                       @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                       @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.fans(id,page, User.getUser(user),ip);
+    }
+    @GetMapping("/follow/{id}/{page}/{text}")
+    public ResponseData followsSearch(@PathVariable("page") int page,
+                                      @PathVariable("text") String text,
+                                       @PathVariable("id") long id,
+                                       @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                       @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.followsSearch(id,page,text, User.getUser(user),ip);
+    }
+    @GetMapping("/fans/{id}/{page}/{text}")
+    public ResponseData fansSearch(@PathVariable("page") int page,
+                                   @PathVariable("text") String text,
+                                       @PathVariable("id") long id,
+                                       @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                       @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.fansSearch(id,page,text, User.getUser(user),ip);
     }
 }
