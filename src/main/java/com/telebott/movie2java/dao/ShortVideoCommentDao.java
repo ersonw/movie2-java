@@ -28,11 +28,10 @@ public interface ShortVideoCommentDao extends JpaRepository<ShortVideoComment, L
     Long countAllByReply(long id);
     @Query(value = "SELECT * FROM (\n" +
             "SELECT svc.*,(SELECT COUNT(*) FROM short_video_comment_like WHERE comment_id = svc.id) AS c \n" +
-            "            FROM `short_video_comment` AS svc\n" +
-            "            WHERE  svc.reply_id =0 and svc.status=1\n" +
-            "            ORDER BY c DESC\n" +
-            ") as s ORDER BY s.pin DESC",nativeQuery = true)
-    Page<ShortVideoComment> getAllComments(Pageable pageable);
+            "FROM `short_video_comment` AS svc\n" +
+            "WHERE  svc.reply_id =0 AND svc.status=1 AND svc.video_id=:videoId ORDER BY c DESC) AS s\n" +
+            "ORDER BY s.pin DESC",nativeQuery = true)
+    Page<ShortVideoComment> getAllComments(long videoId,Pageable pageable);
 
     @Query(value = "SELECT * FROM(\n" +
             "SELECT svc.*,(SELECT COUNT(*) FROM `short_video_comment_like` AS svcl WHERE svcl.comment_id = svc.id) AS c\n" +

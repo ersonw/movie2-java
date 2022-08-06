@@ -346,6 +346,8 @@ public class UserService {
         object.put("nickname", user.getNickname());
         object.put("fans", userFollowDao.countAllByToUserId(user.getId()));
         object.put("followed", userFollowDao.findAllByUserIdAndToUserId(user.getId(),userId) != null);
+        object.put("member",getMember(user.getId()));
+        object.put("level", membershipExperienceDao.countByUserId(user.getId()));
         if(user.getId() == userId){
             object.put("follow", true);
         }else {
@@ -362,6 +364,8 @@ public class UserService {
         object.put("nickname", user.getNickname());
         object.put("fans", userFollowDao.countAllByToUserId(user.getId()));
         object.put("followed", userFollowDao.findAllByUserIdAndToUserId(user.getId(),userId) != null);
+        object.put("member",getMember(user.getId()));
+        object.put("level", membershipExperienceDao.countByUserId(user.getId()));
         if(user.getId() == userId){
             object.put("follow", true);
         }else {

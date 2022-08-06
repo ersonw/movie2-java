@@ -358,8 +358,8 @@ public class ShortVideoService {
         if (video==null) return ResponseData.error("");
         page--;
         if (page < 0) page= 0;
-        Pageable pageable = PageRequest.of(page, 10);
-        Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllComments(pageable);
+        Pageable pageable = PageRequest.of(page, 12);
+        Page<ShortVideoComment> commentPage = shortVideoCommentDao.getAllComments(id,pageable);
 
 //        if (user == null){
 //
