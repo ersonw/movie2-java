@@ -119,6 +119,7 @@ public class MyProfileService {
         }
         if (StringUtils.isNotEmpty(text)) profile.setText(text.trim());
         profile.setToken(user.getToken());
+        userDao.save(profile);
         authDao.pushUser(profile);
         return ResponseData.success("资料修改成功!",getEdit(profile));
     }
