@@ -93,22 +93,31 @@ public class MyProfileService {
 
     public ResponseData editSave(String nickname, String username, String phone, String email, String text, User user, String ip) {
         if (user == null) return ResponseData.error("");
-        if(StringUtils.isEmpty(nickname) || nickname.length() > 20 || nickname.length() < 3 || ToolsUtil.filterWords(nickname)) return ResponseData.error("昵称长度大于20或者小于3或者包含敏感字符");
-        if(StringUtils.isEmpty(username) || username.length() > 20 || username.length() < 6 || ToolsUtil.checkChinese(username)) return ResponseData.error("用户名长度大于20或者小于6或者包含中文字符");
+        if(StringUtils.isEmpty(nickname) || nickname.length() > 20 || nickname.length() < 3 || ToolsUtil.filterWords(nickname.trim())) return ResponseData.error("昵称长度大于20或者小于3或者包含敏感字符");
+        if(StringUtils.isEmpty(username) || username.length() > 20 || username.length() < 6 || ToolsUtil.checkChinese(username.trim())) return ResponseData.error("用户名长度大于20或者小于6或者包含中文字符");
         if(text.length() > 30 || ToolsUtil.filterWords(text)) return ResponseData.error("自我介绍长度超过30或者包含敏感字符");
 //        if(StringUtils.isEmpty(phone) || !MobileRegularExp.isMobileNumber(phone)) return ResponseData.error("手机号格式不正确！");
-        if(StringUtils.isNotEmpty(email) && !ToolsUtil.checkEmailFormat(email)) return ResponseData.error("邮箱格式不正确！");
+        if(StringUtils.isNotEmpty(email) && !ToolsUtil.checkEmailFormat(email.trim())) return ResponseData.error("邮箱格式不正确！");
+        username = username.trim();
+        username = username.replaceAll(" ","");
+        nickname = nickname.trim();
+//        nickname = nickname.replaceAll(" ","");
         User profile = userDao.findByUsername(username);
         if (profile != null && profile.getId() != user.getId()) return ResponseData.error("用户名已存在！");
-        profile = userDao.findAllByNickname(nickname);
+        profile = userDao.findAllByNickname(nickname.replaceAll(" ",""));
         if (profile != null && profile.getId() != user.getId()) return ResponseData.error("昵称已存在！");
-        profile = userDao.findAllByEmail(email);
-        if (profile != null && profile.getId() != user.getId()) return ResponseData.error("电子邮箱已重复！");
+
         profile = userDao.findAllById(user.getId());
         profile.setNickname(nickname);
         profile.setUsername(username);
-        if(StringUtils.isNotEmpty(email)) profile.setEmail(email);
-        if (StringUtils.isNotEmpty(text)) profile.setText(text);
+        if(StringUtils.isNotEmpty(email)){
+            email = email.trim();
+            email = email.replaceAll(" ","");
+            User _email = userDao.findAllByEmail(email);
+            if (_email != null && _email.getId() != user.getId()) return ResponseData.error("电子邮箱已重复！");
+            profile.setEmail(email.trim());
+        }
+        if (StringUtils.isNotEmpty(text)) profile.setText(text.trim());
         profile.setToken(user.getToken());
         authDao.pushUser(profile);
         return ResponseData.success("资料修改成功!",getEdit(profile));
