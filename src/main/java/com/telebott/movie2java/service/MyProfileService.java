@@ -97,8 +97,14 @@ public class MyProfileService {
         if(StringUtils.isEmpty(username) || username.length() > 20 || username.length() < 6 || ToolsUtil.checkChinese(username)) return ResponseData.error("用户名长度大于20或者小于6或者包含中文字符");
         if(text.length() > 30 || ToolsUtil.filterWords(text)) return ResponseData.error("自我介绍长度超过30或者包含敏感字符");
 //        if(StringUtils.isEmpty(phone) || !MobileRegularExp.isMobileNumber(phone)) return ResponseData.error("手机号格式不正确！");
-        if(!ToolsUtil.checkEmailFormat(email)) return ResponseData.error("邮箱格式不正确！");
-        User profile = userDao.findAllById(user.getId());
+        if(StringUtils.isNotEmpty(email) && !ToolsUtil.checkEmailFormat(email)) return ResponseData.error("邮箱格式不正确！");
+        User profile = userDao.findByUsername(username);
+        if (profile != null && profile.getId() != user.getId()) return ResponseData.error("用户名已存在！");
+        profile = userDao.findAllByNickname(nickname);
+        if (profile != null && profile.getId() != user.getId()) return ResponseData.error("昵称已存在！");
+        profile = userDao.findAllByEmail(email);
+        if (profile != null && profile.getId() != user.getId()) return ResponseData.error("电子邮箱已重复！");
+        profile = userDao.findAllById(user.getId());
         profile.setNickname(nickname);
         profile.setUsername(username);
         if(StringUtils.isNotEmpty(email)) profile.setEmail(email);

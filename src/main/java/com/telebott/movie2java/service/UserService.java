@@ -155,6 +155,9 @@ public class UserService {
         user.setUpdateTime(user.getAddTime());
         user.setText("本人很懒，不想说话！");
         user.setUsername(ToolsUtil.getRandom(12));
+        while (userDao.findByUsername(user.getUsername()) != null) {
+            user.setUsername(ToolsUtil.getRandom(12));
+        }
         userDao.saveAndFlush(user);
 //        return login(username,password,deviceId,platform,ip);
         return ResponseData.success(ResponseData.object("id", user.getId()));
