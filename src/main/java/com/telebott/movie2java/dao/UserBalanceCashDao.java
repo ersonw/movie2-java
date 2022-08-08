@@ -11,5 +11,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UserBalanceCashDao extends JpaRepository<UserBalanceCash, Long>, CrudRepository<UserBalanceCash, Long> {
     @Query(value = "SELECT IFNULL( SUM(amount), 0 )  FROM `user_balance_cash` WHERE user_id=:userId",nativeQuery = true)
-    Long getAllByBalance(long userId);
+    Double getAllByBalance(long userId);
 }

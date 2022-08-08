@@ -22,6 +22,12 @@ public  class pData  {
 
     @ApiModelProperty(name = "phone", value= "手机号",required = false)
     private String phone;
+    @ApiModelProperty(name = "nickname", value= "昵称",required = false)
+    private String nickname;
+    @ApiModelProperty(name = "avatar", value= "头像",required = false)
+    private String avatar;
+    @ApiModelProperty(name = "email", value= "电子邮箱",required = false)
+    private String email;
     @ApiModelProperty(name = "codeId", value= "验证码ID",required = false)
     private String codeId;
     @ApiModelProperty(name = "code", value= "验证码",required = false)

@@ -17,7 +17,7 @@ public class UserBalanceCash {
     @GeneratedValue
     private long id;
     private long userId;
-    private long amount;
+    private double amount;
     private String text;
     private long addTime;
 }

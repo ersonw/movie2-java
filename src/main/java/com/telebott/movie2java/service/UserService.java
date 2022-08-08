@@ -124,11 +124,14 @@ public class UserService {
         object.put("phone",user.getPhone());
         object.put("email",user.getEmail());
         object.put("member",getMember(user.getId()));
-        object.put("level", membershipExperienceDao.countByUserId(user.getId()));
+        object.put("level", getMemberLevel(user.getId()));
         return object;
     }
     public boolean getMember(long userId){
         return false;
+    }
+    public long getMemberLevel(long userId){
+        return 0;
     }
     //改为只能手机注册 增加验证码逻辑 增加发送验证码
     public ResponseData register(String password,String codeId,String code,String ip) {
@@ -347,7 +350,7 @@ public class UserService {
         object.put("fans", userFollowDao.countAllByToUserId(user.getId()));
         object.put("followed", userFollowDao.findAllByUserIdAndToUserId(user.getId(),userId) != null);
         object.put("member",getMember(user.getId()));
-        object.put("level", membershipExperienceDao.countByUserId(user.getId()));
+        object.put("level", getMemberLevel(user.getId()));
         if(user.getId() == userId){
             object.put("follow", true);
         }else {
@@ -365,7 +368,7 @@ public class UserService {
         object.put("fans", userFollowDao.countAllByToUserId(user.getId()));
         object.put("followed", userFollowDao.findAllByUserIdAndToUserId(user.getId(),userId) != null);
         object.put("member",getMember(user.getId()));
-        object.put("level", membershipExperienceDao.countByUserId(user.getId()));
+        object.put("level", getMemberLevel(user.getId()));
         if(user.getId() == userId){
             object.put("follow", true);
         }else {

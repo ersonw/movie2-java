@@ -18,7 +18,7 @@ public class UserSpreadRebate {
     private long id;
     private long orderId;
     private long userId;
-    private long amount;
+    private double amount;
     private int status;
     private long addTime;
     private long updateTime;

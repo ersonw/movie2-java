@@ -26,6 +26,10 @@ public class ResponseData {
     public ResponseData(JSONObject data) {
         this.data = JSONObject.toJSONString(data);
     }
+    public ResponseData(String message,JSONObject data) {
+        this.data = JSONObject.toJSONString(data);
+        this.message = message;
+    }
     public ResponseData(int code) {
         this.code = code;
     }
@@ -43,6 +47,9 @@ public class ResponseData {
     }
     public static ResponseData success(JSONObject data) {
         return new ResponseData(data);
+    }
+    public static ResponseData success(String message,JSONObject data) {
+        return new ResponseData(message,data);
     }
     public static ResponseData success(JSONArray array) {
         return new ResponseData(object("list", array));
