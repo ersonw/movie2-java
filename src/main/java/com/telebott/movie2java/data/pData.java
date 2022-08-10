@@ -15,6 +15,8 @@ public  class pData  {
     private String username;
     @ApiModelProperty(name = "password", value= "用户密码",required = false)
     private String password;
+    @ApiModelProperty(name = "salt", value= "密码钥匙",required = false)
+    private String salt;
     @ApiModelProperty(name = "deviceId", value= "设备ID",required = false)
     private String deviceId;
     @ApiModelProperty(name = "platform", value= "设备名称",required = false)
@@ -61,7 +63,7 @@ public  class pData  {
 
     @ApiModelProperty(name = "oss", value= "oss配置",required = false)
     private String oss;
-    public OssConfig getOss() {
+    public OssConfig getOssConfig() {
         if (oss != null) return JSONObject.toJavaObject(JSONObject.parseObject(oss),OssConfig.class);
         return null;
     }

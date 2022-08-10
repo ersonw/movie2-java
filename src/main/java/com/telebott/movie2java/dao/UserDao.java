@@ -19,7 +19,8 @@ public interface UserDao extends JpaRepository<User, Long>, CrudRepository<User,
     User findAllByNickname(String nickname);
     User findAllByEmail(String email);
 
-    User findByPhone(String username);
+    User findAllByPhone(String phone);
+    User findByPhone(String phone);
 
     @Query(value = "SELECT u.* FROM `membership_expired` AS me INNER JOIN `user` u ON u.id=me.user_id WHERE me.user_id=:userId AND me.expired >:time ", nativeQuery = true)
     User getAllByMembership(long userId, long time);

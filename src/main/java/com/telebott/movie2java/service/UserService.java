@@ -121,7 +121,9 @@ public class UserService {
         object.put("nickname",user.getNickname());
         object.put("text",user.getText());
         object.put("username",user.getUsername());
-        object.put("phone",user.getPhone());
+//        object.put("phone",user.getPhone());
+        String phone = user.getPhone();
+        object.put("phone", phone.substring(0,4) + "****" + phone.substring(phone.length() - 4));
         object.put("email",user.getEmail());
         object.put("member",getMember(user.getId()));
         object.put("level", getMemberLevel(user.getId()));
@@ -205,7 +207,7 @@ public class UserService {
         }
         return null;
     }
-    private long checkSmsLast(String phone){
+    public long checkSmsLast(String phone){
         SmsRecord record = smsRecordDao.getLast(phone);
         if (record == null){
             return 0;
@@ -217,7 +219,7 @@ public class UserService {
         }
         return (ms - last) / 1000;
     }
-    private boolean checkSmsMax(String phone){
+    public boolean checkSmsMax(String phone){
         long count = smsRecordDao.countTodayMax(TimeUtil.getTodayZero(),phone);
         long max = Long.parseLong(smsBaoService.getValueByKey("smsCountMaxDay"));
         return count < max;

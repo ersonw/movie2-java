@@ -32,4 +32,41 @@ public class MyProfileControl {
     public ResponseData editSave(@RequestBody pData data){
         return service.editSave(data.getNickname(),data.getUsername(),data.getPhone(),data.getEmail(),data.getText(),data.getUser(),data.getIp());
     }
+    @GetMapping("/edit/phone/sms/{phone}")
+    public ResponseData editPhoneSms(@PathVariable("phone") String phone,
+                             @RequestParam(value = "ip") @ApiParam(hidden = true) String ip,
+                             @RequestParam(value = "user") @ApiParam(hidden = true) String user){
+        return service.editPhoneSms(phone,User.getUser(user), ip);
+    }
+    @GetMapping("/edit/restPassword/sms")
+    public ResponseData restPasswordSms(@RequestParam(value = "ip") @ApiParam(hidden = true) String ip,
+                             @RequestParam(value = "user") @ApiParam(hidden = true) String user){
+        return service.restPasswordSms(User.getUser(user), ip);
+    }
+    @PostMapping("/edit/restPassword/verify")
+    @ApiGlobalModel(component = pData.class, value = "codeId,code")
+    public ResponseData restPasswordVerify(@RequestBody pData data){
+        return service.restPasswordVerify(data.getCodeId(),data.getCode(),data.getUser(),data.getIp());
+    }
+    @PostMapping("/edit/changePassword/verify")
+    @ApiGlobalModel(component = pData.class, value = "password")
+    public ResponseData changePasswordVerify(@RequestBody pData data){
+        return service.changePasswordVerify(data.getPassword(),data.getUser(),data.getIp());
+    }
+    @PostMapping("/edit/restPassword")
+    @ApiGlobalModel(component = pData.class, value = "salt,password")
+    public ResponseData restPassword(@RequestBody pData data){
+        return service.restPassword(data.getSalt(),data.getPassword(),data.getUser(),data.getIp());
+    }
+    @PostMapping("/edit/phone")
+    @ApiGlobalModel(component = pData.class, value = "codeId,code")
+    public ResponseData editPhone(@RequestBody pData data){
+        return service.editPhone(data.getCodeId(),data.getCode(),data.getUser(),data.getIp());
+    }
+    @PostMapping("/edit/avatar")
+    @ApiGlobalModel(component = pData.class, value = "imagePath,oss")
+    public ResponseData editAvatar(@RequestBody pData data){
+//        System.out.printf("%s\n",data.getOss());
+        return service.editAvatar(data.getImagePath(),data.getOssConfig(),data.getUser(),data.getIp());
+    }
 }
