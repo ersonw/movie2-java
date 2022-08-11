@@ -1,6 +1,7 @@
 package com.telebott.movie2java.util;
 
 import com.telebott.movie2java.entity.CashInOrder;
+import com.telebott.movie2java.service.DiamondService;
 import com.telebott.movie2java.service.GameService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ public class EPayUtil {
     private static EPayUtil self;
     @Autowired
     private GameService gameService;
+    @Autowired
+    private DiamondService diamondService;
     @PostConstruct
     public void init(){
         self = this;
@@ -31,7 +34,7 @@ public class EPayUtil {
             case CASH_ORDER:
                 return false;
             case DIAMOND_ORDER:
-                return false;
+                return self.diamondService.handlerOrder(cOrder.getOrderNo());
             case GAME_ORDER:
                 return self.gameService.handlerOrder(cOrder.getOrderNo());
             case MEMBERSHIP_ORDER:

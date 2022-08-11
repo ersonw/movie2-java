@@ -1,6 +1,8 @@
 package com.telebott.movie2java.dao;
 
 import com.telebott.movie2java.entity.UserBalanceDiamond;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -12,4 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UserBalanceDiamondDao extends JpaRepository<UserBalanceDiamond, Long>, CrudRepository<UserBalanceDiamond, Long> {
     @Query(value = "SELECT IFNULL( SUM(amount), 0 )  FROM `user_balance_diamond` WHERE user_id=:userId",nativeQuery = true)
     Long getAllByBalance(long userId);
+
+    Page<UserBalanceDiamond> findAllByUserId(long id, Pageable pageable);
 }

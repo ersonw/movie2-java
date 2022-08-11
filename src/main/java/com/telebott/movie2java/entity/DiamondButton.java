@@ -2,23 +2,23 @@ package com.telebott.movie2java.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 
 @Setter
 @Getter
 @Entity
-@Table(name = "diamond_order")
+@Table(name = "diamond_button")
 @Cacheable
-@ToString(includeFieldNames = true)
-public class DiamondOrder {
+public class DiamondButton {
     @Id
     @GeneratedValue
     private long id;
-    private String orderNo;
-    private long userId;
     private long amount;
     private long price;
+    private int less;
+    private long cashInId;
+    private int status;
     private long addTime;
+    private long updateTime;
 }

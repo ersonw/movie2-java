@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface DiamondOrderDao extends JpaRepository<DiamondOrder, Long>, CrudRepository<DiamondOrder, Long> {
+    DiamondOrder findAllByOrderNo(String orderId);
 }

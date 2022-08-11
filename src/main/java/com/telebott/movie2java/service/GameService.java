@@ -357,7 +357,7 @@ public class GameService {
         authDao.pushOrder(data);
         gameOrderDao.saveAndFlush(order);
         cashInOrderDao.saveAndFlush(cashInOrder);
-        System.out.printf("%s\n",sb.toString());
+//        System.out.printf("%s\n",sb.toString());
         return ResponseData.success(ResponseData.object("url",sb.toString()));
     }
     public boolean handlerOrder(String orderId){
@@ -383,18 +383,20 @@ public class GameService {
         for (CashInOrder order : orderPage.getContent()){
             GameOrder gameOrder = gameOrderDao.findAllByOrderNo(order.getOrderNo());
             CashInOption option = cashInOptionDao.findAllById(order.getType());
-            JSONObject json = new JSONObject();
-            if (option != null){
-                json.put("type",option.getName());
-                json.put("icon",option.getIcon());
+            if (option != null && gameOrder != null){
+                JSONObject json = new JSONObject();
+                if (option != null){
+                    json.put("type",option.getName());
+                    json.put("icon",option.getIcon());
+                }
+                json.put("id", order.getId());
+                json.put("amount", gameOrder.getAmount());
+                json.put("orderNo", order.getOrderNo());
+                json.put("status", order.getStatus() == 1);
+                json.put("addTime", order.getAddTime());
+                json.put("updateTime", order.getUpdateTime());
+                array.add(json);
             }
-            json.put("id", order.getId());
-            json.put("amount", gameOrder.getAmount());
-            json.put("orderNo", order.getOrderNo());
-            json.put("status", order.getStatus() == 1);
-            json.put("addTime", order.getAddTime());
-            json.put("updateTime", order.getUpdateTime());
-            array.add(json);
         }
 //        System.out.printf("array%s\n", array);
         JSONObject json = ResponseData.object("list",array);

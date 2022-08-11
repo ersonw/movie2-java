@@ -17,6 +17,8 @@ public interface CashInOrderDao extends JpaRepository<CashInOrder, Long>, CrudRe
     CashInOrder findAllByOrderNoAndStatus(String orderNo, int status);
     @Query(value = "SELECT cio.* FROM `cash_in_order` AS cio INNER JOIN `game_order` go ON go.order_no = cio.order_no AND go.user_id =:userId WHERE cio.order_type=4",nativeQuery = true)
     Page<CashInOrder> getAllByGame(long userId, Pageable pageable);
+    @Query(value = "SELECT cio.* FROM `cash_in_order` AS cio INNER JOIN `diamond_order` go ON go.order_no = cio.order_no AND go.user_id =:userId WHERE cio.order_type=4",nativeQuery = true)
+    Page<CashInOrder> getAllByDiamond(long userId, Pageable pageable);
     @Query(value = "DELETE game_order FROM game_order LEFT JOIN cash_in_order ON game_order.order_no=cash_in_order.order_no WHERE cash_in_order.id IS NULL",nativeQuery = true)
     @Modifying
     void deleteAllByGameOrder();
