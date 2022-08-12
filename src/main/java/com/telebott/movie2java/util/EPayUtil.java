@@ -1,6 +1,8 @@
 package com.telebott.movie2java.util;
 
 import com.telebott.movie2java.entity.CashInOrder;
+import com.telebott.movie2java.service.CashService;
+import com.telebott.movie2java.service.CoinService;
 import com.telebott.movie2java.service.DiamondService;
 import com.telebott.movie2java.service.GameService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +22,17 @@ public class EPayUtil {
     public static final int CASH_ORDER = 2;
     public static final int DIAMOND_ORDER = 3;
     public static final int GAME_ORDER = 4;
+    public static final int COIN_ORDER = 5;
     private static EPayUtil self;
     @Autowired
     private GameService gameService;
     @Autowired
     private DiamondService diamondService;
+    @Autowired
+    private CoinService coinService;
+    @Autowired
+    private CashService cashService;
+
     @PostConstruct
     public void init(){
         self = this;
@@ -32,13 +40,15 @@ public class EPayUtil {
     public static boolean handlerOrder(CashInOrder cOrder) {
         switch (cOrder.getOrderType()){
             case CASH_ORDER:
-                return false;
+                return self.cashService.handlerOrder(cOrder.getOrderNo());
             case DIAMOND_ORDER:
                 return self.diamondService.handlerOrder(cOrder.getOrderNo());
             case GAME_ORDER:
                 return self.gameService.handlerOrder(cOrder.getOrderNo());
             case MEMBERSHIP_ORDER:
                 return false;
+            case COIN_ORDER:
+                return self.coinService.handlerOrder(cOrder.getOrderNo());
             default:
                 return false;
         }

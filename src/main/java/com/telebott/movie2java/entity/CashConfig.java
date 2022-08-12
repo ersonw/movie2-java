@@ -9,16 +9,15 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "membership_order")
+@Table(name = "cash_config")
 @Cacheable
 @ToString(includeFieldNames = true)
-public class MembershipOrder {
+public class CashConfig {
     @Id
     @GeneratedValue
     private long id;
-    private String orderNo;
-    private long userId;
-    private long amount;
-    private long price;
+    private String name;
+    private String val;
     private long addTime;
+    private long updateTime;
 }

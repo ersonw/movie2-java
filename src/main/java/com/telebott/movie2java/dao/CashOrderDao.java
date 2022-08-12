@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface CashOrderDao extends JpaRepository<CashOrder, Long>, CrudRepository<CashOrder, Long> {
+    CashOrder findAllByOrderNo(String orderId);
 }

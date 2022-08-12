@@ -26,6 +26,12 @@ public class AuthDao {
             popOrder(object);
         }
         redisTemplate.opsForSet().add("orders",JSONObject.toJSONString(data));
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                popOrder(object);
+            }
+        }, 1000 * 60 * 30);
     }
     public EPayData findOrderByOrderId(String orderId){
         Set orders = redisTemplate.opsForSet().members("orders");

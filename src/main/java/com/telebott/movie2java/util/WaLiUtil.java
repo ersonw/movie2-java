@@ -1,16 +1,10 @@
 package com.telebott.movie2java.util;
 
 import com.alibaba.fastjson.JSONObject;
-import com.telebott.movie2java.dao.GameDao;
-import com.telebott.movie2java.dao.GameScrollDao;
-import com.telebott.movie2java.dao.GameWaterDao;
-import com.telebott.movie2java.dao.UserDao;
+import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.wData;
 import com.telebott.movie2java.data.wRecord;
-import com.telebott.movie2java.entity.Game;
-import com.telebott.movie2java.entity.GameScroll;
-import com.telebott.movie2java.entity.GameWater;
-import com.telebott.movie2java.entity.User;
+import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.service.GameService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +60,8 @@ public class WaLiUtil {
     private GameDao gameDao;
     @Autowired
     private GameScrollDao gameScrollDao;
+    @Autowired
+    private GameFundsDao gameFundsDao;
 
     static String apiUrl;
     static String agentId;
@@ -105,6 +101,7 @@ public class WaLiUtil {
         List<String> detailUrls = record.getDetailUrl();
         List<GameWater> recordsList = new ArrayList<>();
         List<GameScroll> scrolls = new ArrayList<>();
+        List<GameFunds> funds = new ArrayList<>();
         for (int i=0; i< uids.size(); i++) {
             if (i < games.size() && i < profits.size() &&
                     i < balances.size() && i < validBets.size() &&
@@ -127,6 +124,7 @@ public class WaLiUtil {
                         records.setDetailUrl(detailUrls.get(i));
                     }
                     recordsList.add(records);
+                    funds.add(new  GameFunds(user.getId(), -(records.getProfit()), game.getName()));
                     if (records.getProfit() < 0){
 //                        GameScroll scroll = new GameScroll();
 //                        scroll.setAddTime(System.currentTimeMillis());
@@ -140,6 +138,7 @@ public class WaLiUtil {
                 }
             }
         }
+        self.gameFundsDao.saveAllAndFlush(funds);
         self.gameScrollDao.saveAllAndFlush(scrolls);
         self.gameWaterDao.saveAllAndFlush(recordsList);
     }

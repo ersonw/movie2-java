@@ -1,6 +1,8 @@
 package com.telebott.movie2java.dao;
 
 import com.telebott.movie2java.entity.UserBalanceCash;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -12,4 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UserBalanceCashDao extends JpaRepository<UserBalanceCash, Long>, CrudRepository<UserBalanceCash, Long> {
     @Query(value = "SELECT IFNULL( SUM(amount), 0 )  FROM `user_balance_cash` WHERE user_id=:userId",nativeQuery = true)
     Double getAllByBalance(long userId);
+
+    Page<UserBalanceCash> findAllByUserId(long id, Pageable pageable);
 }
