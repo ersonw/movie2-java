@@ -7,6 +7,7 @@ import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.SmsCode;
 import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.util.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Slf4j
 @Service
 public class UserService {
     @Autowired
@@ -25,6 +26,8 @@ public class UserService {
     private AuthDao authDao;
     @Autowired
     private MembershipExperienceDao membershipExperienceDao;
+    @Autowired
+    private MembershipGradeDao membershipGradeDao;
     @Autowired
     private SmsRecordDao smsRecordDao;
     @Autowired
@@ -121,6 +124,7 @@ public class UserService {
         object.put("nickname",user.getNickname());
         object.put("text",user.getText());
         object.put("username",user.getUsername());
+        object.put("expired",getExpired(user.getId()));
 //        object.put("phone",user.getPhone());
         String phone = user.getPhone();
         object.put("phone", phone.substring(0,4) + "****" + phone.substring(phone.length() - 4));
@@ -129,11 +133,56 @@ public class UserService {
         object.put("level", getMemberLevel(user.getId()));
         return object;
     }
+    public long getExpired(long userId){
+        MembershipExpired expired = membershipExpiredDao.findAllByUserId(userId);
+        if(expired!=null){
+            return expired.getExpired()+expired.getAddTime();
+        }
+        return 0;
+    }
     public boolean getMember(long userId){
-        return false;
+        return getExpired(userId) > System.currentTimeMillis();
     }
     public long getMemberLevel(long userId){
-        return 0;
+        long level =0;
+        long experience = membershipExperienceDao.getAllByUserId(userId);
+        long experienced = 0;
+        while (experience > experienced){
+            level++;
+            MembershipGrade grade = membershipGradeDao.findByLevel(level);
+            if (grade==null){
+                break;
+            }
+            experienced = grade.getExperience();
+            experience -= grade.getExperience();
+        }
+        if(experience < 0){
+            level--;
+        }
+        return level;
+    }
+    public long getExperience(long userId){
+        long level =0;
+        long experience = membershipExperienceDao.getAllByUserId(userId);
+        long experienced = 0;
+        while (experience > experienced){
+//            log.info("experienced: {} experience:{}",experienced,experience);
+            level++;
+            MembershipGrade grade = membershipGradeDao.findByLevel(level);
+            if (grade==null){
+                break;
+            }
+            experienced = grade.getExperience();
+            experience -= grade.getExperience();
+        }
+        if(experience < 0){
+            experience = experienced+experience;
+        }
+        return experience;
+    }
+    public long getExperienced(long userId){
+        MembershipGrade grade = membershipGradeDao.findByLevel(getMemberLevel(userId)+1);
+        return grade.getExperience();
     }
     //改为只能手机注册 增加验证码逻辑 增加发送验证码
     public ResponseData register(String password,String codeId,String code,String ip) {

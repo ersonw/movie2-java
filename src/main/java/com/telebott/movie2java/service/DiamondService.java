@@ -160,6 +160,7 @@ public class DiamondService {
         cashInOrder.setOrderType(EPayUtil.DIAMOND_ORDER);
         cashInOrder.setAddTime(System.currentTimeMillis());
         cashInOrder.setUpdateTime(System.currentTimeMillis());
+        cashInOrder.setIp(ip);
 
         EPayData data = new EPayData();
         data.setMoney(String.format("%.2f",order.getPrice() / 100D));

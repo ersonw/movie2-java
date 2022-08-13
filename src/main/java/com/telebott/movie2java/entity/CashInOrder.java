@@ -25,4 +25,5 @@ public class CashInOrder {
     private int status;
     private long addTime;
     private long updateTime;
+    private String ip;
 }

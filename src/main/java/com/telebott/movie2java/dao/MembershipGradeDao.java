@@ -9,4 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface MembershipGradeDao extends JpaRepository<MembershipGrade, Long>, CrudRepository<MembershipGrade, Long> {
+    MembershipGrade findAllById(Long id);
+    MembershipGrade findByLevel(long level);
 }

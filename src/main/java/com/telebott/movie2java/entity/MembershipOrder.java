@@ -20,5 +20,7 @@ public class MembershipOrder {
     private long userId;
     private long amount;
     private long price;
+    private long gameCoin;
+    private long experience;
     private long addTime;
 }

@@ -1,10 +1,7 @@
 package com.telebott.movie2java.util;
 
 import com.telebott.movie2java.entity.CashInOrder;
-import com.telebott.movie2java.service.CashService;
-import com.telebott.movie2java.service.CoinService;
-import com.telebott.movie2java.service.DiamondService;
-import com.telebott.movie2java.service.GameService;
+import com.telebott.movie2java.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -32,6 +29,8 @@ public class EPayUtil {
     private CoinService coinService;
     @Autowired
     private CashService cashService;
+    @Autowired
+    private MembershipService membershipService;
 
     @PostConstruct
     public void init(){
@@ -46,7 +45,7 @@ public class EPayUtil {
             case GAME_ORDER:
                 return self.gameService.handlerOrder(cOrder.getOrderNo());
             case MEMBERSHIP_ORDER:
-                return false;
+                return self.membershipService.handlerOrder(cOrder.getOrderNo());
             case COIN_ORDER:
                 return self.coinService.handlerOrder(cOrder.getOrderNo());
             default:

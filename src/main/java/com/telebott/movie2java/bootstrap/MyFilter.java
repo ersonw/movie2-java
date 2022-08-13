@@ -150,13 +150,13 @@ public class MyFilter implements Filter {
 //                        request = new ParameterRequestWrapper(request, parameterMap);
                     }else{
                         Map<String, String[]> parameterMap = new HashMap(request.getParameterMap());
-                        parameterMap.put("ip", new String[]{ip});
+                        if(StringUtils.isNotEmpty(ip)) parameterMap.put("ip", new String[]{ip});
 //                        parameterMap.put("isWeb", userAgent.contains("dart:io"));
-                        parameterMap.put("serverName", new String[]{serverName});
-                        parameterMap.put("serverPort", new String[]{String.valueOf(serverPort)});
-                        parameterMap.put("uri", new String[]{uri});
-                        parameterMap.put("url", new String[]{url});
-                        parameterMap.put("schema", new String[]{schema});
+                        if(StringUtils.isNotEmpty(serverName)) parameterMap.put("serverName", new String[]{serverName});
+                        if(StringUtils.isNotEmpty(serverPort)) parameterMap.put("serverPort", new String[]{String.valueOf(serverPort)});
+                        if(StringUtils.isNotEmpty(uri)) parameterMap.put("uri", new String[]{uri});
+                        if(StringUtils.isNotEmpty(url)) parameterMap.put("url", new String[]{url});
+                        if(StringUtils.isNotEmpty(schema)) parameterMap.put("schema", new String[]{schema});
                         if (user != null) {
                             parameterMap.put("user", new String[]{JSONObject.toJSONString(user)});
                         }

@@ -8,6 +8,7 @@ import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.util.EPayUtil;
 import com.telebott.movie2java.util.TimeUtil;
+import com.telebott.movie2java.util.WaLiUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +18,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
-public class CashService {
+public class MembershipService {
     private static int INDEX_OF_CASH_IN = 0;
     @Autowired
     private UserService userService;
@@ -38,13 +39,23 @@ public class CashService {
     @Autowired
     private CashInOptionDao cashInOptionDao;
     @Autowired
-    private CashOrderDao cashOrderDao;
+    private MembershipConfigDao membershipConfigDao;
     @Autowired
-    private CashButtonDao cashButtonDao;
+    private MembershipButtonDao membershipButtonDao;
     @Autowired
-    private CashConfigDao cashConfigDao;
+    private MembershipOrderDao membershipOrderDao;
     @Autowired
-    private UserBalanceCashDao userBalanceCashDao;
+    private MembershipFundsDao membershipFundsDao;
+    @Autowired
+    private MembershipExpiredDao membershipExpiredDao;
+    @Autowired
+    private MembershipBenefitDao membershipBenefitDao;
+    @Autowired
+    private MembershipGradeDao membershipGradeDao;
+    @Autowired
+    private MembershipExperienceDao membershipExperienceDao;
+    @Autowired
+    private GameFundsDao gameFundsDao;
 
     public boolean getConfigBool(String name){
         return getConfigLong(name) > 0;
@@ -55,25 +66,33 @@ public class CashService {
         return Long.parseLong(value);
     }
     public String getConfig(String name){
-        List<CashConfig> configs = cashConfigDao.findAllByName(name);
+        List<MembershipConfig> configs = membershipConfigDao.findAllByName(name);
         return configs.isEmpty() ? null : configs.get(0).getVal();
     }
-    public ResponseData balance(User user, String ip) {
-        if (user == null) return ResponseData.error("");
-//        BigDecimal.valueOf(funds.getAmount()).multiply(new BigDecimal(100)).longValue());
-        return ResponseData.success(ResponseData.object("balance",userBalanceCashDao.getAllByBalance(user.getId())));
+    public ResponseData info(User user, String ip) {
+//        CompletableFuture.allOf()
+        JSONObject json = new JSONObject();
+        json.put("level", userService.getMemberLevel(user.getId()));
+        json.put("experience", userService.getExperience(user.getId()));
+        json.put("experienced", userService.getExperienced(user.getId()));
+        json.put("expired", userService.getExpired(user.getId()));
+        json.put("member", userService.getMember(user.getId()));
+        return ResponseData.success(json);
     }
     public ResponseData buttons(User user, String ip) {
         if (user == null) return ResponseData.error("");
-        List<CashButton> buttons = cashButtonDao.getAllButtons();
+        List<MembershipButton> buttons = membershipButtonDao.getAllButtons();
         JSONArray array = new JSONArray();
-        for (CashButton b: buttons) {
+        for (MembershipButton b: buttons) {
             JSONObject object = new JSONObject();
             object.put("id", b.getId());
+            object.put("name", b.getName());
             object.put("amount", b.getAmount());
 //            object.put("price", String.format("%.2f",b.getPrice() / 100D));
             object.put("price", b.getPrice());
-            object.put("less", b.getLess() == 1);
+            object.put("original", b.getOriginal());
+            object.put("gameCoin", b.getGameCoin());
+            object.put("experience", b.getExperience());
             array.add(object);
         }
         return ResponseData.success(array);
@@ -81,7 +100,7 @@ public class CashService {
     public ResponseData button(long id, User user, String ip) {
         if (user == null) return ResponseData.error("");
         if (id < 1) return ResponseData.error("");
-        CashButton button = cashButtonDao.findAllById(id);
+        MembershipButton button = membershipButtonDao.findAllById(id);
         if (button == null) return ResponseData.error("按钮已被禁用，请刷新重试！");
         List<CashInOption> options = new ArrayList<>();
         if(button.getCashInId() > 0){
@@ -130,7 +149,7 @@ public class CashService {
         if (user == null) return ResponseData.error("");
         if (id < 1) return ResponseData.error("");
         if (toId < 1) return ResponseData.error("");
-        CashButton button = cashButtonDao.findAllById(id);
+        MembershipButton button = membershipButtonDao.findAllById(id);
         if (button == null || button.getStatus() != 1) return ResponseData.error("按钮已被禁用，请刷新重试！");
         CashInOption option = cashInOptionDao.findAllById(toId);
         if (option == null) return ResponseData.error("支付方式不可用，请刷新重试！");
@@ -147,17 +166,20 @@ public class CashService {
             }
         }
         if (config == null) return ResponseData.error("支付方式不可用，请刷新重试！");
-        CashOrder order = new CashOrder();
+        MembershipOrder order = new MembershipOrder();
         order.setUserId(user.getId());
         order.setOrderNo(TimeUtil._getTime(0));
         order.setAmount(button.getAmount());
         order.setPrice(button.getPrice() * 100);
+        order.setGameCoin(button.getGameCoin());
+        order.setExperience(button.getExperience());
         order.setAddTime(System.currentTimeMillis());
+
 
         CashInOrder cashInOrder = new CashInOrder();
         cashInOrder.setType(option.getId());
         cashInOrder.setOrderNo(order.getOrderNo());
-        cashInOrder.setOrderType(EPayUtil.CASH_ORDER);
+        cashInOrder.setOrderType(EPayUtil.MEMBERSHIP_ORDER);
         cashInOrder.setAddTime(System.currentTimeMillis());
         cashInOrder.setUpdateTime(System.currentTimeMillis());
         cashInOrder.setIp(ip);
@@ -177,22 +199,47 @@ public class CashService {
         }
         sb.append("/api/payment/").append(data.getOut_trade_no());
         authDao.pushOrder(data);
-        cashOrderDao.saveAndFlush(order);
+        membershipOrderDao.saveAndFlush(order);
         cashInOrderDao.saveAndFlush(cashInOrder);
 //        System.out.printf("%s\n",sb.toString());
         return ResponseData.success(ResponseData.object("url",sb.toString()));
     }
     public boolean handlerOrder(String orderId){
-        CashOrder order = cashOrderDao.findAllByOrderNo(orderId);
+        MembershipOrder order = membershipOrderDao.findAllByOrderNo(orderId);
         if (order == null) return false;
         User user = userDao.findAllById(order.getUserId());
         if (user == null) return false;
-        UserBalanceCash balance = new UserBalanceCash();
+        MembershipFunds balance = new MembershipFunds();
         balance.setAddTime(System.currentTimeMillis());
         balance.setAmount(order.getAmount());
+        balance.setGameCoin(order.getGameCoin());
+        balance.setExperience(order.getExperience());
         balance.setUserId(user.getId());
-        balance.setText("在线充值");
-        userBalanceCashDao.save(balance);
+        balance.setText("在线开通");
+        MembershipExpired expired = membershipExpiredDao.findAllByUserId(user.getId());
+        long time = order.getAmount() * 24 * 60 * 60 * 1000;
+        if(expired == null ){
+            MembershipGrade grade = membershipGradeDao.findByLevel(1);
+            membershipExperienceDao.save(new MembershipExperience(user.getId(), "首次开通赠送", grade.getExperience()));
+            expired= new MembershipExpired();
+            expired.setAddTime(System.currentTimeMillis());
+            expired.setUserId(user.getId());
+            expired.setExpired(0);
+        }
+        expired.setUpdateTime(System.currentTimeMillis());
+        expired.setExpired(expired.getExpired()+time);
+        membershipExpiredDao.save(expired);
+        membershipFundsDao.save(balance);
+        if (order.getExperience() > 0) {
+            membershipExperienceDao.save(new MembershipExperience(user.getId(), "开通会员赠送", order.getExperience()));
+        }
+        if (order.getGameCoin() > 0) {
+            if(WaLiUtil.tranferV3(user.getId(), order.getGameCoin()* 100)){
+                gameFundsDao.save(new GameFunds(user.getId(), order.getGameCoin()* 100, "开通会员赠送"));
+            }else {
+                log.info("会员充值赠送失败 会员ID：{} 赠送金额：{}",user.getId(), order.getGameCoin());
+            }
+        }
         return true;
     }
     public ResponseData order(int page, User user, String ip) {
@@ -200,17 +247,17 @@ public class CashService {
         page--;
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page,12, Sort.by(Sort.Direction.DESC,"id"));
-        Page<CashInOrder> orderPage = cashInOrderDao.getAllByCash(user.getId(),pageable);
+        Page<CashInOrder> orderPage = cashInOrderDao.getAllByMembership(user.getId(),pageable);
         JSONArray array = new JSONArray();
         for (CashInOrder order : orderPage.getContent()){
-            CashOrder diamondOrder = cashOrderDao.findAllByOrderNo(order.getOrderNo());
+            MembershipOrder diamondOrder = membershipOrderDao.findAllByOrderNo(order.getOrderNo());
             CashInOption option = cashInOptionDao.findAllById(order.getType());
             if (diamondOrder != null &&option != null){
                 JSONObject json = new JSONObject();
                 json.put("type",option.getName());
                 json.put("icon",option.getIcon());
                 json.put("id", order.getId());
-                json.put("amount", BigDecimal.valueOf(diamondOrder.getAmount()).multiply(new BigDecimal(100)).longValue());
+                json.put("amount", diamondOrder.getAmount());
                 json.put("orderNo", order.getOrderNo());
                 json.put("status", order.getStatus() == 1);
                 json.put("addTime", order.getAddTime());
@@ -229,14 +276,15 @@ public class CashService {
         page--;
         if (page < 0) page = 0;
         Pageable pageable = PageRequest.of(page,12,Sort.by(Sort.Direction.DESC,"id"));
-        Page<UserBalanceCash> fundsPage = userBalanceCashDao.findAllByUserId(user.getId(), pageable);
+        Page<MembershipFunds> fundsPage = membershipFundsDao.findAllByUserId(user.getId(), pageable);
         JSONArray array = new JSONArray();
-        for (UserBalanceCash funds : fundsPage.getContent()){
-            JSONObject json = new JSONObject();
-            json.put("id", funds.getId());
-            json.put("amount", BigDecimal.valueOf(funds.getAmount()).multiply(new BigDecimal(100)).longValue());
-            json.put("addTime", funds.getAddTime());
-            json.put("text", funds.getText());
+        for (MembershipFunds funds : fundsPage.getContent()){
+            JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(funds));
+//            json.put("id", funds.getId());
+//            json.put("amount", funds.getAmount());
+//            json.put("addTime", funds.getAddTime());
+//            json.put("text", funds.getText());
+            json.put("userId", null);
             array.add(json);
         }
 //        System.out.printf("array%s\n", array);

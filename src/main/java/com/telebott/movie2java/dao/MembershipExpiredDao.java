@@ -9,4 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface MembershipExpiredDao extends JpaRepository<MembershipExpired, Long>, CrudRepository<MembershipExpired, Long> {
+    MembershipExpired findAllById(Long id);
+    MembershipExpired findAllByUserId(Long userId);
 }

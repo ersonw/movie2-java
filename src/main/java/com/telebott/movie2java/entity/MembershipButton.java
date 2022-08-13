@@ -16,9 +16,12 @@ public class MembershipButton {
     @Id
     @GeneratedValue
     private long id;
+    private String name;
     private long amount;
     private long price;
-    private int less;
+    private long original;
+    private long gameCoin;
+    private long experience;
     private long cashInId;
     private int status;
     private long addTime;

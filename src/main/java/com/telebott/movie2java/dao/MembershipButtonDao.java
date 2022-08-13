@@ -13,6 +13,6 @@ import java.util.List;
 @Repository
 public interface MembershipButtonDao extends JpaRepository<MembershipButton, Long>, CrudRepository<MembershipButton, Long> {
     MembershipButton findAllById(Long id);
-    @Query(value = "SELECT * FROM `membership_button` WHERE status=1 ORDER BY amount ASC ",nativeQuery = true)
+    @Query(value = "SELECT * FROM `membership_button` WHERE status=1 ORDER BY price ASC ",nativeQuery = true)
     List<MembershipButton> getAllButtons();
 }

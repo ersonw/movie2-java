@@ -27,6 +27,7 @@ public class GameOutOrder {
     private String address;
     private int status;
     private String remark;
+    private String ip;
     private long addTime;
     private long updateTime;
 }

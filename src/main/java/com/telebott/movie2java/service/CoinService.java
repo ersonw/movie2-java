@@ -157,6 +157,7 @@ public class CoinService {
         cashInOrder.setOrderType(EPayUtil.COIN_ORDER);
         cashInOrder.setAddTime(System.currentTimeMillis());
         cashInOrder.setUpdateTime(System.currentTimeMillis());
+        cashInOrder.setIp(ip);
 
         EPayData data = new EPayData();
         data.setMoney(String.format("%.2f",order.getPrice() / 100D));

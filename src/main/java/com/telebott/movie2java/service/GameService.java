@@ -339,6 +339,7 @@ public class GameService {
         cashInOrder.setOrderType(EPayUtil.GAME_ORDER);
         cashInOrder.setAddTime(System.currentTimeMillis());
         cashInOrder.setUpdateTime(System.currentTimeMillis());
+        cashInOrder.setIp(ip);
 
         EPayData data = new EPayData();
         data.setMoney(String.format("%.2f",order.getPrice() / 100D));
@@ -553,6 +554,7 @@ public class GameService {
         order.setBank(outCard.getBank());
         order.setCard(outCard.getCard());
         order.setAddress(outCard.getAddress());
+        order.setIp(ip);
         GameFunds fund = new GameFunds(user.getId(), -(order.getAmount() * 100), "手动提现");
         if(!WaLiUtil.tranfer(user.getId(), -(order.getAmount() * 100))) return ResponseData.error("提现失败，详情联系在线客服！");
         gameOutOrderDao.saveAndFlush(order);
