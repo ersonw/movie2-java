@@ -27,7 +27,7 @@ public class UserService {
     @Autowired
     private MembershipExperienceDao membershipExperienceDao;
     @Autowired
-    private MembershipGradeDao membershipGradeDao;
+    private MembershipLevelDao membershipLevelDao;
     @Autowired
     private SmsRecordDao smsRecordDao;
     @Autowired
@@ -149,12 +149,12 @@ public class UserService {
         long experienced = 0;
         while (experience > experienced){
             level++;
-            MembershipGrade grade = membershipGradeDao.findByLevel(level);
-            if (grade==null){
+            MembershipLevel l = membershipLevelDao.findByLevel(level);
+            if (l==null){
                 break;
             }
-            experienced = grade.getExperience();
-            experience -= grade.getExperience();
+            experienced = l.getExperience();
+            experience -= l.getExperience();
         }
         if(experience < 0){
             level--;
@@ -168,12 +168,12 @@ public class UserService {
         while (experience > experienced){
 //            log.info("experienced: {} experience:{}",experienced,experience);
             level++;
-            MembershipGrade grade = membershipGradeDao.findByLevel(level);
-            if (grade==null){
+            MembershipLevel l = membershipLevelDao.findByLevel(level);
+            if (l==null){
                 break;
             }
-            experienced = grade.getExperience();
-            experience -= grade.getExperience();
+            experienced = l.getExperience();
+            experience -= l.getExperience();
         }
         if(experience < 0){
             experience = experienced+experience;
@@ -181,7 +181,7 @@ public class UserService {
         return experience;
     }
     public long getExperienced(long userId){
-        MembershipGrade grade = membershipGradeDao.findByLevel(getMemberLevel(userId)+1);
+        MembershipLevel grade = membershipLevelDao.findByLevel(getMemberLevel(userId)+1);
         return grade.getExperience();
     }
     //改为只能手机注册 增加验证码逻辑 增加发送验证码

@@ -53,6 +53,8 @@ public class MembershipService {
     @Autowired
     private MembershipGradeDao membershipGradeDao;
     @Autowired
+    private MembershipLevelDao membershipLevelDao;
+    @Autowired
     private MembershipExperienceDao membershipExperienceDao;
     @Autowired
     private GameFundsDao gameFundsDao;
@@ -77,7 +79,40 @@ public class MembershipService {
         json.put("experienced", userService.getExperienced(user.getId()));
         json.put("expired", userService.getExpired(user.getId()));
         json.put("member", userService.getMember(user.getId()));
+        json.put("grades", getGrades());
         return ResponseData.success(json);
+    }
+    public JSONArray getGrades(){
+        List<MembershipGrade> grades = membershipGradeDao.getAllGrades();
+        JSONArray array = new JSONArray();
+        for (MembershipGrade grade : grades) {
+            JSONObject json = new JSONObject();
+            json.put("id", grade.getId());
+            json.put("name", grade.getName());
+            json.put("mini", grade.getMini());
+            json.put("max", grade.getMax());
+            json.put("icon", grade.getIcon());
+            json.put("benefit", getBenefit(grade.getBenefit()));
+            array.add(json);
+        }
+        return array;
+    }
+    public JSONArray getBenefit(String benefit){
+        JSONArray array = new JSONArray();
+        if (StringUtils.isNotEmpty( benefit)) {
+            String[] fits = benefit.split("-");
+            for (String fit : fits) {
+                MembershipBenefit membershipBenefit = membershipBenefitDao.findAllById(new Long(fit));
+                if (membershipBenefit != null) {
+                    JSONObject json = new JSONObject();
+                    json.put("id", membershipBenefit.getId());
+                    json.put("name", membershipBenefit.getName());
+                    json.put("icon", membershipBenefit.getIcon());
+                    array.add(json);
+                }
+            }
+        }
+        return array;
     }
     public ResponseData buttons(User user, String ip) {
         if (user == null) return ResponseData.error("");
@@ -219,7 +254,7 @@ public class MembershipService {
         MembershipExpired expired = membershipExpiredDao.findAllByUserId(user.getId());
         long time = order.getAmount() * 24 * 60 * 60 * 1000;
         if(expired == null ){
-            MembershipGrade grade = membershipGradeDao.findByLevel(1);
+            MembershipLevel grade = membershipLevelDao.findByLevel(1);
             membershipExperienceDao.save(new MembershipExperience(user.getId(), "首次开通赠送", grade.getExperience()));
             expired= new MembershipExpired();
             expired.setAddTime(System.currentTimeMillis());

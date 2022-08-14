@@ -2,13 +2,12 @@ package com.telebott.movie2java.dao;
 
 import com.telebott.movie2java.entity.MembershipGrade;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
-@Repository
+import java.util.List;
+
 public interface MembershipGradeDao extends JpaRepository<MembershipGrade, Long>, CrudRepository<MembershipGrade, Long> {
-    MembershipGrade findAllById(Long id);
-    MembershipGrade findByLevel(long level);
+    @Query(value = "SELECT * FROM `membership_grade` WHERE status=1 ORDER BY `mini` ASC ",nativeQuery = true)
+    List<MembershipGrade> getAllGrades();
 }

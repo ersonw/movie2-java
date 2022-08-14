@@ -9,19 +9,15 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "membership_grade")
+@Table(name = "membership_level")
 @Cacheable
 @ToString(includeFieldNames = true)
-public class MembershipGrade {
+public class MembershipLevel {
     @Id
     @GeneratedValue
     private long id;
-    private String name;
-    private String icon;
-    private String benefit;
-    private long mini;
-    private long max;
-    private int status;
+    private long level;
+    private long experience;
     private long addTime;
     private long updateTime;
 }

@@ -18,7 +18,6 @@ public class MembershipBenefit {
     private long id;
     private String name;
     private String icon;
-    private long gradeId;
     private long addTime;
     private long updateTime;
 }
