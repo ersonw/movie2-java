@@ -72,6 +72,9 @@ public class VideoService {
     private VideoPublicityReportDao videoPublicityReportDao;
     @Autowired
     private VideoPublicityDao videoPublicityDao;
+    @Autowired
+    private UserBalanceDiamondDao userBalanceDiamondDao;
+
     public ResponseData categoryTags(User user, String ip) {
         List<VideoProduced> produceds = videoProducedDao.findAllByStatus(1);
         List<VideoClass> classes = videoClassDao.findAllByStatus(1);
@@ -603,5 +606,23 @@ public class VideoService {
         if (videoPublicity == null) return ResponseData.error("");
         videoPublicityReportDao.save(new VideoPublicityReport(videoPublicity.getId(), user.getId(), ip));
         return ResponseData.success("");
+    }
+
+    public ResponseData buy(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        Video video = videoDao.findAllById(id);
+        if (video == null) return ResponseData.error("");
+        VideoPay pay = videoPayDao.findAllByVideoId(id);
+        if (pay == null) return ResponseData.error("视频无需购买!");
+        VideoPayRecord record = videoPayRecordDao.findAllByUserIdAndPayId(user.getId(),pay.getId());
+        if (record != null) return ResponseData.error("视频已经购买!");
+        record = new VideoPayRecord(user.getId(),pay.getId(),ip);
+        long balance = userBalanceDiamondDao.getAllByBalance(user.getId());
+        if (balance < pay.getAmount()) return ResponseData.error("钻石余额不足!");
+        UserBalanceDiamond diamond = new UserBalanceDiamond(user.getId(), -pay.getAmount(), "购买了视频【"+video.getTitle()+"】");
+        userBalanceDiamondDao.save(diamond);
+        videoPayRecordDao.save(record);
+        return ResponseData.success("购买成功！",ResponseData.object("state",true));
     }
 }

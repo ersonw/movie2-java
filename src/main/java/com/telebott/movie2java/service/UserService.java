@@ -56,7 +56,7 @@ public class UserService {
     private static long FAIL_LOGIN_TIMES = 6;
 
     public boolean isMembership(long userId) {
-        return userDao.getAllByMembership(userId,System.currentTimeMillis()) != null;
+        return getMember(userId);
     }
     private long checkFailLogin(long userId){
         List<UserFailLoginRecord> records = failLoginRecordDao.checkUserToday(userId, TimeUtil.getTodayZero());

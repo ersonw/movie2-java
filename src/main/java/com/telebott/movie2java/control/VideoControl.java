@@ -61,6 +61,12 @@ public class VideoControl {
                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.like(id, User.getInstance(user),ip);
     }
+    @GetMapping("/buy/{id}")
+    public ResponseData buy(@PathVariable long id,
+                             @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
+                             @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.buy(id, User.getInstance(user),ip);
+    }
     @GetMapping("/share/{id}")
     public ResponseData share(@PathVariable long id,
                              @RequestParam(value = "user",required = false) @ApiParam(hidden = true) String user ,
