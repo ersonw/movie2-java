@@ -135,6 +135,7 @@ public class MyFilter implements Filter {
                         jsStr.put("ip", ip);
                         jsStr.put("isWeb", userAgent != null && !userAgent.contains("dart:io"));
                         jsStr.put("serverName", serverName);
+                        jsStr.put("userAgent", userAgent);
                         jsStr.put("serverPort", serverPort);
                         jsStr.put("uri", uri);
                         jsStr.put("url", url);
