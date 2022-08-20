@@ -74,6 +74,8 @@ public class VideoService {
     private VideoPublicityDao videoPublicityDao;
     @Autowired
     private UserBalanceDiamondDao userBalanceDiamondDao;
+    @Autowired
+    private ShortLinkService shortLinkService;
 
     public ResponseData categoryTags(User user, String ip) {
         List<VideoProduced> produceds = videoProducedDao.findAllByStatus(1);

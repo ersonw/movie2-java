@@ -223,7 +223,7 @@ public class WaLiUtil {
                 StringUtils.isNotEmpty(encryptKey) &&
                 StringUtils.isNotEmpty(signKey)
         ) {
-            System.out.println("瓦力游戏配置加载成功！");
+            log.info("瓦力游戏配置加载成功！");
             _timersRecords();
         }
 

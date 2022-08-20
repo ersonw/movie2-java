@@ -40,7 +40,7 @@ public class MessageSocket {
 
     @PostConstruct
     public void init() {
-        System.out.println("Message WebSocket 加载");
+        log.info("Message WebSocket 加载");
         self = this;
     }
     public void deleteUser(User user){
