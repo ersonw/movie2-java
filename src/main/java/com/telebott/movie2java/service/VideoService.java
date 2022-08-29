@@ -465,6 +465,7 @@ public class VideoService {
     private Page<Video> getVideo(long concentrationId){
         Pageable pageable = PageRequest.of(VIDEO_CONCENTRATION_PAGE, 6, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.getVideoByConcentrations(concentrationId,pageable);
+//        System.out.println(videoPage.getContent());
         if(videoPage.getTotalPages() > VIDEO_CONCENTRATION_PAGE){
             VIDEO_CONCENTRATION_PAGE++;
             return videoPage;
@@ -476,26 +477,21 @@ public class VideoService {
         }
     }
     public ResponseData concentrations(User user, String ip) {
-        List<VideoConcentrationList> concentrationLists= videoConcentrationListDao.getAllByGroup();
+        List<VideoConcentration> concentrations = videoConcentrationDao.findAllByList();
+//        System.out.println(concentrations);
         JSONArray jsonArray= new JSONArray();
-        for (VideoConcentrationList concentrationList: concentrationLists) {
-            if(concentrationList != null) {
-                VideoConcentration concentration = videoConcentrationDao.findAllById(concentrationList.getConcentrationId());
-                if(concentration != null){
-                    Page<Video> videoPage = getVideo(concentrationList.getConcentrationId());
-                    if(videoPage.getContent().size() > 0) {
-                        JSONArray array = new JSONArray();
-                        for (Video video: videoPage.getContent()) {
-                            array.add(getVideo(video));
-                        }
-                        JSONObject json = ResponseData.object("videos", array);
-                        json.put("id", concentration.getId());
-                        json.put("name", concentration.getName());
-                        jsonArray.add(json);
-                    }
-                }
+        for (VideoConcentration concentration: concentrations) {
+            Page<Video> videoPage = getVideo(concentration.getId());
+            JSONArray array = new JSONArray();
+            for (Video video: videoPage.getContent()) {
+                array.add(getVideo(video));
             }
+            JSONObject json = ResponseData.object("videos", array);
+            json.put("id", concentration.getId());
+            json.put("name", concentration.getName());
+            jsonArray.add(json);
         }
+//        System.out.println(jsonArray);
         return ResponseData.success(ResponseData.object("list", jsonArray));
     }
 

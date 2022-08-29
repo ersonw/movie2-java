@@ -19,5 +19,4 @@ public class VideoConcentrationList {
     private long concentrationId;
     private long videoId;
     private long addTime;
-    private long updateTime;
 }

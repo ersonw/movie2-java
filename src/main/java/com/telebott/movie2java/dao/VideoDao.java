@@ -43,7 +43,7 @@ public interface VideoDao extends JpaRepository<Video, Long>, CrudRepository<Vid
     @Query(value = "SELECT v.*,(v.plays+(SELECT COUNT(*) FROM `video_play` WHERE video_id= v.id)) AS c  FROM `video_produced_record` AS vpr INNER JOIN `video` AS v ON vpr.video_id=v.id AND v.status=1 AND v.vod_class=:vodClass WHERE vpr.produced_id=:producedId ORDER BY c DESC", nativeQuery = true)
     Page<Video> getVideoByVodClassAndProduced(long vodClass,long producedId,Pageable pageable);
 
-    @Query(value = "SELECT v.* FROM `video_concentration_list` AS vcl INNER JOIN `video` v ON v.id=vcl.id AND v.status=1 WHERE vcl.concentration_id =:concentrationId", nativeQuery = true)
+    @Query(value = "SELECT v.* FROM `video_concentration_list` AS vcl INNER JOIN `video` v ON v.id=vcl.video_id AND v.status=1 WHERE vcl.concentration_id =:concentrationId", nativeQuery = true)
     Page<Video> getVideoByConcentrations(long concentrationId,Pageable pageable);
 
     @Query(value = "SELECT v.* FROM `video` AS v INNER JOIN `video_pay` vp ON vp.video_id=v.id AND vp.amount > 0 WHERE  v.status=:status", nativeQuery = true)
