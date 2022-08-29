@@ -10,6 +10,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional
 @Repository
 public interface VideoDao extends JpaRepository<Video, Long>, CrudRepository<Video, Long> {
@@ -56,5 +58,8 @@ public interface VideoDao extends JpaRepository<Video, Long>, CrudRepository<Vid
     Page<Video> getVideoByRank(long time,long vodClass,Pageable pageable);
     @Query(value = "SELECT (v.plays+(SELECT COUNT(*) FROM `video_play` WHERE video_id= v.id AND add_time >:time)) FROM `video` AS v WHERE v.id=:videoId", nativeQuery = true)
     long getVideoByRank(long time,long videoId);
-
+    @Query(value = "SELECT * FROM video WHERE id IN (SELECT s.id FROM (SELECT v.id,(vs.video_time / v.vod_duration * 100) as c FROM `video_scale` AS vs INNER JOIN video AS v ON v.id=vs.video_id WHERE vs.user_id=:id AND vs.video_time > 30) AS s WHERE s.c > 0)",nativeQuery = true)
+    List<Video> getRecords(long id);
+//    @Query(value = "SELECT * FROM (SELECT (vs.video_time / v.vod_duration * 100) as c FROM `video_scale` AS vs INNER JOIN video AS v ON v.id=vs.video_id WHERE vs.video_id=:id AND vs.video_time > 30) AS s WHERE s.c > 0", nativeQuery = true)
+//    Double getScale(long userId, long videoId);
 }

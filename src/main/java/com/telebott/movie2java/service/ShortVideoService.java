@@ -265,7 +265,7 @@ public class ShortVideoService {
         JSONObject object = ResponseData.object("total",videoPage.getTotalPages());
         JSONArray arry = new JSONArray();
         for (ShortVideo video : videoPage.getContent()) {
-            JSONObject json = getShortVideo(video, user.getId());
+            JSONObject json = getShortVideo(video, user==null?0:user.getId());
             if (json != null) arry.add(json);
         }
 //        object = ResponseData.object("total",arry.size());

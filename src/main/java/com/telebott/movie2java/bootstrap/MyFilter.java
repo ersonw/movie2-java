@@ -113,6 +113,7 @@ public class MyFilter implements Filter {
                 wrapper.addParameter("schema", schema);
                 wrapper.addParameter("query", query);
                 wrapper.addParameter("userAgent", userAgent);
+                wrapper.addParameter("user", null);
                 if (user != null){
                     wrapper.addParameter("user", JSONObject.toJSONString(user));
                 }
@@ -141,6 +142,7 @@ public class MyFilter implements Filter {
                         jsStr.put("uri", uri);
                         jsStr.put("url", url);
                         jsStr.put("schema", schema);
+                        jsStr.put("user", null);
                         if (user != null) {
                             jsStr.put("user", JSONObject.toJSONString(user));
                         }

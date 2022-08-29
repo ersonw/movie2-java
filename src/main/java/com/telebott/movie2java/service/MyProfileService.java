@@ -1,5 +1,6 @@
 package com.telebott.movie2java.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.OssConfig;
@@ -42,6 +43,8 @@ public class MyProfileService {
     private UserSpreadRebateDao userSpreadRebateDao;
     @Autowired
     private SmsRecordDao smsRecordDao;
+    @Autowired
+    private VideoDao videoDao;
 
     public boolean getConfigBool(String name){
         return getConfigLong(name) > 0;
@@ -55,9 +58,20 @@ public class MyProfileService {
         List<UserConfig> configs = userConfigDao.findAllByName(name);
         return configs.isEmpty() ? null : configs.get(0).getVal();
     }
-
+    public JSONArray getRecords(long userId){
+        List<Video> videos = videoDao.getRecords(userId);
+        JSONArray array = new JSONArray();
+        for(Video video : videos) {
+            JSONObject object = new JSONObject();
+            object.put("id",video.getId());
+            object.put("title",video.getTitle());
+            object.put("picThumb",video.getPicThumb());
+            array.add(object);
+        }
+        return array;
+    }
     public ResponseData info(User user, String ip) {
-        if (user == null) return ResponseData.error("");
+        if (user == null) return ResponseData.error("登录已过期!");
         User profile = userDao.findAllById(user.getId());
         profile.setToken(user.getToken());
         authDao.pushUser(profile);
@@ -79,6 +93,7 @@ public class MyProfileService {
         data.put("myVideo", getConfigBool("myVideo"));
         if(StringUtils.isNotEmpty(json.getString("serviceUrl"))) data.put("service", getConfigBool("service"));
         json.put("appData", data);
+        json.put("records",getRecords(user.getId()));
         return ResponseData.success(json);
     }
     public JSONObject getEdit(User user) {
