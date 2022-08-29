@@ -242,7 +242,7 @@ public class MyProfileService {
         User profile = userDao.findAllById(user.getId());
         if (!salt.equals(profile.getSalt())) return ResponseData.error("操作已超时，请返回重试！");
         profile.setSalt(ToolsUtil.getSalt());
-        MD5Util md5 = new MD5Util(user.getSalt());
+        MD5Util md5 = new MD5Util(profile.getSalt());
         profile.setPassword(md5.getPassWord(password));
         userDao.save(profile);
         authDao.pushUser(profile);
@@ -250,10 +250,11 @@ public class MyProfileService {
     }
 
     public ResponseData changePasswordVerify(String password, User user, String ip) {
+//        System.out.println(password);
         if (user == null) return ResponseData.error("");
         if(StringUtils.isEmpty(password)) return ResponseData.error("密码不可为空");
         User profile = userDao.findAllById(user.getId());
-        MD5Util md5 = new MD5Util(user.getSalt());
+        MD5Util md5 = new MD5Util(profile.getSalt());
         if(!md5.getPassWord(password).equals(profile.getPassword())) return ResponseData.error("密码不正确！");
         return ResponseData.success(ResponseData.object("salt", profile.getSalt()));
     }
