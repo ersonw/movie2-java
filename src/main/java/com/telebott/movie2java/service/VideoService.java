@@ -76,6 +76,8 @@ public class VideoService {
     private UserBalanceDiamondDao userBalanceDiamondDao;
     @Autowired
     private ShortLinkService shortLinkService;
+    @Autowired
+    private PublicizeReportDao publicizeReportDao;
 
     public ResponseData categoryTags(User user, String ip) {
         List<VideoProduced> produceds = videoProducedDao.findAllByStatus(1);
@@ -436,15 +438,17 @@ public class VideoService {
         return getVideoObject(videoPage);
     }
     private JSONObject getSortByAll(long second, long last, int page){
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "addTime"));
         Page<Video> videoPage;
         if(second == 0 && last == 0){
             videoPage = videoDao.findAllByStatus(1,pageable);
         }else if(last == 0){
+            pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "add_time"));
             videoPage = videoDao.getAllByProduced(second,pageable);
         }else if(second == 0){
             videoPage = videoDao.findAllByVodClassAndStatus(last,1,pageable);
         }else {
+            pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "add_time"));
             videoPage = videoDao.getAllByVodClassAndProduced(last,second,pageable);
         }
         return getVideoObject(videoPage);
@@ -622,5 +626,14 @@ public class VideoService {
         userBalanceDiamondDao.save(diamond);
         videoPayRecordDao.save(record);
         return ResponseData.success("购买成功！",ResponseData.object("state",true));
+    }
+
+    public ResponseData publicityPlayer(long id, User user, String ip) {
+        if (id < 1) return ResponseData.error("");
+        if (user == null) return ResponseData.error("");
+        Publicize publicize = publicizeDao.findAllById(id);
+        if (publicize == null) return ResponseData.error("");
+        publicizeReportDao.save(new PublicizeReport(publicize.getId(), user.getId(), ip));
+        return ResponseData.success("");
     }
 }

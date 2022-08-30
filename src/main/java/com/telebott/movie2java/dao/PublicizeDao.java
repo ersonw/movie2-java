@@ -17,4 +17,5 @@ public interface PublicizeDao extends JpaRepository<Publicize, Long>, CrudReposi
     Page<Publicize> findAllByStatus(int status, Pageable pageable);
     List<Publicize> findAllByPage(int page);
     List<Publicize> findAllByPageAndStatus(int page, int status);
+    Publicize findAllById(long id);
 }

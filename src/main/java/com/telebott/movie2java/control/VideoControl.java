@@ -140,4 +140,10 @@ public class VideoControl {
                                         @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.publicityReport(id,User.getInstance(user), ip);
     }
+    @GetMapping("/publicityPlayer/report/{id}")
+    public ResponseData publicityPlayer(@PathVariable long id,
+                                        @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                        @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.publicityPlayer(id,User.getInstance(user), ip);
+    }
 }
