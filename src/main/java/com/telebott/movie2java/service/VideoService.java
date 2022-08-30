@@ -330,11 +330,11 @@ public class VideoService {
         }
         JSONObject object = ResponseData.object("list",array);
         List<Publicize> publicizes = publicizeDao.findAllByPageAndStatus(1,1);
-
+        object.put("swiper", new JSONArray());
         if (VIDEO_AD < publicizes.size()) {
             object.put("swiper", getPublicize(publicizes.get(VIDEO_AD)));
             VIDEO_AD++;
-        }else {
+        }else if(publicizes.size() > 0){
             VIDEO_AD = 0;
             object.put("swiper", getPublicize(publicizes.get(VIDEO_AD)));
         }
