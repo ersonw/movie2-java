@@ -45,6 +45,8 @@ public class MyProfileService {
     private SmsRecordDao smsRecordDao;
     @Autowired
     private VideoDao videoDao;
+    @Autowired
+    private VideoScaleDao videoScaleDao;
 
     public boolean getConfigBool(String name){
         return getConfigLong(name) > 0;
@@ -66,6 +68,12 @@ public class MyProfileService {
             object.put("id",video.getId());
             object.put("title",video.getTitle());
             object.put("picThumb",video.getPicThumb());
+            object.put("scale",0);
+            VideoScale scale = videoScaleDao.findAllByUserIdAndVideoId(userId, video.getId());
+            if (scale != null){
+                object.put("scale",scale.getVideoTime());
+            }
+            object.put("vodDuration",video.getVodDuration());
             array.add(object);
         }
         return array;
