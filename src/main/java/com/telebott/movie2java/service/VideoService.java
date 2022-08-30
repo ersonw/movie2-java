@@ -109,7 +109,7 @@ public class VideoService {
         return array;
     }
     public ResponseData player(long id, User user, String ip,boolean isWeb) {
-        System.out.println(isWeb);
+//        System.out.println(isWeb);
         if (user == null) {
             return ResponseData.success(ResponseData.object("error", "login"));
         }
@@ -334,9 +334,20 @@ public class VideoService {
         if (VIDEO_AD < publicizes.size()) {
             object.put("swiper", getPublicize(publicizes.get(VIDEO_AD)));
             VIDEO_AD++;
-        }else if(publicizes.size() > 0){
-            VIDEO_AD = 0;
-            object.put("swiper", getPublicize(publicizes.get(VIDEO_AD)));
+        }else{
+            long count = publicizeDao.countAllByPageAndStatus(1,1);
+            long count1 = publicizeDao.countAllByPageAndStatus(0,1);
+            int index = new Long(VIDEO_AD - count).intValue();
+            if(count1 > index){
+                VIDEO_AD++;
+            }else{
+                VIDEO_AD = 0;
+                index = 0;
+            }
+            publicizes = publicizeDao.findAllByPageAndStatus(0,1);
+            if(publicizes.size() > 0){
+                object.put("swiper", getPublicize(publicizes.get(index)));
+            }
         }
         return ResponseData.success(object);
     }
