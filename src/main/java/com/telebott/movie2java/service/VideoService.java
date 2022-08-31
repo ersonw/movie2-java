@@ -231,7 +231,7 @@ public class VideoService {
 //        if (comment != null) return ResponseData.error("此评论已经录入哦，请勿灌水，谢谢！");
         if (comment != null) return ResponseData.error("");
         comment = new VideoComment();
-        comment.setStatus(new Long(apiService.getVideoConfigLong("commentAudit")).intValue());
+        comment.setStatus(apiService.getVideoConfigBool("commentAudit")?0:1);
         if(ToolsUtil.filterWords(text)){
             comment.setStatus(0);
         }
