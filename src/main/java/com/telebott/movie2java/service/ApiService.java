@@ -152,7 +152,7 @@ public class ApiService {
         List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(),1);
         if (configs.size() == 0) return "fail";
         boolean verify = ePayNotify.isSign(configs.get(0).getSecretKey());
-        System.out.printf(verify ? "效验成功！\n": "效验失败!\n");
+//        System.out.printf(verify ? "效验成功！\n": "效验失败!\n");
         if(verify && ePayNotify.getTrade_status().equals("TRADE_SUCCESS")){
             EPayData data = authDao.findOrderByOrderId(ePayNotify.getOut_trade_no());
             if (data != null) {

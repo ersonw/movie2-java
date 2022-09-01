@@ -52,7 +52,7 @@ public class ApiControl {
                                    @RequestParam(value = "url") @ApiParam(hidden = true) String url,
                                    @RequestParam(value = "query") @ApiParam(hidden = true) String query,
                                    @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        System.out.printf("ePayReturn:%s?%s ip:%s\n", url,query, ip);
+//        System.out.printf("ePayReturn:%s?%s ip:%s\n", url,query, ip);
         return service.ePayReturn(ePayNotify);
     }
     @GetMapping("/payment")
