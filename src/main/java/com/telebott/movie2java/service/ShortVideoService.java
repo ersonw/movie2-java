@@ -458,7 +458,7 @@ public class ShortVideoService {
             comment.setStatus(2);
             shortVideoCommentDao.save(comment);
         }
-        shortVideoCommentReportDao.save(new ShortVideoCommentReport(comment.getId(),ip));
+        shortVideoCommentReportDao.save(new ShortVideoCommentReport(comment.getId(),user.getId(),ip));
         return ResponseData.success(ResponseData.object("state",true));
     }
 

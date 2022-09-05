@@ -14,8 +14,9 @@ import javax.persistence.*;
 @ToString(includeFieldNames = true)
 public class ShortVideoCommentReport {
     public ShortVideoCommentReport() {}
-    public ShortVideoCommentReport(long commentId, String ip) {
+    public ShortVideoCommentReport(long commentId,long userId, String ip) {
         this.commentId = commentId;
+        this.userId = userId;
         this.ip = ip;
         this.state =0;
         this.addTime = System.currentTimeMillis();
@@ -24,6 +25,7 @@ public class ShortVideoCommentReport {
     @GeneratedValue
     private long id;
     private long commentId;
+    private long userId;
     private String ip;
     private int state;
     private long addTime;
