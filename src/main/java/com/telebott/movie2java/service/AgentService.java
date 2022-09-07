@@ -108,13 +108,15 @@ public class AgentService {
         long today = agentRebateDao.countAllByAgentIdAndAddTimeGreaterThanEqual(userId, TimeUtil.getTodayZero());
         long fail = agentRebateDao.countAllByAgentIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
         if (all < 9) return 1;
-        if (spread > new Double((fail * 1D) / today * 100).longValue()) return 1;
+        if ((spread / 100D) > (fail * 1D / today)) return 1;
         return 0;
     }
     public Double getAgentAmount(UserConsume consume, String level){
         long spread = getConfigLong(level);
         if(spread <= 0) return 0.0;
-        Double total = consume.getAmount() * 1D / spread;
+        double total = consume.getAmount() * 1D * (spread / 100D);
+//        System.out.println(consume.getAmount());
+//        System.out.println(String.format("%.2f", total));
         return new Double(String.format("%.2f", total));
     }
     public int getUserHidden(long userId, String level){
@@ -124,13 +126,13 @@ public class AgentService {
         long today = userSpreadRebateDao.countAllByUserIdAndAddTimeGreaterThanEqual(userId, TimeUtil.getTodayZero());
         long fail = userSpreadRebateDao.countAllByUserIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
         if (all < 9) return 1;
-        if (spread > new Double((fail * 1D) / today * 100).longValue()) return 1;
+        if ((spread / 100D) > (fail * 1D / today)) return 1;
         return 0;
     }
     public Double getUserAmount(UserConsume consume, String level){
         long spread = getUserConfigLong(level);
         if(spread <= 0) return 0.0;
-        double total = consume.getAmount() * 1D / spread;
+        double total = consume.getAmount() * 1D * (spread / 100D);
 //        System.out.println(consume.getAmount());
 //        System.out.println(String.format("%.2f", total));
         return new Double(String.format("%.2f", total));
