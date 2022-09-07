@@ -4,6 +4,7 @@ import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.entity.*;
 import com.telebott.movie2java.util.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,11 +97,13 @@ public class AgentService {
             }
         }
 //        userBalanceCashDao.saveAllAndFlush(cashes);
+//        System.out.println(rebates);
         userSpreadRebateDao.saveAllAndFlush(rebates);
         handlerAgent(consume);
     }
     public int getAgentHidden(long userId, String level){
         long spread = getConfigLong(level);
+        if (spread <= 0) return 1;
         long all = agentRebateDao.countAllByAgentId(userId);
         long today = agentRebateDao.countAllByAgentIdAndAddTimeGreaterThanEqual(userId, TimeUtil.getTodayZero());
         long fail = agentRebateDao.countAllByAgentIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
@@ -110,10 +113,13 @@ public class AgentService {
     }
     public Double getAgentAmount(UserConsume consume, String level){
         long spread = getConfigLong(level);
-        return new Double(consume.getAmount() / spread);
+        if(spread <= 0) return 0.0;
+        Double total = consume.getAmount() * 1D / spread;
+        return new Double(String.format("%.2f", total));
     }
     public int getUserHidden(long userId, String level){
         long spread = getUserConfigLong(level);
+        if (spread <= 0) return 1;
         long all = userSpreadRebateDao.countAllByUserId(userId);
         long today = userSpreadRebateDao.countAllByUserIdAndAddTimeGreaterThanEqual(userId, TimeUtil.getTodayZero());
         long fail = userSpreadRebateDao.countAllByUserIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
@@ -123,7 +129,11 @@ public class AgentService {
     }
     public Double getUserAmount(UserConsume consume, String level){
         long spread = getUserConfigLong(level);
-        return new Double(consume.getAmount() / spread);
+        if(spread <= 0) return 0.0;
+        double total = consume.getAmount() * 1D / spread;
+//        System.out.println(consume.getAmount());
+//        System.out.println(String.format("%.2f", total));
+        return new Double(String.format("%.2f", total));
     }
     public boolean getConfigBool(String name) {
         return getConfigLong(name) > 0;
@@ -131,12 +141,12 @@ public class AgentService {
 
     public long getConfigLong(String name) {
         String value = getConfig(name);
-        if (value == null) return 0;
+        if (StringUtils.isEmpty(value)) return 0;
         return Long.parseLong(value);
     }
     public double getConfigDouble(String name) {
         String value = getConfig(name);
-        if (value == null) return 0D;
+        if (StringUtils.isEmpty(value)) return 0D;
         return Double.parseDouble(value);
     }
 
@@ -150,12 +160,12 @@ public class AgentService {
 
     public long getUserConfigLong(String name) {
         String value = getUserConfig(name);
-        if (value == null) return 0;
+        if (StringUtils.isEmpty(value)) return 0;
         return Long.parseLong(value);
     }
     public double getUserConfigDouble(String name) {
         String value = getUserConfig(name);
-        if (value == null) return 0D;
+        if (StringUtils.isEmpty(value)) return 0D;
         return Double.parseDouble(value);
     }
 

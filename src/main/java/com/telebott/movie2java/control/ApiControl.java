@@ -64,7 +64,7 @@ public class ApiControl {
     @GetMapping("/payment/{orderId}")
     public ModelAndView paymentOrderId(@PathVariable String orderId,
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        System.out.printf("paymentOrderId:%s ip:%s\n", orderId, ip);
+//        System.out.printf("paymentOrderId:%s ip:%s\n", orderId, ip);
         return service.payment(orderId, ip);
     }
 
