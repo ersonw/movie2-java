@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface AgentRecordDao extends JpaRepository<AgentRecord, Long>, CrudRepository<AgentRecord, Long> {
+    AgentRecord findAllByUserId(long userId);
 }

@@ -13,6 +13,15 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class UserConsume {
+    public UserConsume() {}
+    public UserConsume(long userId, long amount, String text, int status) {
+        this.userId = userId;
+        this.amount = amount;
+        this.text = text;
+        this.status = status;
+        this.addTime = System.currentTimeMillis();
+        this.updateTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;

@@ -64,6 +64,10 @@ public class GameService {
     private GameOutCardDao gameOutCardDao;
     @Autowired
     private GameOutOrderDao gameOutOrderDao;
+    @Autowired
+    private UserConsumeDao userConsumeDao;
+    @Autowired
+    private AgentService agentService;
 
     public boolean getOutConfigBool(String name) {
         return getOutConfigLong(name) > 0;
@@ -363,10 +367,14 @@ public class GameService {
     }
     public boolean handlerOrder(String orderId){
         GameOrder order = gameOrderDao.findAllByOrderNo(orderId);
-        if (order == null) return false;
+        CashInOrder inOrder = cashInOrderDao.findAllByOrderNo(orderId);
+        if (order == null || inOrder == null) return false;
         User user = userDao.findAllById(order.getUserId());
         if (user == null) return false;
         GameFunds fund = new GameFunds(user.getId(), order.getAmount() * 100, "在线充值");
+        UserConsume consume = new UserConsume(user.getId(), new Double(inOrder.getTotalFee()).longValue(),"在线充值游戏面额"+order.getAmount(),1);
+        userConsumeDao.saveAndFlush(consume);
+        agentService.handlerUser(consume);
         if (WaLiUtil.tranfer(user.getId(),fund.getAmount())){
             gameFundsDao.saveAndFlush(fund);
             return true;

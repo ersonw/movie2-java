@@ -45,6 +45,10 @@ public class DiamondService {
     private CashInConfigDao cashInConfigDao;
     @Autowired
     private CashInOptionDao cashInOptionDao;
+    @Autowired
+    private UserConsumeDao userConsumeDao;
+    @Autowired
+    private AgentService agentService;
 
 
     public boolean getConfigBool(String name){
@@ -184,7 +188,8 @@ public class DiamondService {
     }
     public boolean handlerOrder(String orderId){
         DiamondOrder order = diamondOrderDao.findAllByOrderNo(orderId);
-        if (order == null) return false;
+        CashInOrder inOrder = cashInOrderDao.findAllByOrderNo(orderId);
+        if (order == null || inOrder == null) return false;
         User user = userDao.findAllById(order.getUserId());
         if (user == null) return false;
         UserBalanceDiamond balance = new UserBalanceDiamond();
@@ -193,6 +198,9 @@ public class DiamondService {
         balance.setUserId(user.getId());
         balance.setText("在线充值");
         userBalanceDiamondDao.save(balance);
+        UserConsume consume = new UserConsume(user.getId(), new Double(inOrder.getTotalFee()).longValue(),"在线充值钻石"+order.getAmount(),1);
+        userConsumeDao.saveAndFlush(consume);
+        agentService.handlerUser(consume);
         return true;
     }
     public ResponseData order(int page, User user, String ip) {

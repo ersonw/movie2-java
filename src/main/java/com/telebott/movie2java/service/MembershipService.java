@@ -58,6 +58,10 @@ public class MembershipService {
     private MembershipExperienceDao membershipExperienceDao;
     @Autowired
     private GameFundsDao gameFundsDao;
+    @Autowired
+    private UserConsumeDao userConsumeDao;
+    @Autowired
+    private AgentService agentService;
 
     public boolean getConfigBool(String name){
         return getConfigLong(name) > 0;
@@ -241,7 +245,8 @@ public class MembershipService {
     }
     public boolean handlerOrder(String orderId){
         MembershipOrder order = membershipOrderDao.findAllByOrderNo(orderId);
-        if (order == null) return false;
+        CashInOrder inOrder = cashInOrderDao.findAllByOrderNo(orderId);
+        if (order == null || inOrder == null) return false;
         User user = userDao.findAllById(order.getUserId());
         if (user == null) return false;
         MembershipFunds balance = new MembershipFunds();
@@ -275,6 +280,9 @@ public class MembershipService {
                 log.info("会员充值赠送失败 会员ID：{} 赠送金额：{}",user.getId(), order.getGameCoin());
             }
         }
+        UserConsume consume = new UserConsume(user.getId(), new Double(inOrder.getTotalFee()).longValue(),"在线开通会员"+order.getAmount()+"天",1);
+        userConsumeDao.saveAndFlush(consume);
+        agentService.handlerUser(consume);
         return true;
     }
     public ResponseData order(int page, User user, String ip) {

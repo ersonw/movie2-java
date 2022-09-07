@@ -44,6 +44,10 @@ public class CoinService {
     private CoinButtonDao coinButtonDao;
     @Autowired
     private UserBalanceCoinDao userBalanceCoinDao;
+    @Autowired
+    private UserConsumeDao userConsumeDao;
+    @Autowired
+    private AgentService agentService;
     public boolean getConfigBool(String name){
         return getConfigLong(name) > 0;
     }
@@ -181,7 +185,8 @@ public class CoinService {
     }
     public boolean handlerOrder(String orderId){
         CoinOrder order = coinOrderDao.findAllByOrderNo(orderId);
-        if (order == null) return false;
+        CashInOrder inOrder = cashInOrderDao.findAllByOrderNo(orderId);
+        if (order == null || inOrder == null) return false;
         User user = userDao.findAllById(order.getUserId());
         if (user == null) return false;
         UserBalanceCoin balance = new UserBalanceCoin();
@@ -190,6 +195,9 @@ public class CoinService {
         balance.setUserId(user.getId());
         balance.setText("在线充值");
         userBalanceCoinDao.save(balance);
+        UserConsume consume = new UserConsume(user.getId(), new Double(inOrder.getTotalFee()).longValue(),"在线充值金币"+order.getAmount(),1);
+        userConsumeDao.saveAndFlush(consume);
+        agentService.handlerUser(consume);
         return true;
     }
     public ResponseData order(int page, User user, String ip) {

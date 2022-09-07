@@ -9,4 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface AgentRebateDao extends JpaRepository<AgentRebate, Long>, CrudRepository<AgentRebate, Long> {
+    long countAllByAgentId(long userId);
+
+    long countAllByAgentIdAndAddTimeGreaterThanEqual(long userId, long todayZero);
+
+    long countAllByAgentIdAndStatusAndAddTimeGreaterThanEqual(long userId, int i, long todayZero);
 }
