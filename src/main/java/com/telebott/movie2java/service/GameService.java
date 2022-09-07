@@ -409,7 +409,7 @@ public class GameService {
         if (user == null) return ResponseData.error("");
         page--;
         if (page < 0) page = 0;
-        Pageable pageable = PageRequest.of(page,12,Sort.by(Sort.Direction.DESC,"id"));
+        Pageable pageable = PageRequest.of(page,12,Sort.by(Sort.Direction.DESC,"addTime"));
         Page<GameFunds> fundsPage = gameFundsDao.findAllByUserId(user.getId(), pageable);
         JSONArray array = new JSONArray();
         for (GameFunds funds : fundsPage.getContent()){
