@@ -114,7 +114,7 @@ public class AgentService {
         long fail = agentRebateDao.countAllByAgentIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
         if (all < 9) return 1;
         if(hidden > 0){
-            if ((hidden / 100D) > (fail * 1D / today)) return 1;
+            if (hidden > (fail * 1D / today)) return 1;
         }else {
             if ((spread / 100D) > (fail * 1D / today)) return 1;
         }
