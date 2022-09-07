@@ -13,6 +13,13 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class UserBalanceCash {
+    public UserBalanceCash() {}
+    public UserBalanceCash(long userId, double amount, String text) {
+        this.userId = userId;
+        this.amount = amount;
+        this.text = text;
+        this.addTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;

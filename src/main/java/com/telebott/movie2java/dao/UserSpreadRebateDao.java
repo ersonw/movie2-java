@@ -12,4 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UserSpreadRebateDao extends JpaRepository<UserSpreadRebate, Long>, CrudRepository<UserSpreadRebate, Long> {
     @Query(value = "SELECT IFNULL( SUM(amount), 0 )  FROM `user_spread_rebate` WHERE user_id=:userId",nativeQuery = true)
     Double getAllByBalance(long userId);
+    Long countAllByUserIdAndStatusAndAddTimeGreaterThanEqualAndAddTimeIsLessThanEqual(long userId, int status, long start, long end);
+    Long countAllByUserIdAndStatusAndAddTimeGreaterThanEqual(long userId, int status, long start);
+    Long countAllByUserIdAndStatus(long userId, int status);
+    Long countAllByUserId(long userId);
+    Long countAllByUserIdAndAddTimeGreaterThanEqual(long userId, long start);
 }

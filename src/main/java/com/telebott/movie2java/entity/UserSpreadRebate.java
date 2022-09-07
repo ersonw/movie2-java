@@ -13,6 +13,15 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class UserSpreadRebate {
+    public UserSpreadRebate() {}
+    public UserSpreadRebate(long orderId, long userId, double amount, int status) {
+        this.orderId = orderId;
+        this.userId = userId;
+        this.amount = amount;
+        this.status = status;
+        this.addTime = System.currentTimeMillis();
+        this.updateTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;

@@ -12,6 +12,6 @@ import java.util.List;
 @Transactional
 @Repository
 public interface UserSpreadConfigDao extends JpaRepository<UserSpreadConfig, Long>, CrudRepository<UserSpreadConfig, Long> {
-    List<UserConfig> findAllByName(String name);
+    List<UserSpreadConfig> findAllByName(String name);
     UserSpreadConfig findAllById(Long id);
 }
