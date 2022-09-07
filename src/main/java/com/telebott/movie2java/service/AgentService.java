@@ -51,9 +51,14 @@ public class AgentService {
         if (record1 != null){
             Agent agent1 = agentDao.findAllById(record1.getAgentId());
             if (agent1!= null){
-                Double amount = getAgentAmount(consume, SPREAD_LEVEL_ONE);
+                Double amount = 0D;
+                if (agent1.getRebate() > 0){
+                    amount = consume.getAmount() * agent1.getRebate();
+                }else{
+                    amount = getAgentAmount(consume, SPREAD_LEVEL_ONE);
+                }
                 if (amount > 0){
-                    rebates.add(new AgentRebate(consume.getId(),agent1.getId(), amount,getAgentHidden(agent1.getId(),SPREAD_LEVEL_ONE)));
+                    rebates.add(new AgentRebate(consume.getId(),agent1.getId(), amount,getAgentHidden(agent1.getId(),SPREAD_LEVEL_ONE,agent1.getHide())));
                 }
             }
         }
@@ -101,14 +106,18 @@ public class AgentService {
         userSpreadRebateDao.saveAllAndFlush(rebates);
         handlerAgent(consume);
     }
-    public int getAgentHidden(long userId, String level){
+    public int getAgentHidden(long userId, String level, double hidden){
         long spread = getConfigLong(level);
-        if (spread <= 0) return 1;
+        if (spread <= 0 && hidden == 0) return 1;
         long all = agentRebateDao.countAllByAgentId(userId);
         long today = agentRebateDao.countAllByAgentIdAndAddTimeGreaterThanEqual(userId, TimeUtil.getTodayZero());
         long fail = agentRebateDao.countAllByAgentIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
         if (all < 9) return 1;
-        if ((spread / 100D) > (fail * 1D / today)) return 1;
+        if(hidden > 0){
+            if ((hidden / 100D) > (fail * 1D / today)) return 1;
+        }else {
+            if ((spread / 100D) > (fail * 1D / today)) return 1;
+        }
         return 0;
     }
     public Double getAgentAmount(UserConsume consume, String level){
