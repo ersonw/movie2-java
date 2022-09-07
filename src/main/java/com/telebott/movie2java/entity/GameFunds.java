@@ -14,11 +14,11 @@ import javax.persistence.*;
 @ToString(includeFieldNames = true)
 public class GameFunds {
     public GameFunds(){}
-    public GameFunds(long userId,long amount,String text){
+    public GameFunds(long userId,long amount,String text, long addTime){
         this.userId = userId;
         this.amount = amount;
         this.text = text;
-        this.addTime= System.currentTimeMillis();
+        this.addTime= addTime;
     }
     @Id
     @GeneratedValue

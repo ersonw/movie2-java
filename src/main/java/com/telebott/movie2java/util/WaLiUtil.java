@@ -124,7 +124,7 @@ public class WaLiUtil {
                         records.setDetailUrl(detailUrls.get(i));
                     }
                     recordsList.add(records);
-                    funds.add(new  GameFunds(user.getId(), -(records.getProfit()), game.getName()));
+                    funds.add(new  GameFunds(user.getId(), -(records.getProfit()), game.getName(),records.getRecordTime()));
                     if (records.getProfit() < 0){
 //                        GameScroll scroll = new GameScroll();
 //                        scroll.setAddTime(System.currentTimeMillis());
