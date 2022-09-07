@@ -18,6 +18,5 @@ public class UserSpreadRecord {
     private long id;
     private long shareUserId;
     private long userId;
-    private int status;
     private long addTime;
 }

@@ -30,7 +30,7 @@ public class UserSpreadService {
         return Long.parseLong(value);
     }
     public String getConfig(String name){
-        List<UserConfig> configs = userSpreadConfigDao.findAllByName(name);
+        List<UserSpreadConfig> configs = userSpreadConfigDao.findAllByName(name);
         return configs.isEmpty() ? null : configs.get(0).getVal();
     }
 }
