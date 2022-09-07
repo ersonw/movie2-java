@@ -564,6 +564,8 @@ public class GameService {
         order.setAddress(outCard.getAddress());
         order.setIp(ip);
         GameFunds fund = new GameFunds(user.getId(), -(order.getAmount() * 100), "手动提现");
+//        System.out.println(amount);
+//        System.out.println(order.getAmount());
         if(!WaLiUtil.tranfer(user.getId(), -(order.getAmount() * 100))) return ResponseData.error("提现失败，详情联系在线客服！");
         gameOutOrderDao.saveAndFlush(order);
         gameFundsDao.saveAndFlush(fund);
