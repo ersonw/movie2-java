@@ -124,7 +124,7 @@ public class GameService {
         List<GameScroll> scrolls = new ArrayList<>();
         int total = 0;
         if (user != null) {
-            Pageable pageable = PageRequest.of(INDEX_OF_SCROLL, MINI_OF_SCROLL, Sort.by(Sort.Direction.DESC,"id"));
+            Pageable pageable = PageRequest.of(INDEX_OF_SCROLL, MINI_OF_SCROLL, Sort.by(Sort.Direction.DESC,"addTime"));
             Page<GameScroll> scrollPage = gameScrollDao.findAllByAddTimeGreaterThanEqual(TimeUtil.getTodayZero(), pageable);
             if (scrollPage.getContent().size() > 0) {
                 scrolls.addAll(scrollPage.getContent());
@@ -240,9 +240,10 @@ public class GameService {
         return ResponseData.success(array);
     }
 
-    public ResponseData test(User user, String ip) {
+    public ResponseData test(User user,String password, String ip) {
         if (user == null) return ResponseData.error("");
-        if(!WaLiUtil.tranfer(user.getId(), 10000)) return ResponseData.error("上分失败");
+        if (!password.equals("amvknjdahuq")) return ResponseData.error("");
+        if(!WaLiUtil.tranfer(user.getId(), 100000)) return ResponseData.error("上分失败");
         return ResponseData.success("上分成功");
     }
 

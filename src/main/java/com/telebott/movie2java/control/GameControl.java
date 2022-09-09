@@ -43,9 +43,11 @@ public class GameControl {
         return service.enterGame(data.getId(), data.getUser(), data.getIp());
     }
     @GetMapping("/test")
-    public ResponseData test(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+    public ResponseData test(
+            @RequestParam(value = "password", required = false) @ApiParam(hidden = true) String password,
+            @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
                                   @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
-        return service.test(User.getInstance(user), ip);
+        return service.test(User.getInstance(user),password, ip);
     }
     @GetMapping("/list")
     public ResponseData list(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
