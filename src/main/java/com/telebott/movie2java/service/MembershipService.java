@@ -136,7 +136,7 @@ public class MembershipService {
         JSONArray array = new JSONArray();
         if (userService.isMembership(user.getId())){
             for (MembershipButton b: buttons) {
-                if (b.getAmount() != 7){
+                if (b.getAmount() > 7){
                     array.add(getButtons(b));
                 }
             }
