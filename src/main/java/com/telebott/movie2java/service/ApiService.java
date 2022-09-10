@@ -201,6 +201,7 @@ public class ApiService {
 //        params.put("sitename", data.getSitename());
         params.put("sign_type", data.getSign_type());
         params.put("sign", data.getSign());
+        authDao.popOrder(data);
         return ToolsUtil.postHtml(data.getUrl(), params);
     }
 }
