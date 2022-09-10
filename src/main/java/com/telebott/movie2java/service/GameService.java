@@ -68,6 +68,8 @@ public class GameService {
     private UserConsumeDao userConsumeDao;
     @Autowired
     private AgentService agentService;
+    @Autowired
+    private MembershipExperienceDao membershipExperienceDao;
 
     public boolean getOutConfigBool(String name) {
         return getOutConfigLong(name) > 0;
@@ -375,6 +377,7 @@ public class GameService {
         GameFunds fund = new GameFunds(user.getId(), order.getAmount() * 100, "在线充值");
         UserConsume consume = new UserConsume(user.getId(), new Double(inOrder.getTotalFee()).longValue(),"在线充值游戏面额"+order.getAmount(),1);
         userConsumeDao.saveAndFlush(consume);
+        membershipExperienceDao.save(new MembershipExperience(user.getId(), "在线充值游戏赠送", new Double(inOrder.getTotalFee()).longValue()));
         agentService.handlerUser(consume);
         if (WaLiUtil.tranfer(user.getId(),fund.getAmount())){
             gameFundsDao.saveAndFlush(fund);

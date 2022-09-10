@@ -48,6 +48,8 @@ public class CoinService {
     private UserConsumeDao userConsumeDao;
     @Autowired
     private AgentService agentService;
+    @Autowired
+    private MembershipExperienceDao membershipExperienceDao;
     public boolean getConfigBool(String name){
         return getConfigLong(name) > 0;
     }
@@ -195,6 +197,7 @@ public class CoinService {
         balance.setUserId(user.getId());
         balance.setText("在线充值");
         userBalanceCoinDao.save(balance);
+        membershipExperienceDao.save(new MembershipExperience(user.getId(), "在线充值金币赠送", new Double(inOrder.getTotalFee()).longValue()));
         UserConsume consume = new UserConsume(user.getId(), new Double(inOrder.getTotalFee()).longValue(),"在线充值金币"+order.getAmount(),1);
         userConsumeDao.saveAndFlush(consume);
         agentService.handlerUser(consume);

@@ -49,6 +49,8 @@ public class DiamondService {
     private UserConsumeDao userConsumeDao;
     @Autowired
     private AgentService agentService;
+    @Autowired
+    private MembershipExperienceDao membershipExperienceDao;
 
 
     public boolean getConfigBool(String name){
@@ -200,6 +202,7 @@ public class DiamondService {
         userBalanceDiamondDao.save(balance);
         UserConsume consume = new UserConsume(user.getId(), new Double(inOrder.getTotalFee()).longValue(),"在线充值钻石"+order.getAmount(),1);
         userConsumeDao.saveAndFlush(consume);
+        membershipExperienceDao.save(new MembershipExperience(user.getId(), "在线充值钻石赠送", new Double(inOrder.getTotalFee()).longValue()));
         agentService.handlerUser(consume);
         return true;
     }

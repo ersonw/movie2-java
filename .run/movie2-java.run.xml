@@ -1,0 +1,21 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="movie2-java" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+    <deployment type="dockerfile">
+      <settings>
+        <option name="imageTag" value="movie2-java" />
+        <option name="containerName" value="movie2-java" />
+        <option name="portBindings">
+          <list>
+            <DockerPortBindingImpl>
+              <option name="containerPort" value="8017" />
+              <option name="hostPort" value="8017" />
+            </DockerPortBindingImpl>
+          </list>
+        </option>
+        <option name="commandLineOptions" value="--add-host super-os:172.21.72.18" />
+        <option name="sourceFilePath" value="Dockerfile" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>
