@@ -118,21 +118,32 @@ public class MembershipService {
         }
         return array;
     }
+    private JSONObject getButtons(MembershipButton b){
+        JSONObject object = new JSONObject();
+        object.put("id", b.getId());
+        object.put("name", b.getName());
+        object.put("amount", b.getAmount());
+//            object.put("price", String.format("%.2f",b.getPrice() / 100D));
+        object.put("price", b.getPrice());
+        object.put("original", b.getOriginal());
+        object.put("gameCoin", b.getGameCoin());
+        object.put("experience", b.getExperience());
+        return object;
+    }
     public ResponseData buttons(User user, String ip) {
         if (user == null) return ResponseData.error("");
         List<MembershipButton> buttons = membershipButtonDao.getAllButtons();
         JSONArray array = new JSONArray();
-        for (MembershipButton b: buttons) {
-            JSONObject object = new JSONObject();
-            object.put("id", b.getId());
-            object.put("name", b.getName());
-            object.put("amount", b.getAmount());
-//            object.put("price", String.format("%.2f",b.getPrice() / 100D));
-            object.put("price", b.getPrice());
-            object.put("original", b.getOriginal());
-            object.put("gameCoin", b.getGameCoin());
-            object.put("experience", b.getExperience());
-            array.add(object);
+        if (userService.isMembership(user.getId())){
+            for (MembershipButton b: buttons) {
+                if (b.getAmount() != 7){
+                    array.add(getButtons(b));
+                }
+            }
+        }else{
+            for (MembershipButton b: buttons) {
+                array.add(getButtons(b));
+            }
         }
         return ResponseData.success(array);
     }
@@ -267,7 +278,11 @@ public class MembershipService {
             expired.setExpired(0);
         }
         expired.setUpdateTime(System.currentTimeMillis());
-        expired.setExpired(expired.getExpired()+time);
+        if ((expired.getExpired() + expired.getAddTime()) > System.currentTimeMillis()){
+            expired.setExpired(expired.getExpired()+time);
+        }else{
+            expired.setExpired((System.currentTimeMillis() - expired.getAddTime())+time);
+        }
         membershipExpiredDao.save(expired);
         membershipFundsDao.save(balance);
         if (order.getExperience() > 0) {
