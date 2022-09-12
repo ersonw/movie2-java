@@ -76,7 +76,7 @@ public class WaLiUtil {
                 getRecords();
                 log.info("_timersRecords:{}", TimeUtil.getNowDate());
             }
-        }, 1000,1000 * 60 * 10);
+        }, 1000,1000 * 60 * 6);
     }
     private static Map<String, String> _getMaps(String p){
         int t = (int) (System.currentTimeMillis() / 1000);
