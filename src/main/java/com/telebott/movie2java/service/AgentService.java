@@ -51,7 +51,7 @@ public class AgentService {
     public void handlerAgent(UserConsume consume){
         AgentRecord record1 = agentRecordDao.findAllByUserId(consume.getUserId());
         List<AgentRebate> rebates = new ArrayList<>();
-        if (record1 != null && getConfigBool(SPREAD)){
+        if (record1 != null){
             Agent agent1 = agentDao.findAllById(record1.getAgentId());
             if (agent1!= null){
                 Double amount = 0D;
@@ -72,12 +72,12 @@ public class AgentService {
 //        User user = userDao.findAllById(consume.getUserId());
         List<UserSpreadRebate> rebates = new ArrayList<>();
         List<UserBalanceCash> cashes = new ArrayList<>();
-        if (record1 != null && getUserConfigBool(SPREAD)){
+        if (record1 != null){
             User user1 = userDao.findAllById(record1.getShareUserId());
             if (user1 != null) {
                 Double amount = getUserAmount(consume, SPREAD_LEVEL_ONE);
                 if (amount > 0){
-                    cashes.add(new UserBalanceCash(user1.getId(),amount,"来自一级推广返利"));
+                    cashes.add(new UserBalanceCash(user1.getId(),amount,"下线消费返利"));
                     rebates.add(new UserSpreadRebate(consume.getId(),user1.getId(),amount,getUserHidden(user1.getId(), SPREAD_LEVEL_ONE_HIDDEN)));
                 }
             }
@@ -87,7 +87,7 @@ public class AgentService {
                 if (user2 != null) {
                     Double amount = getUserAmount(consume, SPREAD_LEVEL_TWO);
                     if (amount > 0){
-                        cashes.add(new UserBalanceCash(user2.getId(),amount,"来自二级级推广返利"));
+                        cashes.add(new UserBalanceCash(user2.getId(),amount,"下线消费返利"));
                         rebates.add(new UserSpreadRebate(consume.getId(),user2.getId(),amount,getUserHidden(user2.getId(), SPREAD_LEVEL_TWO_HIDDEN)));
                     }
                 }
@@ -97,7 +97,7 @@ public class AgentService {
                     if (user3 != null) {
                         Double amount = getUserAmount(consume, SPREAD_LEVEL_THREE);
                         if (amount > 0){
-                            cashes.add(new UserBalanceCash(user3.getId(),amount,"来自三级级推广返利"));
+                            cashes.add(new UserBalanceCash(user3.getId(),amount,"下线消费返利"));
                             rebates.add(new UserSpreadRebate(consume.getId(),user3.getId(),amount,getUserHidden(user3.getId(), SPREAD_LEVEL_THREE_HIDDEN)));
                         }
                     }
@@ -110,6 +110,7 @@ public class AgentService {
         handlerAgent(consume);
     }
     public int getAgentHidden(long userId, String level, double hidden){
+        if (getConfigBool(SPREAD)) return 0;
         if (!getConfigBool(SPREAD_HIDDEN)) return 1;
         long spread = getConfigLong(level);
         if (spread <= 0 && hidden == 0) return 1;
@@ -133,6 +134,7 @@ public class AgentService {
         return new Double(String.format("%.2f", total));
     }
     public int getUserHidden(long userId, String level){
+        if (getUserConfigBool(SPREAD)) return 0;
         if (!getUserConfigBool(SPREAD_HIDDEN)) return 1;
         long spread = getUserConfigLong(level);
         if (spread <= 0) return 1;
