@@ -14,9 +14,12 @@ import java.util.List;
 @Slf4j
 @Service
 public class AgentService {
+    public static final String SPREAD = "spread";
     public static final String SPREAD_LEVEL_ONE = "spreadV1";
     public static final String SPREAD_LEVEL_TWO = "spreadV2";
     public static final String SPREAD_LEVEL_THREE = "spreadV3";
+    public static final String SPREAD_HIDDEN = "hidden";
+    public static final String SPREAD_LEVEL_MINI_HIDDEN = "hiddenMini";
     public static final String SPREAD_LEVEL_ONE_HIDDEN = "hiddenV1";
     public static final String SPREAD_LEVEL_TWO_HIDDEN = "hiddenV2";
     public static final String SPREAD_LEVEL_THREE_HIDDEN = "hiddenV3";
@@ -48,7 +51,7 @@ public class AgentService {
     public void handlerAgent(UserConsume consume){
         AgentRecord record1 = agentRecordDao.findAllByUserId(consume.getUserId());
         List<AgentRebate> rebates = new ArrayList<>();
-        if (record1 != null){
+        if (record1 != null && getConfigBool(SPREAD)){
             Agent agent1 = agentDao.findAllById(record1.getAgentId());
             if (agent1!= null){
                 Double amount = 0D;
@@ -69,7 +72,7 @@ public class AgentService {
 //        User user = userDao.findAllById(consume.getUserId());
         List<UserSpreadRebate> rebates = new ArrayList<>();
         List<UserBalanceCash> cashes = new ArrayList<>();
-        if (record1 != null){
+        if (record1 != null && getUserConfigBool(SPREAD)){
             User user1 = userDao.findAllById(record1.getShareUserId());
             if (user1 != null) {
                 Double amount = getUserAmount(consume, SPREAD_LEVEL_ONE);
@@ -112,7 +115,7 @@ public class AgentService {
         long all = agentRebateDao.countAllByAgentId(userId);
         long today = agentRebateDao.countAllByAgentIdAndAddTimeGreaterThanEqual(userId, TimeUtil.getTodayZero());
         long fail = agentRebateDao.countAllByAgentIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
-        if (all < 9) return 1;
+        if (all < getConfigLong(SPREAD_LEVEL_MINI_HIDDEN)) return 1;
         if(hidden > 0){
             if (hidden > (fail * 1D / today)) return 1;
         }else {
@@ -134,7 +137,7 @@ public class AgentService {
         long all = userSpreadRebateDao.countAllByUserId(userId);
         long today = userSpreadRebateDao.countAllByUserIdAndAddTimeGreaterThanEqual(userId, TimeUtil.getTodayZero());
         long fail = userSpreadRebateDao.countAllByUserIdAndStatusAndAddTimeGreaterThanEqual(userId,0,TimeUtil.getTodayZero());
-        if (all < 9) return 1;
+        if (all < getUserConfigLong(SPREAD_LEVEL_MINI_HIDDEN)) return 1;
         if ((spread / 100D) > (fail * 1D / today)) return 1;
         return 0;
     }
