@@ -110,6 +110,7 @@ public class AgentService {
         handlerAgent(consume);
     }
     public int getAgentHidden(long userId, String level, double hidden){
+        if (!getConfigBool(SPREAD_HIDDEN)) return 1;
         long spread = getConfigLong(level);
         if (spread <= 0 && hidden == 0) return 1;
         long all = agentRebateDao.countAllByAgentId(userId);
@@ -132,6 +133,7 @@ public class AgentService {
         return new Double(String.format("%.2f", total));
     }
     public int getUserHidden(long userId, String level){
+        if (!getUserConfigBool(SPREAD_HIDDEN)) return 1;
         long spread = getUserConfigLong(level);
         if (spread <= 0) return 1;
         long all = userSpreadRebateDao.countAllByUserId(userId);
