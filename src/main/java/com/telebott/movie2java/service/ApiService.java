@@ -203,18 +203,19 @@ public class ApiService {
         CashInOrder order = cashInOrderDao.findAllByOrderNo(ePayNotify.getOut_trade_no());
         if (order == null) return ToolsUtil.errorHtml("未知错误！");
         JSONObject object = new JSONObject();
+        object.put("act", "order");
         switch (order.getType().intValue()) {
             case EPayUtil.CASH_ORDER:
-                object.put("act", "cash");
+                object.put("val", "cash");
                 break;
             case EPayUtil.DIAMOND_ORDER:
-                object.put("act", "diamond");
+                object.put("val", "diamond");
                 break;
             case EPayUtil.GAME_ORDER:
-                object.put("act", "game");
+                object.put("val", "game");
                 break;
             case EPayUtil.COIN_ORDER:
-                object.put("act", "coin");
+                object.put("val", "coin");
                 break;
             default:
                 break;
