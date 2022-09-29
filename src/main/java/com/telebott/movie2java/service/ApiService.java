@@ -204,7 +204,7 @@ public class ApiService {
         if (order == null) return ToolsUtil.errorHtml("未知错误！");
         JSONObject object = new JSONObject();
         object.put("act", "order");
-        switch (order.getType().intValue()) {
+        switch (order.getOrderType()) {
             case EPayUtil.CASH_ORDER:
                 object.put("val", "cash");
                 break;
