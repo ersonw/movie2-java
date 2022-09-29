@@ -223,7 +223,7 @@ public class ApiService {
         String data = JSONObject.toJSONString(object);
         data = AESUtils.Encrypt(data);
         assert data != null;
-        data = data.replaceAll("=","@ersonw");
+        data = data.replaceAll("=","@ersonw").replaceAll("\\+","@iterson");
         AppConfig config = appConfigDao.getNewConfig();
         if (config == null || StringUtils.isEmpty(config.getDownload()))  return ToolsUtil.errorHtml("未知错误！");
         return ToolsUtil.getHtml(config.getDownload()+"?action="+data);
