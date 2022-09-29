@@ -160,7 +160,7 @@ public class GameService {
     }
 
     public ResponseData publicity(User user, String ip) {
-        if (user == null) return ResponseData.error("");
+//        if (user == null) return ResponseData.error("");
         List<GamePublicity> publicities = gamePublicityDao.findAllByStatus(1);
         JSONArray array = new JSONArray();
         for (GamePublicity publicity : publicities) {
@@ -185,7 +185,7 @@ public class GameService {
 
     public ResponseData enterGame(long id, User user, String ip) {
         if (id < 0) return ResponseData.error("");
-        if (user == null) return ResponseData.error("");
+        if (user == null) return ResponseData.error("未登录用户不能游玩");
         if(id == 0){
             return ResponseData.success(WaLiUtil.enterGame(user.getId(), 0));
         }else {
@@ -210,7 +210,7 @@ public class GameService {
         return object;
     }
     public ResponseData list(User user, String ip) {
-        if (user == null) return ResponseData.error("");
+//        if (user == null) return ResponseData.error("");
         List<Game> games = gameDao.findAllByStatus(1);
         JSONArray array = new JSONArray();
         for (Game game : games) {
@@ -250,7 +250,7 @@ public class GameService {
     }
 
     public ResponseData buttons(User user, String ip) {
-        if (user == null) return ResponseData.error("");
+//        if (user == null) return ResponseData.error("");
         List<GameButton> buttons = gameButtonDao.getAllButtons();
         JSONArray array = new JSONArray();
         for (GameButton b: buttons) {
@@ -265,7 +265,7 @@ public class GameService {
         return ResponseData.success(array);
     }
     public ResponseData button(long id, User user, String ip) {
-        if (user == null) return ResponseData.error("");
+//        if (user == null) return ResponseData.error("");
         if (id < 1) return ResponseData.error("");
         GameButton button = gameButtonDao.findAllById(id);
         if (button == null) return ResponseData.error("按钮已被禁用，请刷新重试！");
@@ -313,7 +313,7 @@ public class GameService {
     }
 
     public ResponseData payment(long id, long toId, String schema, String serverName, int serverPort, User user, String ip) {
-        if (user == null) return ResponseData.error("");
+        if (user == null) return ResponseData.error("未登录用户不能充值");
         if (id < 1) return ResponseData.error("");
         if (toId < 1) return ResponseData.error("");
         GameButton button = gameButtonDao.findAllById(id);

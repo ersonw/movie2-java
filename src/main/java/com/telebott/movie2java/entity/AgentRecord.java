@@ -13,6 +13,14 @@ import javax.persistence.*;
 @Cacheable
 @ToString(includeFieldNames = true)
 public class AgentRecord {
+    public AgentRecord() {}
+    public AgentRecord(long agentId, long userId, String ip) {
+        this.agentId = agentId;
+        this.userId = userId;
+        this.ip = ip;
+        addTime = System.currentTimeMillis();
+        updateTime = System.currentTimeMillis();
+    }
     @Id
     @GeneratedValue
     private long id;
@@ -20,4 +28,5 @@ public class AgentRecord {
     private long userId;
     private long addTime;
     private long updateTime;
+    private String ip;
 }

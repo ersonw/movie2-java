@@ -58,8 +58,12 @@ public class ApiControl {
     @GetMapping("/payment")
     public ModelAndView payment(@RequestParam(value = "orderId") String orderId,
                                 @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
-        System.out.printf("payment:%s ip:%s\n", orderId, ip);
+//        System.out.printf("payment:%s ip:%s\n", orderId, ip);
         return service.payment(orderId, ip);
+    }
+    @GetMapping("/config")
+    public ResponseData config(@RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.config(ip);
     }
     @GetMapping("/payment/{orderId}")
     public ModelAndView paymentOrderId(@PathVariable String orderId,
@@ -67,7 +71,16 @@ public class ApiControl {
 //        System.out.printf("paymentOrderId:%s ip:%s\n", orderId, ip);
         return service.payment(orderId, ip);
     }
-
+    @PostMapping("/invitation")
+    @ApiGlobalModel(component = pData.class, value = "code")
+    public ResponseData invitation(@RequestBody pData data){
+        return service.invitation(data.getCode(), data.getUser(),data.getIp());
+    }
+    @PostMapping("/channel")
+    @ApiGlobalModel(component = pData.class, value = "code")
+    public ResponseData channel(@RequestBody pData data){
+        return service.channel(data.getCode(), data.getUser(),data.getIp());
+    }
     @ApiIgnore
     @PostMapping("/toPayNotify")
     public String toPayNotify(@RequestBody ToPayNotify payNotify) {

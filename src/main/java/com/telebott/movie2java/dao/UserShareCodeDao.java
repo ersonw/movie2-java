@@ -12,4 +12,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UserShareCodeDao extends JpaRepository<UserShareCode, Long>, CrudRepository<UserShareCode, Long> {
     Page<UserShareCode> findAllByUserId(long userId, Pageable pageable);
+    UserShareCode findByInviteCode(String code);
 }

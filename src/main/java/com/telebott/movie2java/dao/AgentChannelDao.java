@@ -9,4 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public interface AgentChannelDao extends JpaRepository<AgentChannel, Long>, CrudRepository<AgentChannel, Long> {
+    AgentChannel findByChannel(String code);
 }

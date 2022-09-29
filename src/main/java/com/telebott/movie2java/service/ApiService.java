@@ -34,58 +34,73 @@ public class ApiService {
     private OrderService orderService;
     @Autowired
     private AuthDao authDao;
+    @Autowired
+    private UserSpreadRecordDao userSpreadRecordDao;
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private UserShareCodeDao userShareCodeDao;
+    @Autowired
+    private AgentChannelDao agentChannelDao;
+    @Autowired
+    private AgentRecordDao agentRecordDao;
+    @Autowired
+    private AppConfigDao appConfigDao;
 
 
-    public String getVideoConfig(String name){
+    public String getVideoConfig(String name) {
         List<VideoPpvod> ppvods = videoPpvodDao.findAllByName(name);
-        if(ppvods.size() > 0){
+        if (ppvods.size() > 0) {
             return ppvods.get(0).getVal();
         }
         return null;
     }
-    public long getVideoConfigLong(String name){
+
+    public long getVideoConfigLong(String name) {
         String val = getVideoConfig(name);
-        if (val != null && ToolsUtil.isNumberString(val)){
+        if (val != null && ToolsUtil.isNumberString(val)) {
             return Long.parseLong(val);
         }
         return 0;
     }
-    public boolean getVideoConfigBool(String name){
+
+    public boolean getVideoConfigBool(String name) {
         return getVideoConfigLong(name) > 0;
     }
+
     public ResponseData handlerYzm(YzmData yzmData, String passwd) {
         log.info("[{}]视频回调 {}", TimeUtil.getNowDate(), yzmData);
         String pass = getVideoConfig("passwd");
-        if (!Objects.equals(pass, passwd)){
+        if (!Objects.equals(pass, passwd)) {
             return ResponseData.fail("auth failed");
         }
         if (StringUtils.isEmpty(yzmData.getShareid())) return ResponseData.fail("add failed");
         Video video = videoDao.findAllByShareId(yzmData.getShareid());
-        if (video == null){
+        if (video == null) {
             video = new Video();
             video.setStatus(1);
             video.setShareId(yzmData.getShareid());
             video.setAddTime(System.currentTimeMillis());
-            video.setLikes(ToolsUtil.cardinality(getVideoConfigLong("miniLikes"),getVideoConfigLong("maxLikes")));
-            video.setPlays(ToolsUtil.cardinality(getVideoConfigLong("miniPlays"),getVideoConfigLong("maxPlays")));
+            video.setLikes(ToolsUtil.cardinality(getVideoConfigLong("miniLikes"), getVideoConfigLong("maxLikes")));
+            video.setPlays(ToolsUtil.cardinality(getVideoConfigLong("miniPlays"), getVideoConfigLong("maxPlays")));
         }
         video.setUpdateTime(System.currentTimeMillis());
-        if (yzmData.getRpath().contains("/")){
+        if (yzmData.getRpath().contains("/")) {
             String[] rpath = yzmData.getRpath().split("/");
             for (int i = 0; i < rpath.length; i++) {
                 rpath[i] = UrlUtil.encode(rpath[i]);
             }
-            yzmData.setRpath(StringUtils.join(rpath,"/"));
-        }else{
+            yzmData.setRpath(StringUtils.join(rpath, "/"));
+        } else {
             yzmData.setRpath(UrlUtil.encode(yzmData.getRpath()));
         }
-        if (yzmData.getPath().contains("/")){
+        if (yzmData.getPath().contains("/")) {
             String[] path = yzmData.getPath().split("/");
             for (int i = 0; i < path.length; i++) {
                 path[i] = UrlUtil.encode(path[i]);
             }
-            yzmData.setPath(StringUtils.join(path,"/"));
-        }else{
+            yzmData.setPath(StringUtils.join(path, "/"));
+        } else {
             yzmData.setPath(UrlUtil.encode(yzmData.getPath()));
         }
         String pic1 = yzmData.getRpath() + "/1.jpg";
@@ -106,7 +121,7 @@ public class ApiService {
         if (yzmData.getMetadata() != null) {
             video.setVodDuration(yzmData.getMetadata().getTime());
         }
-        if (!yzmData.getDomain().endsWith("/")) yzmData.setDomain(yzmData.getDomain()+"/");
+        if (!yzmData.getDomain().endsWith("/")) yzmData.setDomain(yzmData.getDomain() + "/");
         if (yzmData.getOutput() != null) {
             String picDomain = yzmData.getDomain();
             if (StringUtils.isNotEmpty(yzmData.getPicdomain())) picDomain = yzmData.getPicdomain();
@@ -126,7 +141,7 @@ public class ApiService {
                     playUrl.setUrl(yzmData.getDomain() + yzmData.getRpath() + "/" + data.getBitrate() + "kb/hls/index.m3u8");
                     playUrls.add(playUrl);
                 }
-                video.setVodPlayUrl(playUrls.get(playUrls.size()-1).getUrl());
+                video.setVodPlayUrl(playUrls.get(playUrls.size() - 1).getUrl());
 //                video.setVodPlayUrl(JSONArray.toJSONString(playUrls));
             }
         }
@@ -139,21 +154,22 @@ public class ApiService {
         if (StringUtils.isEmpty(payNotify.getMchid())) return "fail";
         List<CashInConfig> configs = cashInConfigDao.findAllByMchId(payNotify.getMchid());
         if (configs.size() == 0) return "fail";
-        if (!ShowPayUtil.toPayNotify(payNotify,configs.get(0))) return "fail";
-        CashInOrder order = cashInOrderDao.findAllByOrderNoAndStatus(payNotify.getOut_trade_no(),0);
+        if (!ShowPayUtil.toPayNotify(payNotify, configs.get(0))) return "fail";
+        CashInOrder order = cashInOrderDao.findAllByOrderNoAndStatus(payNotify.getOut_trade_no(), 0);
         if (order == null) return "fail";
         order.setTotalFee(payNotify.getTotal_fee());
         if (!orderService.handlerToPayNotify(order)) return "fail";
         return "success";
     }
+
     public String ePayNotify(EPayNotify ePayNotify) {
 //        System.out.printf("%s\n",ePayNotify);
-        if(ePayNotify.getPid() == 0) return "fail";
-        List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(),1);
+        if (ePayNotify.getPid() == 0) return "fail";
+        List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(), 1);
         if (configs.size() == 0) return "fail";
         boolean verify = ePayNotify.isSign(configs.get(0).getSecretKey());
 //        System.out.printf(verify ? "效验成功！\n": "效验失败!\n");
-        if(verify && ePayNotify.getTrade_status().equals("TRADE_SUCCESS")){
+        if (verify && ePayNotify.getTrade_status().equals("TRADE_SUCCESS")) {
             EPayData data = authDao.findOrderByOrderId(ePayNotify.getOut_trade_no());
             if (data != null) {
                 authDao.pushOrder(data);
@@ -164,7 +180,7 @@ public class ApiService {
                 cOrder.setTradeNo(ePayNotify.getTrade_no());
                 cOrder.setStatus(1);
                 cOrder.setTotalFee(ePayNotify.getMoney());
-                if(EPayUtil.handlerOrder(cOrder)) {
+                if (EPayUtil.handlerOrder(cOrder)) {
                     cashInOrderDao.saveAndFlush(cOrder);
                     return "success";
                 }
@@ -174,17 +190,38 @@ public class ApiService {
     }
 
     public ModelAndView ePayReturn(EPayNotify ePayNotify) {
-        List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(),1);
+        List<CashInConfig> configs = cashInConfigDao.findAllByMchIdAndStatus(ePayNotify.getPid().toString(), 1);
         if (configs.size() == 0) return ToolsUtil.errorHtml("fail");
         boolean verify = ePayNotify.isSign(configs.get(0).getSecretKey());
 //        return ToolsUtil.errorHtml(verify ? "效验成功！": "效验失败!");
-        if(!verify){
+        if (!verify) {
             return ToolsUtil.errorHtml("数据效验失败!");
         }
-        if (!ePayNotify.getTrade_status().equals("TRADE_SUCCESS")){
+        if (!ePayNotify.getTrade_status().equals("TRADE_SUCCESS")) {
             return ToolsUtil.waitHtml();
         }
-        return ToolsUtil.getHtml("z1uhui99://dl/businessWebview/link/");
+        CashInOrder order = cashInOrderDao.findAllByOrderNo(ePayNotify.getOut_trade_no());
+        if (order == null) return ToolsUtil.errorHtml("未知错误！");
+        JSONObject object = new JSONObject();
+        switch (order.getType().intValue()) {
+            case EPayUtil.CASH_ORDER:
+                object.put("act", "cash");
+                break;
+            case EPayUtil.DIAMOND_ORDER:
+                object.put("act", "diamond");
+                break;
+            case EPayUtil.GAME_ORDER:
+                object.put("act", "game");
+                break;
+            case EPayUtil.COIN_ORDER:
+                object.put("act", "coin");
+                break;
+            default:
+                break;
+        }
+        String data = JSONObject.toJSONString(object);
+        data = AESUtils.AESEncode(data);
+        return ToolsUtil.getHtml("https://app-gnsz6pbx.appopenvip.com/page/gnsz6pbx/js-test?action="+data);
     }
 
     public ModelAndView payment(String orderId, String ip) {
@@ -203,5 +240,81 @@ public class ApiService {
         params.put("sign", data.getSign());
         authDao.popOrder(data);
         return ToolsUtil.postHtml(data.getUrl(), params);
+    }
+
+    public ResponseData invitation(String code, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        UserSpreadRecord record = userSpreadRecordDao.findAllByUserId(user.getId());
+        if (record != null)  return ResponseData.success(ResponseData.object("state",true));
+        if (StringUtils.isEmpty(code)) return ResponseData.success(ResponseData.object("state",true));
+        User inviteUser = userDao.findByUsername(code);
+        if (inviteUser == null){
+            UserShareCode shareCode = userShareCodeDao.findByInviteCode(code);
+            if (shareCode == null){
+                return ResponseData.success(ResponseData.object("state",true));
+            }
+            inviteUser = userDao.findAllById(shareCode.getUserId());
+            if (inviteUser == null){
+                return ResponseData.success(ResponseData.object("state",true));
+            }
+        }
+//        UserSpreadRecord record = userSpreadRecordDao.findAllByUserIdAndShareUserId()
+        record = new UserSpreadRecord(user.getId(),inviteUser.getId(),ip);
+        userSpreadRecordDao.saveAndFlush(record);
+        return ResponseData.success(ResponseData.object("state",true));
+    }
+
+    public ResponseData channel(String code, User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        AgentRecord record = agentRecordDao.findAllByUserId(user.getId());
+        if (record == null) return ResponseData.success(ResponseData.object("state",true));
+        if (StringUtils.isEmpty(code)) return ResponseData.success(ResponseData.object("state",true));
+        AgentChannel channel = agentChannelDao.findByChannel(code);
+        if (channel == null) return ResponseData.success(ResponseData.object("state",true));
+        record = new AgentRecord(channel.getAgentId(),user.getId(),ip);
+        agentRecordDao.saveAndFlush(record);
+        return ResponseData.success(ResponseData.object("state",true));
+    }
+    public JSONObject getConfig(AppConfig config){
+        JSONObject object = new JSONObject();
+        object.put("mainUrl",config.getMainUrl());
+        object.put("mainDomain",config.getMainDomain());
+        object.put("channelDomain",config.getChannelDomain());
+        object.put("download",config.getDownload());
+        JSONArray array = new JSONArray();
+        if (StringUtils.isNotEmpty(config.getSplashList())){
+            String[] list = config.getSplashList().split(";");
+            for (String item: list) {
+                JSONObject json = new JSONObject();
+                if (item.contains("=")){
+                    String[] it = item.split("==");
+                    json.put("pic", it[0]);
+                    json.put("url", it[1]);
+                }else{
+                    json.put("pic", item);
+                }
+                array.add(json);
+            }
+        }
+        object.put("splashList",array);
+        String version = "1.0.0";
+        long buildNumber = 0;
+        if (StringUtils.isNotEmpty(config.getVersion())){
+            if (config.getVersion().contains("+")){
+                String[] versions = config.getVersion().split("\\+");
+                version = (versions[0]);
+                buildNumber = Long.parseLong(versions[1]);
+            }else{
+                version = (config.getVersion());
+            }
+        }
+        object.put("version",version);
+        object.put("buildNumber",buildNumber);
+        return object;
+    }
+    public ResponseData config(String ip) {
+        AppConfig config = appConfigDao.getNewConfig();
+        if (config == null) config = new AppConfig();
+        return ResponseData.success(getConfig(config));
     }
 }

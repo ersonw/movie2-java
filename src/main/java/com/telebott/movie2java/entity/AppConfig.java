@@ -9,21 +9,19 @@ import javax.persistence.*;
 @Setter
 @Getter
 @Entity
-@Table(name = "cash_in_order")
+@Table(name = "app_config")
 @Cacheable
 @ToString(includeFieldNames = true)
-public class CashInOrder {
+public class AppConfig {
     @Id
     @GeneratedValue
     private long id;
-    private String orderId;
-    private String orderNo;
-    private int orderType;
-    private Long type;
-    private String tradeNo;
-    private String totalFee;
-    private int status;
+    private String mainUrl;
+    private String mainDomain;
+    private String channelDomain;
+    private String splashList;
+    private String version;
+    private String download;
     private long addTime;
     private long updateTime;
-    private String ip;
 }
