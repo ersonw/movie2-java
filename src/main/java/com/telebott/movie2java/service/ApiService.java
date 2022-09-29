@@ -220,8 +220,12 @@ public class ApiService {
                 break;
         }
         String data = JSONObject.toJSONString(object);
-        data = AESUtils.AESEncode(data);
-        return ToolsUtil.getHtml("https://app-gnsz6pbx.appopenvip.com/page/gnsz6pbx/js-test?action="+data);
+        data = AESUtils.Encrypt(data);
+        assert data != null;
+        data = data.replaceAll("=","@ersonw");
+        AppConfig config = appConfigDao.getNewConfig();
+        if (config == null || StringUtils.isEmpty(config.getDownload()))  return ToolsUtil.errorHtml("未知错误！");
+        return ToolsUtil.getHtml(config.getDownload()+"?action="+data);
     }
 
     public ModelAndView payment(String orderId, String ip) {
