@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Api(value = "/api/watch", tags = "看片")
+//@Api(value = "/api/watch", tags = "看片")
 @ApiResponses({
         @ApiResponse(code = 200, message = "成功"),
         @ApiResponse(code = 105, message = "未带token请求"),

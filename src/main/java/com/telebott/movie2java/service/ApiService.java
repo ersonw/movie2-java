@@ -107,16 +107,17 @@ public class ApiService {
         video.setTitle(yzmData.getTitle());
         video.setVodContent(video.getTitle());
         if (StringUtils.isNotEmpty(yzmData.getCategory())) {
-            VideoClass videoClass = videoClassDao.findAllByName(yzmData.getCategory());
-            if (videoClass == null) {
-                videoClass = new VideoClass();
+            List<VideoClass> videoClassList = videoClassDao.findAllByName(yzmData.getCategory());
+            if (videoClassList.size() == 0) {
+                VideoClass videoClass = new VideoClass();
                 videoClass.setName(yzmData.getCategory());
                 videoClass.setAddTime(System.currentTimeMillis());
                 videoClass.setUpdateTime(System.currentTimeMillis());
-                videoClassDao.saveAndFlush(videoClass);
+                videoClassList.add(videoClass);
+                videoClassDao.saveAllAndFlush(videoClassList);
             }
 //            System.out.println(videoClass.getId());
-            video.setVodClass(videoClass.getId());
+            video.setVodClass(videoClassList.get(0).getId());
         }
         if (yzmData.getMetadata() != null) {
             video.setVodDuration(yzmData.getMetadata().getTime());
@@ -182,9 +183,9 @@ public class ApiService {
                 cOrder.setTotalFee(ePayNotify.getMoney());
                 if (EPayUtil.handlerOrder(cOrder)) {
                     cashInOrderDao.saveAndFlush(cOrder);
-                    return "success";
                 }
             }
+            return "success";
         }
         return "fail";
     }

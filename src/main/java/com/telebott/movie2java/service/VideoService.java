@@ -598,7 +598,7 @@ public class VideoService {
         return ResponseData.success(ResponseData.object("list", array));
     }
     public ResponseData publicity(User user, String ip) {
-        if (user == null) return ResponseData.error("");
+//        if (user == null) return ResponseData.error("");
         List<VideoPublicity> publicities = videoPublicityDao.findAllByStatus(1);
         JSONArray array = new JSONArray();
         for (VideoPublicity publicity : publicities) {

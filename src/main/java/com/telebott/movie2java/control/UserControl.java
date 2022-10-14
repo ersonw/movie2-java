@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
-@Api(value = "api", tags = "用户接口")
+//@Api(value = "api", tags = "用户接口")
 public class UserControl {
     @Autowired
     private UserService service;
@@ -29,6 +29,12 @@ public class UserControl {
             return ResponseData.error("用户名或密码必填!");
         }
         return service.login(data.getUsername(),data.getPassword(), data.getDeviceId(), data.getPlatform(),data.getIp());
+    }
+    @GetMapping("/logout")
+    public ResponseData logout(
+            @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                               @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.logout(User.getUser(user),ip);
     }
     @GetMapping("/login/sms/{phone}")
     public ResponseData userLoginSms(@PathVariable("phone") String phone,

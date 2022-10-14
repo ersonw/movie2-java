@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 
@@ -37,6 +38,7 @@ public class User {
         return JSONObject.toJavaObject(object, User.class);
     }
     public static User getUser(String s){
+        if (StringUtils.isEmpty(s)) return null;
         JSONObject object = JSONObject.parseObject(s);
         return JSONObject.toJavaObject(object, User.class);
     }

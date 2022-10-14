@@ -13,7 +13,7 @@ import java.util.List;
 @Transactional
 @Repository
 public interface VideoClassDao extends JpaRepository<VideoClass, Long>, CrudRepository<VideoClass, Long> {
-    VideoClass findAllByName(String name);
+    List<VideoClass> findAllByName(String name);
     @Modifying
     @Query(value = "SELECT vc.* FROM (SELECT * FROM `video` WHERE status=:status AND vod_class > 0 GROUP BY `vod_class`) v LEFT JOIN `video_class` vc ON v.vod_class=vc.id ", nativeQuery = true)
     List<VideoClass> findAllByStatus(int status);

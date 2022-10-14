@@ -11,4 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UserSpreadRecordDao extends JpaRepository<UserSpreadRecord, Long>, CrudRepository<UserSpreadRecord, Long> {
     UserSpreadRecord findAllByUserId(long userId);
     UserSpreadRecord findAllByUserIdAndShareUserId(long userId, long toUserId);
+
+    Long countByUserId(long id);
 }

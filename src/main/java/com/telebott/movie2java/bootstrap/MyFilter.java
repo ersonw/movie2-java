@@ -113,7 +113,7 @@ public class MyFilter implements Filter {
                 wrapper.addParameter("schema", schema);
                 wrapper.addParameter("query", query);
                 wrapper.addParameter("userAgent", userAgent);
-                wrapper.addParameter("user", null);
+                wrapper.addParameter("user", "");
                 if (user != null){
                     wrapper.addParameter("user", JSONObject.toJSONString(user));
                 }

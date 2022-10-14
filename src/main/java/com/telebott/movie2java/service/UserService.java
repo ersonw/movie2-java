@@ -577,4 +577,10 @@ public class UserService {
         authDao.pushUser(user);
         return ResponseData.success(getUserInfo(user));
     }
+
+    public ResponseData logout(User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        authDao.popUser(user);
+        return ResponseData.success();
+    }
 }

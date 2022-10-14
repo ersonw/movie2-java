@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/video")
-@Api(value = "api", tags = "视频接口")
+//@Api(value = "api", tags = "视频接口")
 public class VideoControl {
     @Autowired
     private VideoService service;

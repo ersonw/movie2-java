@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/membership")
-@Api(value = "api", tags = "会员中心")
+//@Api(value = "api", tags = "会员中心")
 public class MembershipControl {
     @Autowired
     private MembershipService service;

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-@Api(value = "api", tags = "根接口")
+//@Api(value = "api", tags = "根接口")
 @ApiResponses({
         @ApiResponse(code = 200, message = "成功"),
         @ApiResponse(code = 105, message = "未带token请求"),
@@ -110,14 +110,8 @@ public class ApiControl {
                 "</body>\n" +
                 "</html>";
     }
-//    @Param("")
-//    @RequestBody
-//    @ModelAttribute
-//    @ApiGlobalModel(component = pData.class, value = "limit,page")
-//    @PostMapping("/test")
-//    public String test(JSONObject data) {
-//        return JSONObject.toJSONString(data);
-//    }
-//    @ApiIgnore
-
+    @GetMapping("/test")
+    public ResponseData test(){
+        return ResponseData.success();
+    }
 }
