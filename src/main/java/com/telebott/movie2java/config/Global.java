@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class Global {
-    public static ExecutorService executor = Executors.newFixedThreadPool(6);
+    public static ExecutorService executor = Executors.newFixedThreadPool(1);
     public static ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;
 //    public static boolean authRoles(int roles){
 //        String path = getPath();

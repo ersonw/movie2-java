@@ -1,10 +1,13 @@
 package com.telebott.movie2java.service;
 
 import com.telebott.movie2java.dao.AuthDao;
+import com.telebott.movie2java.dao.UserDao;
 import com.telebott.movie2java.dao.UserDeviceRecordDao;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.entity.UserDeviceRecord;
+import com.telebott.movie2java.util.SmsBaoUtil;
+import com.telebott.movie2java.util.ToolsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,8 @@ public class DeviceService {
     private UserDeviceRecordDao deviceRecordDao;
     @Autowired
     private AuthDao authDao;
+    @Autowired
+    private UserDao userDao;
     @Autowired
     private UserService userService;
 
@@ -43,15 +48,28 @@ public class DeviceService {
     }
 
     public ResponseData checkDevice(String deviceId, String ip) {
-        if(!check(deviceId)){
-            return ResponseData.fail();
+        User user = getToken(deviceId, ip);
+//        if(!check(deviceId)){
+        if(user == null){
+            user = new User();
+            user.setNickname("春潮视频_游客"+ SmsBaoUtil.getSmsCode());
+            user.setText("春潮视频萌新，待机中哟！");
+            user.setUsername(ToolsUtil.getRandom(6));
+            user.setStatus(1);
+            user.setAddTime(System.currentTimeMillis());
+            user.setUpdateTime(System.currentTimeMillis());
+            user.setRegisterIp(ip);
+            user.setPhone("");
+            userDao.saveAndFlush(user);
+            user.setToken(ToolsUtil.getToken());
+            authDao.pushUser(user);
+//            return ResponseData.fail();
         }
 //        String token = getToken(deviceId);
 //        if (token == null) {}
-        User user = getToken(deviceId, ip);
-        if (user == null) {
-            return ResponseData.fail();
-        }
+//        if (user == null) {
+//            return ResponseData.fail();
+//        }
         return ResponseData.success(userService.getUserInfo(user));
     }
 }

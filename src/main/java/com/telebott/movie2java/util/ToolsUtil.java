@@ -4,6 +4,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.FilterWordsDao;
 import com.telebott.movie2java.entity.FilterWords;
+import lombok.extern.slf4j.Slf4j;
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -39,6 +46,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 @Component
+@Slf4j
 public class ToolsUtil {
     private static ToolsUtil self;
     @Autowired
@@ -47,7 +55,91 @@ public class ToolsUtil {
     private static List<FilterWords> filterWords;
     public static final int TIME_OUT = 30;
     public static final int MAX_Black = 3;
+    public static String getCamelPinYin(String hz) {
+        return getCamelPinYin(hz, false);
+    }
+    public static String getCamelPinYin(String hz, boolean type) {
+        HanyuPinyinOutputFormat format = new HanyuPinyinOutputFormat();
+        format.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+        format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+        format.setVCharType(HanyuPinyinVCharType.WITH_V);
+        String m;
+        StringBuilder r = new StringBuilder();
+        try {
+            for (char value : hz.toCharArray()) {
+                // 判断是否为汉字字符
+                if (Character.toString(value).matches("[\\u4E00-\\u9FA5]+")) {
+                    // 取出该汉字全拼的第一种读音并连接到字符串m后
+                    m = PinyinHelper.toHanyuPinyinStringArray(value, format)[0];
+                } else {
+                    // 如果不是汉字字符，直接取出字符并连接到字符串m后
+                    m = Character.toString(value);
+                }
 
+                if (type) {
+                    r.append(m.substring(0, 1).toUpperCase()).append(m.substring(1));
+                } else {
+                    r.append(m);
+                }
+            }
+        } catch (BadHanyuPinyinOutputFormatCombination e) {
+            log.error(e.getMessage(), e);
+        }
+
+        return r.toString();
+    }
+
+    /**
+     * 简要说明：获取汉字首字母
+     *
+     * @param hz 	[需要转换的汉字]
+     * @param type 	[是否大写]
+     * @return java.lang.String
+     */
+    public static String getPinYinHeadChar(String hz, boolean type) {
+        StringBuilder r = new StringBuilder();
+        String s = "";
+        for (char v : hz.toCharArray()) {
+            // 判断是否为汉字字符
+            if (Character.toString(v).matches("[\\u4E00-\\u9FA5]+")) {
+                s = PinyinHelper.toHanyuPinyinStringArray(v)[0];
+            } else {
+                // 如果不是汉字字符，直接取出字符并连接到字符串m后
+                s = Character.toString(v);
+            }
+
+            r.append(s != null ? s.substring(0, 1) : null);
+        }
+
+        return type ? r.toString().toUpperCase() : r.toString();
+    }
+    /**
+     * 获取汉字串拼音首字母，英文字符不变
+     * @param chinese 汉字串
+     * @return 汉语拼音首字母
+     */
+    public static String getFirstSpell(String chinese) {
+        StringBuffer pybf = new StringBuffer();
+        char[] arr = chinese.toCharArray();
+        HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();
+        defaultFormat.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+        defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+        if(arr.length>0){
+            if (arr[0] > 128) {
+                try {
+                    String[] temp = PinyinHelper.toHanyuPinyinStringArray(arr[0], defaultFormat);
+                    if (temp != null) {
+                        pybf.append(temp[0].charAt(0));
+                    }
+                } catch (BadHanyuPinyinOutputFormatCombination e) {
+                    e.printStackTrace();
+                }
+            } else {
+                pybf.append(arr[0]);
+            }
+        }
+        return pybf.toString().replaceAll("\\W", "").trim().toUpperCase();
+    }
     public static ModelAndView errorHtml(String msg){
         ModelAndView error = new ModelAndView("payHtml/error");
         error.addObject("msg",msg);

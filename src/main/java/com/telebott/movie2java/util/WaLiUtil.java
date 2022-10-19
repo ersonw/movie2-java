@@ -47,7 +47,7 @@ public class WaLiUtil {
     public static final String KICK = "kick";
     public static final String GET_BALANCE = "getBalance";
     public static final String GET_RECORD_V2 = "getRecordV2";
-    private static final String prefix = "23porn_";
+    private static final String prefix = "CC";
     private static final Timer timer = new Timer();
 
     @Autowired
@@ -76,7 +76,7 @@ public class WaLiUtil {
                 getRecords();
                 log.info("_timersRecords:{}", TimeUtil.getNowDate());
             }
-        }, 1000,1000 * 60 * 6);
+        }, 1000,1000 * 60 * 1);
     }
     private static Map<String, String> _getMaps(String p){
         int t = (int) (System.currentTimeMillis() / 1000);

@@ -105,40 +105,62 @@ public class ShortVideoService {
         video.setFile(JSONObject.toJSONString(new ShortVideoFile(files)));
         List<ShortVideo> videoList = shortVideoDao.findAllByFileAndUserId(video.getFile(), user.getId());
         if(videoList.size() > 0){
-            return ResponseData.error("重复上传，无效操作！");
+            return ResponseData.error("重复上传,无效操作！");
         }
         shortVideoDao.saveAndFlush(video);
         return ResponseData.success(ResponseData.object("upload",true));
     }
-    public String getOssUrl(String path,OssConfig config){
-        String endPoint = config.getEndPoint();
-        if(!endPoint.startsWith("http")){
-            if(config.getUseSSL()){
-                endPoint = "https://"+endPoint;
-            }else {
-                endPoint = "http://"+endPoint;
-            }
+    public boolean isImage(String fileName){
+        String[] extensions = "bmp,jpg,png,tif,gif,pcx,tga,exif,fpx,svg,psd,cdr,pcd,dxf,ufo,eps,ai,raw,WMF,webp,avif,apng".split(",");
+        String extension = "";
+        int i = fileName.lastIndexOf('.');
+        if (i > 0) {
+            extension = fileName.substring(i+1);
+        }else{
+            return false;
         }
-        if(config.getPort() != null){
-            endPoint = endPoint+":"+config.getPort();
+        for (String s: extensions) {
+            if (s.equals(extension)) return true;
+        }
+        return false;
+    }
+    public String getOssUrl(String path,OssConfig config){
+        String picDomian = getShortVideoConfig("picDomian");
+        boolean force = getShortVideoConfigBool("force");
+        if (force){
+            config = getUploadConfig();
+        }else if (config == null){
+            config = getUploadConfig();
+        }
+        String endPoint = config.getEndPoint();
+        if (!endPoint.startsWith("http")){
+            if (config.getPort() != 443 && !config.getUseSSL()){
+                if (config.getPort() != 80) endPoint = "http://" + endPoint + ":" + config.getPort();
+            }else{
+                endPoint = "https://" + endPoint;
+                if (config.getPort() != 443) endPoint = endPoint + ":" +  config.getPort();
+            }
         }
 //        log.error("endPoint:{} AccessKey:{} SecretKey:{}",endPoint,config.getAccessKey(),config.getSecretKey());
         switch (config.getType()){
             case OssConfig.TYPE_UPLOAD_OSS_MINIO:
                 try {
-                    MinioClient minioClient = new MinioClient(endPoint, config.getAccessKey(), config.getSecretKey());
-//                    ObjectStat objectStat = minioClient.statObject(config.getBucket(), path);
-//                    System.out.println(objectStat);
-//                    System.out.printf(minioClient.getObjectUrl(config.getBucket(),path));
+                    MinioClient minioClient = new MinioClient(endPoint, config.getAccessKey(), config.getSecretKey(),config.getUseSSL());
                     ObjectStat stat = minioClient.statObject(config.getBucket(),path);
-//                    System.out.printf("length:%d\n",stat.length());
-//                    if ()
-                    return minioClient.getObjectUrl(config.getBucket(),path);
+                    String url = minioClient.getObjectUrl(config.getBucket(),path);
+                    if (picDomian != null && isImage(path) && force) {
+                        String[] urls = url.split(config.getEndPoint());
+                        url = url.replaceAll(urls[0]+config.getEndPoint()+"/"+config.getBucket(), picDomian);
+                    }
+                    return url;
                 } catch (InvalidPortException | InvalidEndpointException | InvalidBucketNameException |
                          InsufficientDataException | XmlPullParserException | ErrorResponseException |
                          NoSuchAlgorithmException | IOException | NoResponseException | InvalidKeyException |
                          InternalException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage());
+                    log.error("minio domain {}", endPoint);
+//                    e.printStackTrace();
+//                    System.out.println(config);
                 }
                 break;
         }
@@ -190,7 +212,7 @@ public class ShortVideoService {
         if(user == null) return ResponseData.error("");
         page--;
         if (page < 0) page = 0;
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC,"id"));
+        Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.DESC,"id"));
         Page<ShortVideo> videoPage;
         if (id == 0){
             videoPage = shortVideoDao.getAllByForwards(user.getId(), pageable);
@@ -198,7 +220,7 @@ public class ShortVideoService {
             if (videoPage.getContent().size() == 0){
                 page = page - videoPage.getTotalPages();
                 if (page < 0) page = 0;
-                pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC,"id"));
+                pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.DESC,"id"));
                 videoPage = shortVideoDao.getAllByForward(user.getId(), pageable);
             }
         }else {
@@ -245,25 +267,27 @@ public class ShortVideoService {
     }
 
     public ResponseData concentration(int page, User user, String ip) {
-
         page--;
         if (page < 0) page = 0;
-        Pageable pageable = PageRequest.of(page, 10);
+//        System.out.printf("page: %d\n", page);
+        Pageable pageable = PageRequest.of(page, 30);
         Page<ShortVideo> videoPage;
         if(user == null) {
             videoPage = shortVideoDao.getAllVideos(pageable);
         }else {
             videoPage = shortVideoDao.getAllVideos(user.getId(),pageable);
+//            System.out.println(videoPage.getContent().size());
 //        if (page > videoPage.getTotalPages()){
             if (videoPage.getContent().size() == 0){
                 page = page - videoPage.getTotalPages();
                 if (page < 0) page = 0;
-                pageable = PageRequest.of(page, 10);
+                pageable = PageRequest.of(page, 30);
                 videoPage = shortVideoDao.getAllVideos(pageable);
             }
         }
         JSONObject object = ResponseData.object("total",videoPage.getTotalPages());
         JSONArray arry = new JSONArray();
+//        System.out.println(videoPage.getContent());
         for (ShortVideo video : videoPage.getContent()) {
             JSONObject json = getShortVideo(video, user==null?0:user.getId());
             if (json != null) arry.add(json);
@@ -481,5 +505,38 @@ public class ShortVideoService {
         comment.setPin(0);
         shortVideoCommentDao.save(comment);
         return ResponseData.success(ResponseData.object("state",true));
+    }
+
+    public ResponseData uploadConfig(User instance, String ip) {
+        OssConfig config = getUploadConfig();
+        if (config == null) return ResponseData.error("获取配置失败！");
+        return ResponseData.success(JSONObject.parseObject(JSONObject.toJSONString(config)));
+    }
+    public OssConfig getUploadConfig(){
+        OssConfig config = new OssConfig();
+        String conf = getShortVideoConfig("endPoint");
+        if (conf == null)return null;
+        config.setEndPoint(conf);
+        conf = getShortVideoConfig("port");
+        boolean useSSL = getShortVideoConfigBool("useSSL");
+        config.setUseSSL(useSSL);
+        if(conf == null){
+            if (useSSL){
+                conf = "443";
+            }else {
+                conf = "80";
+            }
+        }
+        config.setPort(new Long(conf));
+        conf = getShortVideoConfig("accessKey");
+        if (conf == null)return null;
+        config.setAccessKey(conf);
+        conf = getShortVideoConfig("secretKey");
+        if (conf == null)return null;
+        config.setSecretKey(conf);
+        conf = getShortVideoConfig("bucket");
+        if (conf == null)return null;
+        config.setBucket(conf);
+        return config;
     }
 }

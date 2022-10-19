@@ -22,6 +22,11 @@ public class ShortVideoControl {
     public ResponseData upload(@RequestBody pData data) {
         return service.upload(data.getText(), data.getFilePath(), data.getImagePath(), data.getDuration(), data.getFiles(), data.getUser(), data.getIp());
     }
+    @GetMapping("/uploadConfig")
+    public ResponseData uploadConfig(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                     @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.uploadConfig(User.getInstance(user), ip);
+    }
     @PostMapping("/heartbeat")
     @ApiGlobalModel(component = pData.class, value = "seek,id")
     public ResponseData heartbeat(@RequestBody pData data) {

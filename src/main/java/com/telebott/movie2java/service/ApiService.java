@@ -69,7 +69,7 @@ public class ApiService {
     }
 
     public ResponseData handlerYzm(YzmData yzmData, String passwd) {
-        log.info("[{}]视频回调 {}", TimeUtil.getNowDate(), yzmData);
+//        log.info("[{}]视频回调 {}", TimeUtil.getNowDate(), yzmData);
         String pass = getVideoConfig("passwd");
         if (!Objects.equals(pass, passwd)) {
             return ResponseData.fail("auth failed");
@@ -106,19 +106,20 @@ public class ApiService {
         String pic1 = yzmData.getRpath() + "/1.jpg";
         video.setTitle(yzmData.getTitle());
         video.setVodContent(video.getTitle());
-        if (StringUtils.isNotEmpty(yzmData.getCategory())) {
-            List<VideoClass> videoClassList = videoClassDao.findAllByName(yzmData.getCategory());
-            if (videoClassList.size() == 0) {
-                VideoClass videoClass = new VideoClass();
-                videoClass.setName(yzmData.getCategory());
-                videoClass.setAddTime(System.currentTimeMillis());
-                videoClass.setUpdateTime(System.currentTimeMillis());
-                videoClassList.add(videoClass);
-                videoClassDao.saveAllAndFlush(videoClassList);
-            }
-//            System.out.println(videoClass.getId());
-            video.setVodClass(videoClassList.get(0).getId());
-        }
+        video.setVodClass(0);
+//        if (StringUtils.isNotEmpty(yzmData.getCategory())) {
+//            List<VideoClass> videoClassList = videoClassDao.findAllByName(yzmData.getCategory());
+//            if (videoClassList.size() == 0) {
+//                VideoClass videoClass = new VideoClass();
+//                videoClass.setName(yzmData.getCategory());
+//                videoClass.setAddTime(System.currentTimeMillis());
+//                videoClass.setUpdateTime(System.currentTimeMillis());
+//                videoClassList.add(videoClass);
+//                videoClassDao.saveAllAndFlush(videoClassList);
+//            }
+////            System.out.println(videoClass.getId());
+//            video.setVodClass(videoClassList.get(0).getId());
+//        }
         if (yzmData.getMetadata() != null) {
             video.setVodDuration(yzmData.getMetadata().getTime());
         }

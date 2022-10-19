@@ -125,9 +125,10 @@ public class UserService {
         object.put("text",user.getText());
         object.put("username",user.getUsername());
         object.put("expired",getExpired(user.getId()));
-//        object.put("phone",user.getPhone());
         String phone = user.getPhone();
-        object.put("phone", phone.substring(0,4) + "****" + phone.substring(phone.length() - 4));
+        if (StringUtils.isNotEmpty(phone)) {
+            object.put("phone", phone.substring(0, 4) + "****" + phone.substring(phone.length() - 4));
+        }
         object.put("email",user.getEmail());
         object.put("member",getMember(user.getId()));
         object.put("level", getMemberLevel(user.getId()));
@@ -197,17 +198,17 @@ public class UserService {
         user = new User();
         user.setRegisterIp(ip);
         user.setPhone(phone);
-        user.setNickname(phone.substring(0,4)+"****"+phone.substring(8));
+        user.setNickname("春潮用户_"+phone.substring(phone.length() - 6));
         user.setSalt(ToolsUtil.getSalt());
         MD5Util md5Util = new MD5Util(user.getSalt());
         user.setPassword(md5Util.getPassWord(password));
         user.setStatus(1);
         user.setAddTime(System.currentTimeMillis());
         user.setUpdateTime(user.getAddTime());
-        user.setText("本人很懒，不想说话！");
-        user.setUsername(ToolsUtil.getRandom(12));
+        user.setText("春潮视频萌新，待机中哟！");
+        user.setUsername(ToolsUtil.getRandom(6));
         while (userDao.findByUsername(user.getUsername()) != null) {
-            user.setUsername(ToolsUtil.getRandom(12));
+            user.setUsername(ToolsUtil.getRandom(6));
         }
         userDao.saveAndFlush(user);
 //        return login(username,password,deviceId,platform,ip);
@@ -274,9 +275,12 @@ public class UserService {
         return count < max;
     }
     public String verifyCode(String id, String code){
+        return verifyCode(id, code, true);
+    }
+    public String verifyCode(String id, String code, boolean del){
         SmsCode smsCode = authDao.findCode(id);
         if (smsCode != null && smsCode.getCode().equals(code)){
-            authDao.popCode(smsCode);
+            if (del)authDao.popCode(smsCode);
 //            SmsRecords smsRecords = smsRecordsDao.findAllByData(smsCode.getId());
 //            smsRecords.setStatus(2);
 //            smsRecordsDao.saveAndFlush(smsRecords);
@@ -293,7 +297,8 @@ public class UserService {
         Page<ShortVideo> videoPage = shortVideoDao.getAllMyVideos(user.getId(),pageable);
         JSONArray array = new JSONArray();
         for (ShortVideo video : videoPage.getContent()){
-            array.add(shortVideoService.getShortVideo(video,user.getId()));
+            JSONObject object = shortVideoService.getShortVideo(video,user.getId());
+            if (object != null) array.add(object);
         }
         JSONObject json = ResponseData.object("list", array);
         json.put("total", videoPage.getTotalPages());
@@ -338,7 +343,8 @@ public class UserService {
         Page<ShortVideo> videoPage = shortVideoDao.getAllProfileVideos(profile.getId(), pageable);
         JSONArray array = new JSONArray();
         for (ShortVideo video : videoPage.getContent()){
-            array.add(shortVideoService.getShortVideo(video,user.getId()));
+            JSONObject object = shortVideoService.getShortVideo(video,user.getId());
+            if (object != null) array.add(object);
         }
         JSONObject json = ResponseData.object("list", array);
         json.put("total", videoPage.getTotalPages());
@@ -357,7 +363,7 @@ public class UserService {
 //        json.put("diamond", userBalanceDiamondDao.getAllByBalance(profile.getId()));
 //        json.put("likes", shortVideoLikeDao.countAllByUserId(profile.getId()));
         json.put("follows", userFollowDao.countAllByUserId(profile.getId()));
-        json.put("follow", userFollowDao.findAllByUserIdAndToUserId(user.getId(), profile.getId()) != null);
+        json.put("follow", userFollowDao.findAllByUserIdAndToUserId(user==null?0: user.getId(), profile.getId()) != null);
         json.put("fans", userFollowDao.countAllByToUserId(profile.getId()));
         return ResponseData.success(json);
     }
@@ -373,7 +379,8 @@ public class UserService {
         Page<ShortVideo> videoPage = shortVideoDao.getAllLikeProfileVideos(profile.getId(), pageable);
         JSONArray array = new JSONArray();
         for (ShortVideo video : videoPage.getContent()){
-            array.add(shortVideoService.getShortVideo(video,user.getId()));
+            JSONObject object = shortVideoService.getShortVideo(video,user.getId());
+            if (object != null) array.add(object);
         }
         JSONObject json = ResponseData.object("list", array);
         json.put("total", videoPage.getTotalPages());
@@ -388,7 +395,8 @@ public class UserService {
         Page<ShortVideo> videoPage = shortVideoDao.getAllLikeProfileVideos(user.getId(), pageable);
         JSONArray array = new JSONArray();
         for (ShortVideo video : videoPage.getContent()){
-            array.add(shortVideoService.getShortVideo(video,user.getId()));
+            JSONObject object = shortVideoService.getShortVideo(video,user.getId());
+            if (object != null) array.add(object);
         }
         JSONObject json = ResponseData.object("list", array);
         json.put("total", videoPage.getTotalPages());
@@ -580,6 +588,7 @@ public class UserService {
 
     public ResponseData logout(User user, String ip) {
         if (user == null) return ResponseData.error("");
+        if (StringUtils.isEmpty(user.getPhone())) return ResponseData.error("为了安全起见，游客暂不支持注销账号哟！注销账号将无法找回！");
         authDao.popUser(user);
         return ResponseData.success();
     }

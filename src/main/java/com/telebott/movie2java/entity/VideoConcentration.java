@@ -17,6 +17,7 @@ public class VideoConcentration {
     @GeneratedValue
     private long id;
     private String name;
+    private int px;
     private long addTime;
     private long updateTime;
 }

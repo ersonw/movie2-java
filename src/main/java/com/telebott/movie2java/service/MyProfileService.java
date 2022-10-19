@@ -47,6 +47,8 @@ public class MyProfileService {
     private VideoDao videoDao;
     @Autowired
     private VideoScaleDao videoScaleDao;
+    @Autowired
+    private MembershipService membershipService;
 
     public boolean getConfigBool(String name){
         return getConfigLong(name) > 0;
@@ -110,7 +112,9 @@ public class MyProfileService {
         json.put("nickname", user.getNickname());
         json.put("username", user.getUsername());
         String phone = user.getPhone();
-        json.put("phone", phone.substring(0,4) + "****" + phone.substring(phone.length() - 4));
+        if (StringUtils.isNotEmpty(phone)) {
+            json.put("phone", phone.substring(0, 6) + "****" + phone.substring(phone.length() - 4));
+        }
         json.put("text", user.getText());
         json.put("email", user.getEmail());
         json.put("avatar", user.getAvatar());
@@ -141,7 +145,7 @@ public class MyProfileService {
         if (profile != null && profile.getId() != user.getId()) return ResponseData.error("昵称已存在！");
 
         profile = userDao.findAllById(user.getId());
-        profile.setNickname(nickname);
+//        profile.setNickname(nickname);
         profile.setUsername(username);
         if(StringUtils.isNotEmpty(email)){
             email = email.trim();
@@ -266,5 +270,46 @@ public class MyProfileService {
         MD5Util md5 = new MD5Util(profile.getSalt());
         if(!md5.getPassWord(password).equals(profile.getPassword())) return ResponseData.error("密码不正确！");
         return ResponseData.success(ResponseData.object("salt", profile.getSalt()));
+    }
+
+    public ResponseData bindPhoneSms(String phone, User user, String ip) {
+        if(user == null) return ResponseData.error(201);
+        user = userDao.findAllById(user.getId());
+        if(StringUtils.isNotEmpty(user.getPhone())) return ResponseData.error("本账号已绑定手机号码！");
+        User profile = userDao.findByPhone(phone);
+        if(profile != null) return ResponseData.error("该手机号已绑定其他账号,如需登录请更换手机号绑定！");
+        return getSendSms(ip, phone);
+    }
+
+    public ResponseData bindPhone(String codeId, String code,  String phone, long force,User user, String ip) {
+        if (user == null) return ResponseData.error("");
+        if (phone == null) return ResponseData.error("未填写手机号！");
+        String p = userService.verifyCode(codeId,code, false);
+        if (p == null) return ResponseData.error("验证码不正确或者已失效！");
+        if (!phone.equals(p)) return ResponseData.error("手机号码或者验证码错误！");
+        User profile = userDao.findAllById(user.getId());
+        if (StringUtils.isNotEmpty(profile.getPhone())) return ResponseData.error("该账号已绑定手机号");
+        User pep = userDao.findByPhone(phone);
+        if (pep != null) {
+            if (force > 0){
+                pep.setPhone("");
+                userDao.saveAndFlush(pep);
+                pep =  authDao.findUserByUserId(pep.getId());
+                if (pep != null) authDao.popUser(pep);
+            }else{
+                return ResponseData.success("该手机号已绑定其他账号号,继续将解绑原有账号并且不可找回！", ResponseData.object("state", true));
+            }
+        }else{
+            membershipService.handlerRegister(profile.getId());
+        }
+        profile.setNickname("春潮用户_"+phone.substring(phone.length() - 6));
+        profile.setPhone(phone);
+        profile.setUpdateTime(System.currentTimeMillis());
+        userDao.save(profile);
+        profile.setToken(user.getToken());
+        authDao.popUser(user);
+        authDao.pushUser(profile);
+        userService.verifyCode(codeId,code);
+        return ResponseData.success(ResponseData.object("token", profile.getToken()));
     }
 }

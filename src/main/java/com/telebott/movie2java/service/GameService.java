@@ -6,10 +6,7 @@ import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.EPayData;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
-import com.telebott.movie2java.util.EPayUtil;
-import com.telebott.movie2java.util.TimeUtil;
-import com.telebott.movie2java.util.UrlUtil;
-import com.telebott.movie2java.util.WaLiUtil;
+import com.telebott.movie2java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -221,12 +218,14 @@ public class GameService {
     public String getImageSmall(Game game) {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
         if (StringUtils.isNotEmpty(game.getImage()) && game.getImage().startsWith("http")) return game.getImage();
-        return getConfig("ImageDomain") + "/game/gameicon-200x200/200-200-" + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
+//        return getConfig("ImageDomain") + "/game/gameicon-200x200/200-200-" + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
+        return  "/game/gameicon-200x200/200-200-" + game.getGameId() + "." + ToolsUtil.getCamelPinYin(game.getName()) + ".png";
     }
     public String getImage(Game game) {
 //        if (StringUtils.isEmpty(game.getImage())) return game.getImage();
         if (StringUtils.isNotEmpty(game.getImage()) && game.getImage().startsWith("http")) return game.getImage();
-        return getConfig("ImageDomain") + "/game/gameicon-600400-square/600-400-" + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
+//        return getConfig("ImageDomain") + "/game/gameicon-600400-square/600-400-" + game.getGameId() + "." + UrlUtil.encode(game.getName()) + ".png";
+        return "/game/gameicon-600400-square/600-400-" + game.getGameId() + "." + ToolsUtil.getCamelPinYin(game.getName()) + ".png";
     }
 
     public ResponseData records(User user, String ip) {
@@ -447,6 +446,14 @@ public class GameService {
         JSONObject json = ResponseData.object("balance", WaLiUtil.getBalance(user.getId()));
 //        json.put("wBalance", new Double(String.format("%.2f", wBalance / 100D)));
 //        json.put("freezeBalance", new Double(String.format("%.2f", freezeBalance / 100D)));
+//        Long w = getOutConfigLong("water");
+//        Long in = gameOutOrderDao.getRecentIn(user.getId());
+//        Long water = gameOutOrderDao.getRecentWater(user.getId());
+//        Double wWater = 0D;
+//        if (w > 0){
+//            wWater = new Double(String.format("%.2f", in * 1D * w - water));
+//        }
+//        json.put("wWater", wWater);
         json.put("wBalance", new Double(wBalance));
         json.put("freezeBalance", new Double(freezeBalance));
         return ResponseData.success(json);
@@ -537,6 +544,16 @@ public class GameService {
     public ResponseData cashOut(long id, long amount, User user, String ip) {
         if (user == null) return ResponseData.error("");
         if (id < 1) return ResponseData.error("未选择收款方式");
+        /**判断流水**/
+        Long w = getOutConfigLong("water");
+        Long in = gameOutOrderDao.getRecentIn(user.getId());
+        Long water = gameOutOrderDao.getRecentWater(user.getId());
+        Double wWater = 0D;
+        if (w > 0){
+            wWater = new Double(String.format("%.2f", in * 1D * w - water));
+        }
+        if (wWater > 0) return ResponseData.error("游戏流水不足，提现失败！");
+
         GameOutCard outCard = gameOutCardDao.findAllByIdAndUserId(id, user.getId());
         if (outCard == null) return ResponseData.error("收款方式未定义！");
         double balance = WaLiUtil.getBalance(user.getId());
@@ -553,6 +570,7 @@ public class GameService {
         }
         _fee = new Double(_fee.longValue()+"");
         Double _amount = amount - _fee;
+
         GameOutOrder order = new GameOutOrder();
         order.setUserId(user.getId());
         order.setOrderNo(TimeUtil._getTime(0));

@@ -254,6 +254,36 @@ public class MembershipService {
 //        System.out.printf("%s\n",sb.toString());
         return ResponseData.success(ResponseData.object("url",sb.toString()));
     }
+    public void handlerRegister(long userId){
+        handlerRegister(userId,1);
+    }
+    public void handlerRegister(long userId,long days){
+        MembershipFunds balance = new MembershipFunds();
+        balance.setAddTime(System.currentTimeMillis());
+        balance.setAmount(days);
+        balance.setGameCoin(0);
+        balance.setExperience(0);
+        balance.setUserId(userId);
+        balance.setText("绑定手机号赠送");
+        MembershipExpired expired = membershipExpiredDao.findAllByUserId(userId);
+        long time = days * 24 * 60 * 60 * 1000;
+        if(expired == null ){
+            MembershipLevel grade = membershipLevelDao.findByLevel(1);
+            membershipExperienceDao.save(new MembershipExperience(userId, "首次赠送", grade.getExperience()));
+            expired= new MembershipExpired();
+            expired.setAddTime(System.currentTimeMillis());
+            expired.setUserId(userId);
+            expired.setExpired(0);
+        }
+        expired.setUpdateTime(System.currentTimeMillis());
+        if ((expired.getExpired() + expired.getAddTime()) > System.currentTimeMillis()){
+            expired.setExpired(expired.getExpired()+time);
+        }else{
+            expired.setExpired((System.currentTimeMillis() - expired.getAddTime())+time);
+        }
+        membershipExpiredDao.save(expired);
+        membershipFundsDao.save(balance);
+    }
     public boolean handlerOrder(String orderId){
         MembershipOrder order = membershipOrderDao.findAllByOrderNo(orderId);
         CashInOrder inOrder = cashInOrderDao.findAllByOrderNo(orderId);

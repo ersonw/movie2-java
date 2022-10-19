@@ -78,7 +78,25 @@ public class VideoService {
     private ShortLinkService shortLinkService;
     @Autowired
     private PublicizeReportDao publicizeReportDao;
+    @Autowired
+    private VideoPpvodDao videoPpvodDao;
 
+    public String getConfig(String name) {
+        List<VideoPpvod> configs = videoPpvodDao.findAllByName(name);
+        if (configs.size() == 0){
+            return null;
+        }
+        return configs.get(0).getVal();
+    }
+    public Long getConfigLong(String name){
+        String value = getConfig(name);
+        if (value == null) return 0L;
+        if (!ToolsUtil.isNumberString(value)) return 0L;
+        return new Long(value);
+    }
+    public boolean getConfigBool(String name){
+        return getConfigLong(name) > 0;
+    }
     public ResponseData categoryTags(User user, String ip) {
         List<VideoProduced> produceds = videoProducedDao.findAllByStatus(1);
         List<VideoClass> classes = videoClassDao.findAllByStatus(1);
@@ -168,8 +186,8 @@ public class VideoService {
             }
         }
         object.put("id", id);
-        object.put("picThumb",video.getPicThumb());
-        object.put("vodPlayUrl",video.getVodPlayUrl());
+        object.put("picThumb",getUrlPic(video.getPicThumb()));
+        object.put("vodPlayUrl",getUrlVideo(video.getVodPlayUrl()));
         object.put("title", video.getTitle());
         object.put("addTime", video.getAddTime());
         object.put("vodContent", video.getVodContent());
@@ -179,6 +197,29 @@ public class VideoService {
         return ResponseData.success(ResponseData.object("player", object));
     }
 
+    public String getUrlPic(String url){
+        String videoDomain = getConfig("picDomain");
+        if (StringUtils.isNotEmpty(videoDomain)){
+            url = videoDomain + getUrlPath(url);
+        }
+        return url;
+    }
+    public String getUrlVideo(String url){
+        String videoDomain = getConfig("videoDomain");
+        if (StringUtils.isNotEmpty(videoDomain)){
+            url = videoDomain + getUrlPath(url);
+        }
+        return url;
+    }
+    public String getUrlPath(String url){
+        String[] urls = url.split("://");
+        String[] path = urls[1].split("/");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < path.length; i++) {
+            sb.append("/").append(path[i]);
+        }
+        return sb.toString();
+    }
     public ResponseData heartbeat(long id, long seek, User user, String ip) {
 //        System.out.println(id+"=="+seek);
         if (user == null) {
@@ -384,7 +425,7 @@ public class VideoService {
         JSONObject object = ResponseData.object("id",video.getId());
         object.put("title",video.getTitle());
         object.put("vodContent",video.getVodContent());
-        object.put("picThumb",video.getPicThumb());
+        object.put("picThumb",getUrlPic(video.getPicThumb()));
         object.put("shareUrl","");
         return ResponseData.success(object);
     }
@@ -435,7 +476,7 @@ public class VideoService {
         return ResponseData.success(json);
     }
     private JSONObject getSortByHot(long second, long last, int page){
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 30);
         Page<Video> videoPage;
         if(second == 0 && last == 0){
             videoPage = videoDao.getVideoByStatus(1,pageable);
@@ -492,8 +533,11 @@ public class VideoService {
         }
     }
     public ResponseData concentrations(User user, String ip) {
-        List<VideoConcentration> concentrations = videoConcentrationDao.findAllByList();
+//        List<VideoConcentration> concentrations = videoConcentrationDao.findAllByList();
+        Pageable pageable = PageRequest.of(0, 3000, Sort.by(Sort.Direction.DESC,"px"));
+        Page<VideoConcentration> concentrationPage = videoConcentrationDao.findAllByList(pageable);
 //        System.out.println(concentrations);
+        List<VideoConcentration> concentrations = concentrationPage.getContent();
         JSONArray jsonArray= new JSONArray();
         for (VideoConcentration concentration: concentrations) {
             Page<Video> videoPage = getVideo(concentration.getId());
@@ -507,6 +551,7 @@ public class VideoService {
             jsonArray.add(json);
         }
 //        System.out.println(jsonArray);
+
         return ResponseData.success(ResponseData.object("list", jsonArray));
     }
 
@@ -527,19 +572,21 @@ public class VideoService {
         if (concentration == null) return ResponseData.error("concentration not found");
         page--;
         if(page < 0) page= 0;
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.getVideoByConcentrations(id,pageable);
         JSONArray array = new JSONArray();
         for (Video video: videoPage.getContent()) {
             array.add(getVideo(video));
         }
-        return ResponseData.success(ResponseData.object("list", array));
+        JSONObject object = ResponseData.object("list", array);
+        object.put("total", videoPage.getTotalPages());
+        return ResponseData.success(object);
     }
 
     public ResponseData membership(int page, User user, String ip) {
         page--;
         if (page < 0) page = 0;
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 30);
         Page<Video> videoPage = videoDao.getVideoByPay(pageable);
         return getResponseVideoList(videoPage);
     }
@@ -547,7 +594,7 @@ public class VideoService {
     public ResponseData diamond(int page, User user, String ip) {
         page--;
         if (page < 0) page = 0;
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.DESC, "id"));
         Page<Video> videoPage = videoDao.getVideoByPay(1,pageable);
         return getResponseVideoList(videoPage);
     }
@@ -646,5 +693,19 @@ public class VideoService {
         if (publicize == null) return ResponseData.error("");
         publicizeReportDao.save(new PublicizeReport(publicize.getId(), user.getId(), ip));
         return ResponseData.success("");
+    }
+
+    public ResponseData videoClass(long id, int page,User instance, String ip) {
+        page--;
+        if (page < 0) page = 0;
+        return ResponseData.success(getSortByHot(0,id,page));
+    }
+    public ResponseData videoClass(User instance, String ip) {
+//        List<VideoClass> classes = videoClassDao.findAllByStatus(1);
+        Pageable pageable = PageRequest.of(0, 3000, Sort.by(Sort.Direction.DESC,"px"));
+        Page<VideoClass> classPage = videoClassDao.findAllByStatus(1, pageable);
+        List<VideoClass> classes = classPage.getContent();
+        JSONObject object = ResponseData.object("class",getClass(classes));
+        return ResponseData.success(object);
     }
 }

@@ -48,6 +48,16 @@ public class MyProfileControl {
     public ResponseData restPasswordVerify(@RequestBody pData data){
         return service.restPasswordVerify(data.getCodeId(),data.getCode(),data.getUser(),data.getIp());
     }
+    @PostMapping("/bindPhone")
+    @ApiGlobalModel(component = pData.class, value = "codeId,code,phone,toId")
+    public ResponseData bindPhone(@RequestBody pData data){
+        return service.bindPhone(data.getCodeId(),data.getCode(),data.getPhone(),data.getToId(),data.getUser(),data.getIp());
+    }
+    @PostMapping("/bindPhone/sms")
+    @ApiGlobalModel(component = pData.class, value = "phone")
+    public ResponseData bindPhoneSms(@RequestBody pData data){
+        return service.bindPhoneSms(data.getPhone(),data.getUser(),data.getIp());
+    }
     @PostMapping("/edit/changePassword/verify")
     @ApiGlobalModel(component = pData.class, value = "password")
     public ResponseData changePasswordVerify(@RequestBody pData data){
