@@ -7,6 +7,8 @@ import com.telebott.movie2java.data.OssConfig;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.data.ShortVideoFile;
 import com.telebott.movie2java.entity.*;
+import com.telebott.movie2java.util.ReadExcel;
+import com.telebott.movie2java.util.SmsBaoUtil;
 import com.telebott.movie2java.util.ToolsUtil;
 import io.minio.MinioClient;
 import io.minio.ObjectStat;
@@ -61,6 +63,8 @@ public class ShortVideoService {
     @Autowired
     private UserDao userDao;
     @Autowired
+    private AuthDao authDao;
+    @Autowired
     private UserFollowDao userFollowDao;
     public boolean getShortVideoConfigBool(String name){
         return getShortVideoConfigLong(name) > 0;
@@ -108,6 +112,7 @@ public class ShortVideoService {
             return ResponseData.error("重复上传,无效操作！");
         }
         shortVideoDao.saveAndFlush(video);
+        if (video.getStatus() == 0) authDao.pushInfo(1,7);
         return ResponseData.success(ResponseData.object("upload",true));
     }
     public boolean isImage(String fileName){
@@ -208,6 +213,33 @@ public class ShortVideoService {
         object.put("userId",video.getUserId());
         return  object;
     }
+    public JSONArray getOfficialShortVideo(){
+        JSONArray array = ReadExcel.getData();
+        JSONArray data = new JSONArray();
+        for (Object o: array) {
+            JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(o));
+            JSONObject object = JSONObject.parseObject(JSONObject.toJSONString(o));
+            object.put("id",0);
+            object.put("title",json.getString("title"));
+            object.put("playUrl",json.getString("m3u8"));
+            object.put("pic",json.getString("pic"));
+            object.put("addTime",System.currentTimeMillis());
+            object.put("plays", new Integer(SmsBaoUtil.getSmsCode()));
+            object.put("likes",new Integer(SmsBaoUtil.getSmsCode()));
+            object.put("like",false);
+            object.put("pin",false);
+            object.put("comments",new Integer(SmsBaoUtil.getSmsCode()));
+            object.put("collects",new Integer(SmsBaoUtil.getSmsCode()));
+            object.put("follow", true);
+            object.put("forwards", new Integer(SmsBaoUtil.getSmsCode()));
+            object.put("forward", false);
+            object.put("avatar",null);
+            object.put("nickname", "春潮视频官方");
+            object.put("userId",0);
+            data.add(object);
+        }
+        return  data;
+    }
     public ResponseData friend(long id,int page, User user, String ip) {
         if(user == null) return ResponseData.error("");
         page--;
@@ -292,6 +324,9 @@ public class ShortVideoService {
             JSONObject json = getShortVideo(video, user==null?0:user.getId());
             if (json != null) arry.add(json);
         }
+        if(videoPage.getContent().size() < 30){
+            arry.addAll(getOfficialShortVideo());
+        }
 //        object = ResponseData.object("total",arry.size());
         object.put("list",arry);
         return ResponseData.success(object);
@@ -300,6 +335,7 @@ public class ShortVideoService {
     public ResponseData like(long id, User user, String ip) {
         if (id < 1) return ResponseData.error("");
         if (user == null) return ResponseData.error("");
+        if(shortVideoDao.findAllById(id) == null) return ResponseData.success();
         ShortVideoLike like = shortVideoLikeDao.findAllByUserIdAndVideoId(user.getId(), id);
         if (like!=null) return ResponseData.success("");
         like = new ShortVideoLike(user.getId(), id,ip);
@@ -309,6 +345,7 @@ public class ShortVideoService {
     public ResponseData unlike(long id, User user, String ip) {
         if (id < 1) return ResponseData.error("");
         if (user == null) return ResponseData.error("");
+        if(shortVideoDao.findAllById(id) == null) return ResponseData.success();
         ShortVideoLike like = shortVideoLikeDao.findAllByUserIdAndVideoId(user.getId(), id);
         if (like==null) return ResponseData.success("");
         shortVideoLikeDao.delete(like);

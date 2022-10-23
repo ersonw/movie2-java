@@ -258,4 +258,14 @@ public class DiamondService {
         return ResponseData.success(json);
     }
 
+    public void handlerRegister(long userId, Long amount, String text) {
+        User user = userDao.findAllById(userId);
+        if (user == null) return;
+        UserBalanceDiamond balance = new UserBalanceDiamond();
+        balance.setAddTime(System.currentTimeMillis());
+        balance.setAmount(amount);
+        balance.setUserId(user.getId());
+        balance.setText(text);
+        userBalanceDiamondDao.save(balance);
+    }
 }

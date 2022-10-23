@@ -66,7 +66,7 @@ public class MessageSocket {
             }
             return;
         }
-        log.error("[{}] {} 登录消息系统", TimeUtil.getNowDate(),user.getPhone());
+        log.error("[{}] {} 登录消息系统 当前在线人数：{}", TimeUtil.getNowDate(),user.getPhone(), webSockets.size());
         deleteUser(user);
         remoteAddress = WebSocketUtil.getRemoteAddress(session);
         onlineNumber++;
@@ -78,12 +78,15 @@ public class MessageSocket {
                 sendMessage("H");
             }
         }, 1000, 1000 * 15);
+        self.authDao.pushInfo(1, 0);
     }
     @OnClose
     public void onClose() {
         onlineNumber--;
         webSockets.remove(this);
         timer.cancel();
+        self.authDao.pushInfo(-1,0);
+        log.info("当前在线人数 {}", webSockets.size());
     }
     @OnMessage
     public void onMessage(String m, Session session) {

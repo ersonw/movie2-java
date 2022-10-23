@@ -42,6 +42,11 @@ public class ApiControl {
         return service.handlerYzm(YzmData.getInstance(yzmData), passwd);
     }
     @ApiIgnore
+    @GetMapping("/info")
+    public String info(){
+        return service.info();
+    }
+    @ApiIgnore
     @GetMapping("/ePayNotify")
     public String ePayNotify(@ModelAttribute EPayNotify ePayNotify){
         return service.ePayNotify(ePayNotify);
@@ -112,6 +117,6 @@ public class ApiControl {
     }
     @GetMapping("/test")
     public ResponseData test(){
-        return ResponseData.success();
+        return service.test();
     }
 }

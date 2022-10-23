@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.ResponseData;
 import com.telebott.movie2java.entity.*;
+import com.telebott.movie2java.util.AESUtils;
 import com.telebott.movie2java.util.TimeUtil;
 import com.telebott.movie2java.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -171,6 +172,7 @@ public class VideoService {
         VideoPay pay = videoPayDao.findAllByVideoId(id);
         if (pay != null) {
             boolean isPay = videoPayRecordDao.findAllByUserIdAndPayId(user.getId(),pay.getId()) != null;
+//            System.out.println(videoPayRecordDao.findAllByUserIdAndPayId(user.getId(),pay.getId()));
             object.put("pay", isPay);
             object.put("price", pay.getAmount());
             object.put("total", pay.getAmount());
@@ -426,7 +428,15 @@ public class VideoService {
         object.put("title",video.getTitle());
         object.put("vodContent",video.getVodContent());
         object.put("picThumb",getUrlPic(video.getPicThumb()));
-        object.put("shareUrl","");
+        object.put("shareUrl", "");
+        String shareDomain = getConfig("shareDomain");
+        if (StringUtils.isNotEmpty(shareDomain)){
+            JSONObject json = new JSONObject();
+            json.put("act", "video");
+            json.put("val", String.valueOf(video.getId()));
+            String data = AESUtils.EncryptOpenData(json);
+            object.put("shareUrl", shareDomain+"?code="+user.getUsername()+"&action="+data);
+        }
         return ResponseData.success(object);
     }
 

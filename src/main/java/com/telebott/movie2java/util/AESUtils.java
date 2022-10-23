@@ -17,6 +17,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.alibaba.fastjson.JSONObject;
+import com.telebott.movie2java.entity.AppConfig;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,6 +37,14 @@ public class AESUtils {
 
     private static final String encodeRules = "@ersonw";
 
+    public static String EncryptOpenData(Object data){
+        return  EncryptOpenData(JSONObject.toJSONString(data));
+    }
+    public static String EncryptOpenData(String data){
+        data = AESUtils.Encrypt(data);
+        assert data != null;
+        return data.replaceAll("=","@ersonw").replaceAll("\\+","@iterson");
+    }
     // 加密
     public static String Encrypt(String sSrc){
         try {

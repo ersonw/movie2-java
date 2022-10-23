@@ -135,4 +135,15 @@ public class UserControl {
                                        @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
         return service.fansSearch(id,page,text, User.getUser(user),ip);
     }
+    @GetMapping("/share/receive/{text}")
+    public ResponseData shareReceive(@PathVariable("text") String text,
+                                     @RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                       @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.shareReceive(text, User.getUser(user),ip);
+    }
+    @GetMapping("/share/config")
+    public ResponseData shareConfig(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                                       @RequestParam(value = "ip") @ApiParam(hidden = true) String ip){
+        return service.shareConfig(User.getUser(user),ip);
+    }
 }

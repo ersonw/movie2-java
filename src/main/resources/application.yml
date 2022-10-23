@@ -19,11 +19,9 @@ spring:
     resources:
       static-locations:  classpath:/static/
   datasource:
-#    url: jdbc:mysql://api2.telebott.com:3306/movie?useSSL=false&useUnicode=true&character_set_server=utf8mb4
-#    url: jdbc:mysql://super-os:3306/movie?useSSL=false&useUnicode=true&character_set_server=utf8mb4
-    url: jdbc:mysql://pc-bp10htht113i5s180.rwlb.rds.aliyuncs.com:3306/movie?useSSL=false&useUnicode=true&character_set_server=utf8mb4
-    username: movie
-    password: 5diXYxcYL7H4LbRN
+    url: jdbc:mysql://${MYSQL_HOST:super-os}:3306/${MYSQL_DB:movie}?useSSL=false&useUnicode=true&character_set_server=utf8mb4
+    username: ${MYSQL_USERNAME:movie}
+    password: ${MYSQL_PASSWORD:5diXYxcYL7H4LbRN}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-timeout: 10000
@@ -39,8 +37,7 @@ spring:
       test-on-borrow: true
       validation-query: Select 1
   redis:
-    #    host: 119.8.56.223
-    host: super-os
-    port: 6379
-    database: 0
-    password: 2pmnpw47
+    host: ${REDIS_HOST:super-os}
+    port: ${REDIS_PORT:6379}
+    database: ${REDIS_DB:0}
+    password: ${REDIS_PASSWORD:2pmnpw47}

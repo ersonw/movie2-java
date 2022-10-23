@@ -155,6 +155,10 @@ public class GameService {
         if (user == null) return ResponseData.error("");
         return ResponseData.success(ResponseData.object("balance", WaLiUtil.getBalance(user.getId())));
     }
+    public ResponseData getService(User user, String ip) {
+//        if (user == null) return ResponseData.error("");
+        return ResponseData.success(ResponseData.object("service", getConfig("service")));
+    }
 
     public ResponseData publicity(User user, String ip) {
 //        if (user == null) return ResponseData.error("");
@@ -592,6 +596,7 @@ public class GameService {
         gameOutOrderDao.saveAndFlush(order);
         gameFundsDao.saveAndFlush(fund);
         gameScrollDao.saveAndFlush(new GameScroll(user.getNickname(),order.getAmount() * 100,"手动提现"));
+        authDao.pushInfo(1,6);
         return ResponseData.success(ResponseData.object("state",true));
     }
 
@@ -618,5 +623,14 @@ public class GameService {
         jsonObject.put("list",array);
         jsonObject.put("total",orderPage.getTotalPages());
         return ResponseData.success(jsonObject);
+    }
+
+    public void handlerRegister(long userId, Long amount, String text) {
+        User user = userDao.findAllById(userId);
+        if (user == null) return ;
+        GameFunds fund = new GameFunds(user.getId(), amount * 100, text);
+        if (WaLiUtil.tranfer(user.getId(),fund.getAmount())){
+            gameFundsDao.saveAndFlush(fund);
+        }
     }
 }

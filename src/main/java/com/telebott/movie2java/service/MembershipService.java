@@ -255,16 +255,16 @@ public class MembershipService {
         return ResponseData.success(ResponseData.object("url",sb.toString()));
     }
     public void handlerRegister(long userId){
-        handlerRegister(userId,1);
+        handlerRegister(userId,1,"绑定手机号赠送");
     }
-    public void handlerRegister(long userId,long days){
+    public void handlerRegister(long userId,long days, String text){
         MembershipFunds balance = new MembershipFunds();
         balance.setAddTime(System.currentTimeMillis());
         balance.setAmount(days);
         balance.setGameCoin(0);
         balance.setExperience(0);
         balance.setUserId(userId);
-        balance.setText("绑定手机号赠送");
+        balance.setText(text);
         MembershipExpired expired = membershipExpiredDao.findAllByUserId(userId);
         long time = days * 24 * 60 * 60 * 1000;
         if(expired == null ){

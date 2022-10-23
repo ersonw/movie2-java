@@ -53,7 +53,29 @@ public class UserService {
     @Autowired
     private ShortVideoService shortVideoService;
 
+    @Autowired
+    private MembershipService membershipService;
+    @Autowired
+    private GameService gameService;
+    @Autowired
+    private DiamondService diamondService;
+    @Autowired
+    private UserShareRecordDao userShareRecordDao;
+    @Autowired
+    private UserShareConfigDao userShareConfigDao;
+    @Autowired
+    private UserSpreadRecordDao userSpreadRecordDao;
+
     private static long FAIL_LOGIN_TIMES = 6;
+    private static String SHARE_CONFIG_V1 = "v1";
+    private static String SHARE_CONFIG_V1S = "v1s";
+    private static String SHARE_CONFIG_V1V = "v1v";
+    private static String SHARE_CONFIG_V2 = "v2";
+    private static String SHARE_CONFIG_V2S = "v2s";
+    private static String SHARE_CONFIG_V2V = "v2v";
+    private static String SHARE_CONFIG_V3 = "v3";
+    private static String SHARE_CONFIG_V3S = "v3s";
+    private static String SHARE_CONFIG_V3V = "v3v";
 
     public boolean isMembership(long userId) {
         return getMember(userId);
@@ -352,7 +374,7 @@ public class UserService {
     }
 
     public ResponseData profile(long id, User user, String ip) {
-        if (id < 1) return ResponseData.error("用户不存在！");
+        if (id < 1) return ResponseData.error("");
         User profile = userDao.findAllById(id);
         if (profile == null) return ResponseData.error("用户不存在！");
         JSONObject json = new JSONObject();
@@ -591,5 +613,104 @@ public class UserService {
         if (StringUtils.isEmpty(user.getPhone())) return ResponseData.error("为了安全起见，游客暂不支持注销账号哟！注销账号将无法找回！");
         authDao.popUser(user);
         return ResponseData.success();
+    }
+    public String getShareConfig(String name){
+        List<UserShareConfig> configList = userShareConfigDao.findAllByName(name);
+        if (configList.isEmpty()) return null;
+        return configList.get(0).getVal();
+    }
+    public long getShareConfigLong(String name){
+        String val = getShareConfig(name);
+        if (StringUtils.isEmpty(val)) return 0;
+        if (!ToolsUtil.isNumberString(val)) return 0;
+        return Long.parseLong(val);
+    }
+    public boolean getShareConfigBool(String name){
+        if (getShareConfigLong(name) > 0) return true;
+        return false;
+    }
+    public String getShareConfigStr(String type){
+        String val =  getShareConfig(type+"s");
+        if (StringUtils.isNotEmpty(val)) return  val;
+        val =  getShareConfig(type+"v");
+        if (StringUtils.isEmpty(val)) return  null;
+//        System.out.println(val);
+        String[] values = val.split(";");
+        StringBuilder sb = new StringBuilder();
+        for (String v: values) {
+            String[] vs = v.split("=");
+            switch (vs[0]) {
+                case "m":
+                    sb.append("会员体验").append(vs[1]).append("天").append("+");
+                    break;
+                case "g":
+                    sb.append("游戏金币").append(vs[1]).append("个").append("+");
+                    break;
+                case "d":
+                    sb.append("钻石").append(vs[1]).append("个").append("+");
+                    break;
+                default:
+                    break;
+            }
+        }
+//        System.out.println(sb);
+        if (sb.toString().endsWith("+")) return sb.substring(0,sb.toString().length()-1);
+        return sb.toString();
+    }
+    public ResponseData shareConfig(User user, String ip) {
+        JSONObject object = new JSONObject();
+        object.put(SHARE_CONFIG_V1, getShareConfigLong(SHARE_CONFIG_V1));
+        object.put(SHARE_CONFIG_V1S, getShareConfigStr(SHARE_CONFIG_V1));
+
+        object.put(SHARE_CONFIG_V2, getShareConfigLong(SHARE_CONFIG_V2));
+        object.put(SHARE_CONFIG_V2S, getShareConfigStr(SHARE_CONFIG_V2));
+
+        object.put(SHARE_CONFIG_V3, getShareConfigLong(SHARE_CONFIG_V3));
+        object.put(SHARE_CONFIG_V3S, getShareConfigStr(SHARE_CONFIG_V3));
+        String shareUrl = getShareConfig("shareUrl");
+        if (shareUrl != null){
+            if (!shareUrl.startsWith("http")){
+                shareUrl = "http://" + shareUrl;
+            }
+            if (!shareUrl.endsWith("/")){
+                shareUrl += "/";
+            }
+        }
+        if (user != null){
+            object.put("shareUrl", shareUrl+"?code="+user.getUsername());
+            object.put("count", userSpreadRecordDao.findAllByCount(user.getId()));
+            object.put("v1f", (userShareRecordDao.findAllByTypeAndUserId(SHARE_CONFIG_V1, user.getId())).size() > 0);
+            object.put("v2f", (userShareRecordDao.findAllByTypeAndUserId(SHARE_CONFIG_V2, user.getId())).size() > 0);
+            object.put("v3f", (userShareRecordDao.findAllByTypeAndUserId(SHARE_CONFIG_V3, user.getId())).size() > 0);
+        }
+        return ResponseData.success(object);
+    }
+    public void handlerReceive(String type, long userId,String ip){
+        String val =  getShareConfig(type+"v");
+        if (StringUtils.isEmpty(val)) return ;
+        String[] values = val.split(";");
+        for (String v: values) {
+            String[] vs = v.split("=");
+            switch (vs[0]) {
+                case "m":
+                    membershipService.handlerRegister(userId, new Long(vs[1]),"推广任务领取");
+                    break;
+                case "g":
+                    gameService.handlerRegister(userId, new Long(vs[1]),"推广任务领取");
+                    break;
+                case "d":
+                    diamondService.handlerRegister(userId, new Long(vs[1]),"推广任务领取");
+                    break;
+                default:
+                    break;
+            }
+        }
+        userShareRecordDao.saveAndFlush(new UserShareRecord(type, ip, userId));
+    }
+    public ResponseData shareReceive(String type, User user, String ip) {
+        if(user == null) return ResponseData.error("");
+        if((userShareRecordDao.findAllByTypeAndUserId(type, user.getId())).size() > 0) return ResponseData.success("已领取过该奖励!");
+        handlerReceive(type,user.getId(), ip);
+        return ResponseData.success("领取成功!",ResponseData.object("state", true));
     }
 }

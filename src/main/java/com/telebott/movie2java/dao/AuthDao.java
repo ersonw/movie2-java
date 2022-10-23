@@ -3,6 +3,7 @@ package com.telebott.movie2java.dao;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telebott.movie2java.data.EPayData;
+import com.telebott.movie2java.data.InfoData;
 import com.telebott.movie2java.data.SearchData;
 import com.telebott.movie2java.data.SmsCode;
 import com.telebott.movie2java.entity.User;
@@ -20,6 +21,45 @@ public class AuthDao {
     @Autowired
     RedisTemplate redisTemplate;
     private static final Timer timer = new Timer();
+    public void pushInfo(int count, int type){
+        InfoData info = findInfoDataType(type);
+        if (info == null){
+            info = new InfoData();
+            info.setType(type);
+            info.setAddTime(System.currentTimeMillis());
+        }else {
+            Set infos = redisTemplate.opsForSet().members("infos");
+            if (infos != null){
+                for (Object o: infos) {
+                    JSONObject jsonObject = JSONObject.parseObject(o.toString());
+                    if (type == jsonObject.getInteger("type")){
+                        redisTemplate.opsForSet().remove("infos" ,JSONObject.toJSONString(JSONObject.toJavaObject(jsonObject,InfoData.class)));
+                    }
+                }
+            }
+        }
+        info.setUpdateTime(System.currentTimeMillis());
+        info.setCount(info.getCount()+count);
+        redisTemplate.opsForSet().add("infos",JSONObject.toJSONString(info));
+    }
+    public void popInfo(int type){
+        InfoData info = findInfoDataType(type);
+        if (info == null){
+            redisTemplate.opsForSet().remove("infos" ,JSONObject.toJSONString(info));
+        }
+    }
+    public InfoData findInfoDataType(int type) {
+        Set infos = redisTemplate.opsForSet().members("infos");
+        if (infos != null){
+            for (Object o: infos) {
+                JSONObject jsonObject = JSONObject.parseObject(o.toString());
+                if (type == jsonObject.getInteger("type")){
+                    return JSONObject.toJavaObject(jsonObject,InfoData.class);
+                }
+            }
+        }
+        return null;
+    }
     public void pushOrder(EPayData data){
         EPayData object = findOrderByOrderId(data.getOut_trade_no());
         if (object != null){

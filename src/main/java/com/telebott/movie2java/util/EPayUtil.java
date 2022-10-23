@@ -1,5 +1,6 @@
 package com.telebott.movie2java.util;
 
+import com.telebott.movie2java.dao.AuthDao;
 import com.telebott.movie2java.entity.CashInOrder;
 import com.telebott.movie2java.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +32,15 @@ public class EPayUtil {
     private CashService cashService;
     @Autowired
     private MembershipService membershipService;
+    @Autowired
+    private AuthDao authDao;
 
     @PostConstruct
     public void init(){
         self = this;
     }
     public static boolean handlerOrder(CashInOrder cOrder) {
+        self.authDao.pushInfo(1,cOrder.getOrderType());
         switch (cOrder.getOrderType()){
             case CASH_ORDER:
                 return self.cashService.handlerOrder(cOrder.getOrderNo());

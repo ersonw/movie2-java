@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 @Component
 @WebFilter(filterName = "myFilter", urlPatterns = {"/api/*"})
@@ -35,6 +37,8 @@ public class MyFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+//        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.of("+8")));
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
 //        authDao = new AuthDao();
     }
     /**

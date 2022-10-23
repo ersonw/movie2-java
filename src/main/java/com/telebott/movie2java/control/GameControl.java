@@ -26,6 +26,11 @@ public class GameControl {
                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
         return service.getBalance(User.getInstance(user), ip);
     }
+    @GetMapping("/getService")
+    public ResponseData getService(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
+                             @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {
+        return service.getService(User.getInstance(user), ip);
+    }
     @GetMapping("/publicity")
     public ResponseData publicity(@RequestParam(value = "user", required = false) @ApiParam(hidden = true) String user,
                              @RequestParam(value = "ip") @ApiParam(hidden = true) String ip) {

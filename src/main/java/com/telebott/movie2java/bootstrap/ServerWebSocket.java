@@ -8,6 +8,7 @@ import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.SmsBaoService;
 import com.telebott.movie2java.util.WebSocketUtil;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @ServerEndpoint(value = "/")
 @Component
 @Getter
+@Slf4j
 public class ServerWebSocket {
     @Autowired
     private AuthDao authDao;
@@ -51,11 +53,12 @@ public class ServerWebSocket {
     private final Timer timer = new Timer();
 
     public static long getOnline(){
-        long counts = 0;
-        for (ServerWebSocket socket : webSockets) {
-            counts += socket.count;
-        }
-        return counts;
+//        long counts = 0;
+//        for (ServerWebSocket socket : webSockets) {
+//            counts += socket.count;
+//        }
+//        return counts;
+        return webSockets.size();
     }
     @PostConstruct
     public void init() {
@@ -92,7 +95,8 @@ public class ServerWebSocket {
 //                sendMessage("H");
 //            }
 //        }, 1000, 1000 * 10);
-        System.out.println(remoteAddress.getAddress());
+//        System.out.println(remoteAddress.getAddress());
+
     }
 
     /**
@@ -103,6 +107,7 @@ public class ServerWebSocket {
         onlineNumber--;
         webSockets.remove(this);
         timer.cancel();
+
 //        System.out.println("有连接关闭！ 当前在线人数" + onlineNumber);
     }
 

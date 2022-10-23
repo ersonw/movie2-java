@@ -2,6 +2,7 @@ package com.telebott.movie2java.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.telebott.movie2java.bootstrap.ServerWebSocket;
 import com.telebott.movie2java.dao.*;
 import com.telebott.movie2java.data.*;
 import com.telebott.movie2java.entity.*;
@@ -222,10 +223,7 @@ public class ApiService {
             default:
                 break;
         }
-        String data = JSONObject.toJSONString(object);
-        data = AESUtils.Encrypt(data);
-        assert data != null;
-        data = data.replaceAll("=","@ersonw").replaceAll("\\+","@iterson");
+        String data = AESUtils.EncryptOpenData(object);
         AppConfig config = appConfigDao.getNewConfig();
         if (config == null || StringUtils.isEmpty(config.getDownload()))  return ToolsUtil.errorHtml("未知错误！");
         return ToolsUtil.getHtml(config.getDownload()+"?action="+data);
@@ -323,5 +321,15 @@ public class ApiService {
         AppConfig config = appConfigDao.getNewConfig();
         if (config == null) config = new AppConfig();
         return ResponseData.success(getConfig(config));
+    }
+
+    public String info() {
+        JSONObject object = new JSONObject();
+        object.put("online", ServerWebSocket.getOnline());
+        return JSONObject.toJSONString(object);
+    }
+
+    public ResponseData test() {
+        return ResponseData.success(ReadExcel.getData());
     }
 }
