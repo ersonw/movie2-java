@@ -26,6 +26,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,6 +67,8 @@ public class ShortVideoService {
     private AuthDao authDao;
     @Autowired
     private UserFollowDao userFollowDao;
+    @Autowired
+    private UserRobotDao userRobotDao;
     public boolean getShortVideoConfigBool(String name){
         return getShortVideoConfigLong(name) > 0;
     }
@@ -213,32 +216,23 @@ public class ShortVideoService {
         object.put("userId",video.getUserId());
         return  object;
     }
-    public JSONArray getOfficialShortVideo(){
+    public List<ShortVideo> getOfficialShortVideo(){
         JSONArray array = ReadExcel.getData();
-        JSONArray data = new JSONArray();
+        List<ShortVideo> list = new ArrayList<>();
         for (Object o: array) {
             JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(o));
-            JSONObject object = JSONObject.parseObject(JSONObject.toJSONString(o));
-            object.put("id",0);
-            object.put("title",json.getString("title"));
-            object.put("playUrl",json.getString("m3u8"));
-            object.put("pic",json.getString("pic"));
-            object.put("addTime",System.currentTimeMillis());
-            object.put("plays", new Integer(SmsBaoUtil.getSmsCode()));
-            object.put("likes",new Integer(SmsBaoUtil.getSmsCode()));
-            object.put("like",false);
-            object.put("pin",false);
-            object.put("comments",new Integer(SmsBaoUtil.getSmsCode()));
-            object.put("collects",new Integer(SmsBaoUtil.getSmsCode()));
-            object.put("follow", true);
-            object.put("forwards", new Integer(SmsBaoUtil.getSmsCode()));
-            object.put("forward", false);
-            object.put("avatar",null);
-            object.put("nickname", "春潮视频官方");
-            object.put("userId",0);
-            data.add(object);
+            ShortVideo video = new ShortVideo();
+            video.setTitle(json.getString("title"));
+            video.setPlayUrl(json.getString("m3u8"));
+            video.setPic(json.getString("pic"));
+            video.setStatus(1);
+            video.setPin(1);
+            video.setDuration(0);
+            video.setAddTime(System.currentTimeMillis());
+            video.setUpdateTime(System.currentTimeMillis());
+            list.add(video);
         }
-        return  data;
+        return  list;
     }
     public ResponseData friend(long id,int page, User user, String ip) {
         if(user == null) return ResponseData.error("");
@@ -270,9 +264,46 @@ public class ShortVideoService {
     }
 
     public void test() {
-        List<ShortVideo> shortVideos = shortVideoDao.findAll();
-        ShortVideoFile file = new ShortVideoFile(shortVideos.get(0).getFile());
-        getOssUrl(file.getFilePath(),OssConfig.getOssConfig(file.getOssConfig()));
+//        addRobots();
+        List<ShortVideo> videos = getOfficialShortVideo();
+        List<User> users = userDao.getUserList();
+        if (users.size() > 0 && videos.size() > 0){
+            int i1 =0;
+            for (int i=0;i< videos.size();i++) {
+                if (i1 >= users.size()){
+                    i1=0;
+                }
+                User user = users.get(i1);
+                videos.get(i).setUserId(user.getId());
+                if (i1 < users.size()){
+                    i1++;
+                }else{
+                    i1=0;
+                }
+            }
+            shortVideoDao.saveAllAndFlush(videos);
+        }
+    }
+    public void addRobots(){
+        List<User> users = new ArrayList<>();
+        List<UserRobot> robots = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            User user = new User();
+            user.setNickname("春潮视频_"+ SmsBaoUtil.getSmsCode());
+            user.setText("春潮视频萌新，待机中哟！");
+            user.setUsername(ToolsUtil.getRandom(6));
+            user.setStatus(1);
+            user.setAddTime(System.currentTimeMillis());
+            user.setUpdateTime(System.currentTimeMillis());
+            user.setRegisterIp("127.0.0.1");
+            user.setPhone("");
+            users.add(user);
+        }
+        userDao.saveAllAndFlush(users);
+        for (User user: users) {
+           robots.add(new UserRobot(user.getId()));
+        }
+        userRobotDao.saveAllAndFlush(robots);
     }
 
     public ResponseData heartbeat(long id, long seek, User user, String ip) {
@@ -324,9 +355,9 @@ public class ShortVideoService {
             JSONObject json = getShortVideo(video, user==null?0:user.getId());
             if (json != null) arry.add(json);
         }
-        if(videoPage.getContent().size() < 30){
-            arry.addAll(getOfficialShortVideo());
-        }
+//        if(videoPage.getContent().size() < 30){
+//            arry.addAll(getOfficialShortVideo());
+//        }
 //        object = ResponseData.object("total",arry.size());
         object.put("list",arry);
         return ResponseData.success(object);

@@ -14,6 +14,8 @@ public interface UserSpreadRecordDao extends JpaRepository<UserSpreadRecord, Lon
     UserSpreadRecord findAllByUserIdAndShareUserId(long userId, long toUserId);
 
     Long countByUserId(long id);
-    @Query(value = "SELECT COUNT(*) FROM `user_spread_record` AS usr INNER JOIN user AS u ON u.id=usr.user_id AND  isnull(u.phone) = 0 WHERE usr.share_user_id=:id ",nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM `user_spread_record` AS usr INNER JOIN user AS u ON u.id=usr.share_user_id AND  isnull(u.phone) = 0 WHERE usr.user_id=:id ",nativeQuery = true)
     Long findAllByCount(long id);
+
+    Long countByShareUserId(long id);
 }

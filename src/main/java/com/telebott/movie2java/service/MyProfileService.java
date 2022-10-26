@@ -89,7 +89,7 @@ public class MyProfileService {
         json.put("user", userService.getUserInfo(profile));
         json.put("diamond", userBalanceDiamondDao.getAllByBalance(user.getId()));
         json.put("count", userSpreadRecordDao.countByUserId(user.getId()));
-        json.put("cash", userBalanceCashDao.getAllByBalance(user.getId()));
+        json.put("cash", userSpreadRebateDao.getAllByBalance(user.getId()));
         json.put("coin", userBalanceCoinDao.getAllByBalance(user.getId()));
         json.put("gain", userSpreadRebateDao.getAllByBalance(user.getId()));
         json.put("carUrl", getConfig("carUrl"));

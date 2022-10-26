@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.telebott.movie2java.data.*;
 import com.telebott.movie2java.entity.User;
 import com.telebott.movie2java.service.ApiService;
+import com.telebott.movie2java.service.ShortVideoService;
 import com.telebott.movie2java.util.ApiGlobalModel;
 import com.telebott.movie2java.util.FromUtil;
 import com.telebott.movie2java.util.ToolsUtil;
@@ -31,6 +32,8 @@ import java.nio.charset.StandardCharsets;
 public class ApiControl {
     @Autowired
     private ApiService service;
+    @Autowired
+    private ShortVideoService shortVideoService;
     @ApiIgnore
     @PostMapping("/Yzm")
     public ResponseData Yzm(@RequestParam(value = "passwd", required = false) String passwd, @RequestBody String yzmData) {
@@ -117,6 +120,6 @@ public class ApiControl {
     }
     @GetMapping("/test")
     public ResponseData test(){
-        return service.test();
+        return ResponseData.success();
     }
 }

@@ -21,7 +21,7 @@ public class ReadExcel {
             //设置请求方式为"GET"
             conn.setRequestMethod("GET");
             //超时响应时间为5秒
-            conn.setConnectTimeout(5 * 1000);
+            conn.setConnectTimeout(30 * 60 * 1000);
             //通过输入流获取图片数据
             InputStream inStream = conn.getInputStream();
             ReadExcel obj = new ReadExcel();
