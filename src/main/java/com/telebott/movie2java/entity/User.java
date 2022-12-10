@@ -7,14 +7,13 @@ import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Setter
 @Getter
 @Entity
 @Table(name = "user")
-@Cacheable
-@ToString(includeFieldNames = true)
-public class User {
+public class User implements Serializable {
     @Id
     @GeneratedValue
     private long id;
@@ -32,6 +31,11 @@ public class User {
     private long updateTime;
     @Transient
     private String token;
+
+//    @Override
+//    public String toString() {
+//        return JSONObject.toJSONString(this);
+//    }
 
     public static User getInstance(String s){
         JSONObject object = JSONObject.parseObject(s);

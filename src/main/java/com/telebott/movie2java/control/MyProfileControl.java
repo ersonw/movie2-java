@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/myProfile")
-//@Api(value = "api", tags = "个人中心接口")
+@Api(value = "api", tags = "个人中心接口")
 public class MyProfileControl {
     @Autowired
     private MyProfileService service;

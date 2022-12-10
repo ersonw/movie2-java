@@ -55,6 +55,77 @@ public class ToolsUtil {
     private static List<FilterWords> filterWords;
     public static final int TIME_OUT = 30;
     public static final int MAX_Black = 3;
+    /**
+     * 对象转Byte数组
+     * @param obj
+     * @return
+     */
+    public static byte[] objectToByteArray(Object obj) {
+        byte[] bytes = null;
+        ByteArrayOutputStream byteArrayOutputStream = null;
+        ObjectOutputStream objectOutputStream = null;
+        try {
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(obj);
+            objectOutputStream.flush();
+            bytes = byteArrayOutputStream.toByteArray();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (objectOutputStream != null) {
+                try {
+                    objectOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (byteArrayOutputStream != null) {
+                try {
+                    byteArrayOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+        return bytes;
+    }
+
+    /**
+     * Byte数组转对象
+     * @param bytes
+     * @return
+     */
+    public static <T> T byteArrayToObject(byte[] bytes) {
+        Object obj = null;
+        ByteArrayInputStream byteArrayInputStream = null;
+        ObjectInputStream objectInputStream = null;
+        try {
+            byteArrayInputStream = new ByteArrayInputStream(bytes);
+            objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            obj = objectInputStream.readObject();
+        } catch (Exception e) {
+//            e.printStackTrace();
+        } finally {
+            if (byteArrayInputStream != null) {
+                try {
+                    byteArrayInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (objectInputStream != null) {
+                try {
+                    objectInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return (T) obj;
+    }
     public static String getCamelPinYin(String hz) {
         return getCamelPinYin(hz, false);
     }

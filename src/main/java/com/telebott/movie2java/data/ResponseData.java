@@ -11,46 +11,66 @@ import lombok.ToString;
 @Getter
 @ToString(includeFieldNames = true)
 public class ResponseData {
-    private  int code = 200;
-    private  String message;
-    private  String data;
-    public String getData(){
-        if (data != null) return AESUtils.Encrypt(data);
+    private int code = 200;
+    private String message;
+    private String data;
+
+    //    public String getData(){
+//        if (data != null) return AESUtils.Encrypt(data);
+//        return null;
+//    }
+    public JSONObject getData() {
+        if (data != null) return JSONObject.parseObject(data);
         return null;
     }
 
-    public ResponseData() {}
+
+    public ResponseData() {
+    }
+
     public ResponseData(String message) {
         this.message = message;
     }
+
     public ResponseData(JSONObject data) {
         this.data = JSONObject.toJSONString(data);
     }
-    public ResponseData(String message,JSONObject data) {
+
+    public ResponseData(String message, JSONObject data) {
         this.data = JSONObject.toJSONString(data);
         this.message = message;
     }
+
     public ResponseData(int code) {
         this.code = code;
     }
+
     public ResponseData(int code, String message) {
         this.code = code;
         this.message = message;
     }
+
     public ResponseData(int code, String message, String data) {
         this.code = code;
         this.message = message;
         this.data = data;
     }
+
     public static ResponseData success() {
         return new ResponseData("");
     }
+
     public static ResponseData success(JSONObject data) {
         return new ResponseData(data);
     }
-    public static ResponseData success(String message,JSONObject data) {
-        return new ResponseData(message,data);
+
+    public static ResponseData success(String message, JSONObject data) {
+        return new ResponseData(message, data);
     }
+    public static ResponseData success(String message, int code) {
+        return new ResponseData(code,message);
+    }
+
     public static ResponseData success(JSONArray array) {
         return new ResponseData(object("list", array));
     }
@@ -58,29 +78,34 @@ public class ResponseData {
     public static ResponseData fail() {
         return new ResponseData(404);
     }
+
     public static ResponseData error() {
         return new ResponseData(404);
     }
+
     public static ResponseData error(int code) {
         return new ResponseData(code);
     }
+
     public static ResponseData error(int code, String message) {
         return new ResponseData(code, message);
     }
+
     public static ResponseData fail(String message) {
-        return new ResponseData(404,message);
+        return new ResponseData(404, message);
     }
 
     public static ResponseData error(String message) {
         return fail(message);
     }
+
     public static JSONObject object(String name, Object val) {
         JSONObject obj = new JSONObject();
-        obj.put(name,val);
+        obj.put(name, val);
         return obj;
     }
 
     public static ResponseData success(String message) {
-        return new ResponseData(200,message);
+        return new ResponseData(200, message);
     }
 }

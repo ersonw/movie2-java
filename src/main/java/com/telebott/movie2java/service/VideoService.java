@@ -130,7 +130,7 @@ public class VideoService {
     public ResponseData player(long id, User user, String ip,boolean isWeb) {
 //        System.out.println(isWeb);
         if (user == null) {
-            return ResponseData.success(ResponseData.object("error", "login"));
+            return ResponseData.success("未登录账号",201);
         }
         if (id == 0) {
             return ResponseData.error("You can't find the video with id 0");
@@ -550,12 +550,13 @@ public class VideoService {
         List<VideoConcentration> concentrations = concentrationPage.getContent();
         JSONArray jsonArray= new JSONArray();
         for (VideoConcentration concentration: concentrations) {
-            Page<Video> videoPage = getVideo(concentration.getId());
-            JSONArray array = new JSONArray();
-            for (Video video: videoPage.getContent()) {
-                array.add(getVideo(video));
-            }
-            JSONObject json = ResponseData.object("videos", array);
+//            Page<Video> videoPage = getVideo(concentration.getId());
+//            JSONArray array = new JSONArray();
+//            for (Video video: videoPage.getContent()) {
+//                array.add(getVideo(video));
+//            }
+//            JSONObject json = ResponseData.object("videos", array);
+            JSONObject json = new JSONObject();
             json.put("id", concentration.getId());
             json.put("name", concentration.getName());
             jsonArray.add(json);

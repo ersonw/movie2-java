@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/coin")
-//@Api(value = "api", tags = "金币钱包")
+@Api(value = "api", tags = "金币钱包")
 public class CoinControl {
     @Autowired
     private CoinService service;

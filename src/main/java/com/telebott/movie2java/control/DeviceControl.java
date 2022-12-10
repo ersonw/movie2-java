@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/device")
-//@Api(value = "api", tags = "设备接口")
+@Api(value = "api", tags = "设备接口")
 public class DeviceControl {
     @Autowired
     private DeviceService service;

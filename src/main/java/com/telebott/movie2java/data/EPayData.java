@@ -12,6 +12,7 @@ import lombok.ToString;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.Map;
 
 @Setter
@@ -19,7 +20,7 @@ import java.util.Map;
 @ToString(includeFieldNames = true)
 @Data
 @ApiModel
-public class EPayData {
+public class EPayData implements Serializable {
     public EPayData(){}
     @ApiModelProperty(value= "商户ID",required = false)
     private String pid;

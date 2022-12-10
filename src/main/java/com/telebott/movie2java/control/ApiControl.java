@@ -7,6 +7,7 @@ import com.telebott.movie2java.service.ApiService;
 import com.telebott.movie2java.service.ShortVideoService;
 import com.telebott.movie2java.util.ApiGlobalModel;
 import com.telebott.movie2java.util.FromUtil;
+import com.telebott.movie2java.util.MD5Util;
 import com.telebott.movie2java.util.ToolsUtil;
 import io.lettuce.core.dynamic.annotation.Param;
 import io.swagger.annotations.*;
@@ -118,8 +119,10 @@ public class ApiControl {
                 "</body>\n" +
                 "</html>";
     }
-    @GetMapping("/test")
+    @RequestMapping("/test")
     public ResponseData test(){
+//        MD5Util md5Util = new MD5Util();
+//        System.out.println(md5Util.getMD5("111111"));
         return ResponseData.success();
     }
 }

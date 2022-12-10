@@ -7,19 +7,33 @@ import com.telebott.movie2java.data.InfoData;
 import com.telebott.movie2java.data.SearchData;
 import com.telebott.movie2java.data.SmsCode;
 import com.telebott.movie2java.entity.User;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.*;
 
-@Repository
+import static java.time.temporal.ChronoUnit.SECONDS;
+
+@Slf4j
+@Component
 public class AuthDao {
     @Autowired
     UserDao userDao;
     @Autowired
     RedisTemplate redisTemplate;
+    @Resource
+    private RedisTemplate<String, User> userRedisTemplate;
+    @Resource
+    private RedisTemplate<String, SmsCode> codeRedisTemplate;
+    @Resource
+    private RedisTemplate<String, SearchData> searchRedisTemplate;
+    @Resource
+    private RedisTemplate<String, EPayData> orderRedisTemplate;
     private static final Timer timer = new Timer();
     public void pushInfo(int count, int type){
         InfoData info = findInfoDataType(type);
@@ -60,229 +74,116 @@ public class AuthDao {
         }
         return null;
     }
+
     public void pushOrder(EPayData data){
-        EPayData object = findOrderByOrderId(data.getOut_trade_no());
-        if (object != null){
-            popOrder(object);
-        }
-        redisTemplate.opsForSet().add("orders",JSONObject.toJSONString(data));
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                popOrder(object);
-            }
-        }, 1000 * 60 * 30);
+        orderRedisTemplate.opsForValue().set(data.getOut_trade_no(),data, Duration.of(60*15,SECONDS));
     }
     public EPayData findOrderByOrderId(String orderId){
-        Set orders = redisTemplate.opsForSet().members("orders");
-        if (orders != null){
-            for (Object o: orders) {
-                JSONObject jsonObject = JSONObject.parseObject(o.toString());
-                if (orderId.equals(jsonObject.get("out_trade_no"))){
-                    return JSONObject.toJavaObject(jsonObject,EPayData.class);
-                }
-            }
-        }
-        return null;
+        return orderRedisTemplate.opsForValue().get(orderId);
     }
     public void popOrder(EPayData data){
-        redisTemplate.opsForSet().remove("orders" ,JSONObject.toJSONString(data));
+        orderRedisTemplate.delete(data.getOut_trade_no());
     }
     public void popOrderById(String orderId){
         EPayData object = findOrderByOrderId(orderId);
-        if (object != null){
+        while (object != null){
             popOrder(object);
+            object = findOrderByOrderId(orderId);
         }
     }
+    private List<EPayData> getAllOrder() {
+        Set<String> keys = codeRedisTemplate.keys("*");
+        if (keys == null) return new ArrayList<>();
+        return orderRedisTemplate.opsForValue().multiGet(keys);
+    }
+
     public void pushSearch(SearchData data){
-        SearchData object = findSearch(data.getId());
-        if (object != null){
-            popSearch(object);
-        }
-        redisTemplate.opsForSet().add("searchs",JSONObject.toJSONString(data));
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                popSearch(object);
-            }
-        }, 1000 * 60 * 60);
+        searchRedisTemplate.opsForValue().set(data.getId(),data, Duration.of(60*15,SECONDS));
     }
     public List<SearchData> findSearchByUserId(long userId){
-        Set searchs = redisTemplate.opsForSet().members("searchs");
-        if (searchs != null){
-            List<SearchData> datas = new ArrayList<>();
-            for (Object search: searchs) {
-                JSONObject jsonObject = JSONObject.parseObject(search.toString());
-                if (jsonObject.getLong("userId") == userId){
-                    datas.add(JSONObject.toJavaObject(jsonObject,SearchData.class));
-                }
+        List<SearchData> dataList = getAllSearch();
+        List<SearchData> list = new ArrayList<>();
+        for(SearchData data: dataList){
+            if (data.getUserId() == userId){
+                list.add(data);
             }
-            return datas;
         }
-        return null;
+        return list;
     }
     public SearchData findSearch(String id){
-        Set searchs = redisTemplate.opsForSet().members("searchs");
-        if (searchs != null){
-            for (Object search: searchs) {
-                JSONObject jsonObject = JSONObject.parseObject(search.toString());
-                if (id.equals(jsonObject.get("id"))){
-                    return JSONObject.toJavaObject(jsonObject,SearchData.class);
-                }
+        List<SearchData> dataList = getAllSearch();
+        for(SearchData data: dataList){
+            if (data.getId().equals(id)){
+                return data;
             }
         }
         return null;
-    }
-    public void popSearch(List<SearchData> datas){
-        for (SearchData data: datas) {
-            redisTemplate.opsForSet().remove("searchs" ,JSONObject.toJSONString(data));
-        }
     }
     public void popSearch(SearchData data){
-        redisTemplate.opsForSet().remove("searchs" ,JSONObject.toJSONString(data));
+        searchRedisTemplate.delete(data.getId());
     }
+    private List<SearchData> getAllSearch() {
+        Set<String> keys = codeRedisTemplate.keys("*");
+        if (keys == null) return new ArrayList<>();
+        return searchRedisTemplate.opsForValue().multiGet(keys);
+    }
+
     public void pushCode(SmsCode smsCode){
-        SmsCode object = findCode(smsCode.getId());
-        if (object != null){
-            popCode(object);
-        }
-//        System.out.println(smsCode);
-//        redisTemplate.opsForSet().add("smsCode",JSONObject.toJSONString(smsCode),5, TimeUnit.MINUTES);
-        redisTemplate.opsForSet().add("smsCode",JSONObject.toJSONString(smsCode));
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                popCode(smsCode);
-            }
-        }, 1000 * 60 * 60);
+        codeRedisTemplate.opsForValue().set(smsCode.getId(),smsCode, Duration.of(60*60,SECONDS));
     }
     public SmsCode findCode(String id){
-        Set smsCode = redisTemplate.opsForSet().members("smsCode");
-        if (smsCode != null){
-            JSONObject jsonObject = new JSONObject();
-            for (Object code: smsCode) {
-//                System.out.println(code);
-                jsonObject = JSONObject.parseObject(code.toString());
-                if (id.equals(jsonObject.get("id"))){
-                    return JSONObject.toJavaObject(jsonObject,SmsCode.class);
-                }
-            }
-        }
-        return null;
+        return codeRedisTemplate.opsForValue().get(id);
     }
     public void removeByPhone(String phone){
-        Set smsCode = redisTemplate.opsForSet().members("smsCode");
-        if (smsCode != null){
-            JSONObject jsonObject = new JSONObject();
-            for (Object code: smsCode) {
-                jsonObject = JSONObject.parseObject(code.toString());
-                if (phone.equals(jsonObject.get("phone"))){
-                    popCode(JSONObject.toJavaObject(jsonObject,SmsCode.class));
-                }
-            }
+        SmsCode code = findByPhone(phone);
+        while (code != null){
+            codeRedisTemplate.delete(code.getId());
+            code = findByPhone(phone);
         }
     }
     public SmsCode findByPhone(String phone){
-        Set smsCode = redisTemplate.opsForSet().members("smsCode");
-        if (smsCode != null){
-            JSONObject jsonObject = new JSONObject();
-            for (Object code: smsCode) {
-                jsonObject = JSONObject.parseObject(code.toString());
-                if (phone.equals(jsonObject.get("phone"))){
-                    return (JSONObject.toJavaObject(jsonObject,SmsCode.class));
-                }
-            }
+        List<SmsCode> codes = getAllCodes();
+        for (SmsCode code: codes) {
+            if (code.getPhone().equals(phone)) return code;
         }
         return null;
+    }
+    private List<SmsCode> getAllCodes() {
+        Set<String> keys = codeRedisTemplate.keys("*");
+        if (keys == null) return new ArrayList<>();
+        return codeRedisTemplate.opsForValue().multiGet(keys);
     }
     public void popCode(SmsCode code){
-        redisTemplate.opsForSet().remove("smsCode" ,JSONObject.toJSONString(code));
-    }
-    public void pushUser(User userToken){
-        if (StringUtils.isNotEmpty(userToken.getToken())) {
-            Set users = redisTemplate.opsForSet().members("Users");
-            assert users != null;
-//        System.out.println(users.toString());
-            for (Object user: users) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                User userEntity = objectMapper.convertValue(user, User.class);
-                if (userEntity.getToken().equals(userToken.getToken()) || (userEntity.getId() > 0 && userToken.getId() > 0 && userEntity.getId() == userToken.getId())){
-                    popUser(userEntity);
-                }
-            }
-            redisTemplate.opsForSet().add("Users",userToken);
-        }
-    }
-    public void updateUser(String token){
-        User user = findUserByToken(token);
-        if (user != null){
-            if (user.getId() > 0){
-                user = userDao.findAllById(user.getId());
-                if (user != null){
-                    user.setToken(token);
-                    pushUser(user);
-                }
-            }else {
-                pushUser(user);
-            }
-        }
-    }
-    public void removeUser(User userToken){
-        Set users = redisTemplate.opsForSet().members("Users");
-        if (users != null){
-            for (Object user: users) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                User userEntity = objectMapper.convertValue(user,User.class);
-                if (userEntity.getToken().equals(userToken.getToken())){
-                    popUser(userEntity);
-                }
-            }
-        }
-    }
-    public void popUser(User userToken){
-        redisTemplate.opsForSet().remove("Users" ,userToken);
-    }
-//    public User findUserByIdentifier(String id) {
-//        Set users = redisTemplate.opsForSet().members("Users");
-//        if (users != null){
-//            for (Object user: users) {
-//                ObjectMapper objectMapper = new ObjectMapper();
-//                User userEntity = objectMapper.convertValue(user,User.class);
-//                if (userEntity.getIdentifier().equals(id)){
-//                    return userEntity;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-    public User findUserByToken(String token) {
-        Set users = redisTemplate.opsForSet().members("Users");
-        if (users != null){
-            for (Object user: users) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                User userEntity = objectMapper.convertValue(user,User.class);
-                if (userEntity.getToken().equals(token)){
-                    return userEntity;
-                }
-            }
-        }
-        return null;
-    }
-    public User findUserByUserId(long userId) {
-        Set users = redisTemplate.opsForSet().members("Users");
-        if (users != null){
-            for (Object user: users) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                User userEntity = objectMapper.convertValue(user,User.class);
-                if (userEntity.getId()== userId){
-                    return userEntity;
-                }
-            }
-        }
-        return null;
+        codeRedisTemplate.delete(code.getId());
     }
 
-    public Set getAllUser(){
-        return redisTemplate.opsForSet().members("Users");
+    public void pushUser(User userToken){
+        popUser(userToken);
+        userRedisTemplate.opsForValue().set(userToken.getToken(),userToken);
+    }
+    private List<User> getAllUsers() {
+        Set<String> keys = userRedisTemplate.keys("*");
+        if (keys == null) return new ArrayList<>();
+        return userRedisTemplate.opsForValue().multiGet(keys);
+    }
+    public void popUser(User userToken){
+        List<User> users = getAllUsers();
+        for (User user : users) {
+//            System.out.println(user);
+            if (user.getId() == userToken.getId()) {
+                userRedisTemplate.delete(user.getToken());
+            }
+        }
+    }
+
+    public User findUserByToken(String token) {
+        return userRedisTemplate.opsForValue().get(token);
+    }
+    public User findUserByUserId(long userId) {
+        List<User> users = getAllUsers();
+        for (User user: users) {
+            if (user.getId() == userId) return user;
+        }
+        return null;
     }
 }

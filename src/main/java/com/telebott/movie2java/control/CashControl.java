@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cash")
-//@Api(value = "api", tags = "现金钱包")
+@Api(value = "api", tags = "现金钱包")
 public class CashControl {
     @Autowired
     private CashService service;

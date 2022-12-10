@@ -40,6 +40,8 @@ public class DeviceService {
                 record.setIp(ip);
                 record.setAddTime(System.currentTimeMillis());
                 deviceRecordDao.saveAndFlush(record);
+                user.setToken(ToolsUtil.getToken());
+                authDao.pushUser(user);
                 return user;
             }
         }

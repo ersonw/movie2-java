@@ -100,6 +100,7 @@ public class MyFilter implements Filter {
 //            System.out.printf(schema+"\n");
             User user = null;
             if (StringUtils.isNotEmpty(token)){
+//                System.out.println(authDao.findUserByToken(token));
                 user = authDao.findUserByToken(token);
                 if (token.equals("e4188bce3f35436f9dc5f0e627d093e31651674631238")) {
                     user = userDao.findAllById(1);

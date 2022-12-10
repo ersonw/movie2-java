@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/game")
-//@Api(value = "api", tags = "游戏接口")
+@Api(value = "api", tags = "游戏接口")
 public class GameControl {
     @Autowired
     private GameService service;

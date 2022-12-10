@@ -234,7 +234,12 @@ public class UserService {
         }
         userDao.saveAndFlush(user);
 //        return login(username,password,deviceId,platform,ip);
-        return ResponseData.success(ResponseData.object("id", user.getId()));
+        JSONObject object = ResponseData.object("id", user.getId());
+        user.setToken(ToolsUtil.getToken());
+        authDao.pushUser(user);
+        object.put("token",user.getToken());
+        object.put("nickname",user.getNickname());
+        return ResponseData.success(object);
     }
     public ResponseData sendSmsRegister(String phone, String ip){
         if (!MobileRegularExp.isMobileNumber(phone)){
@@ -610,9 +615,9 @@ public class UserService {
 
     public ResponseData logout(User user, String ip) {
         if (user == null) return ResponseData.error("");
-        if (StringUtils.isEmpty(user.getPhone())) return ResponseData.error("为了安全起见，游客暂不支持注销账号哟！注销账号将无法找回！");
+//        if (StringUtils.isEmpty(user.getPhone())) return ResponseData.error("为了安全起见，游客暂不支持注销账号哟！注销账号将无法找回！");
         authDao.popUser(user);
-        return ResponseData.success();
+        return ResponseData.success("未绑定手机号将无法找回原来账号！注销成功",ResponseData.object("state", true));
     }
     public String getShareConfig(String name){
         List<UserShareConfig> configList = userShareConfigDao.findAllByName(name);

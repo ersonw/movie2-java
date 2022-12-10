@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
-//@Api(value = "api", tags = "短链接接口")
+@Api(value = "api", tags = "短链接接口")
 public class ShortLinkControl {
     @Autowired
     private ShortLinkService service;

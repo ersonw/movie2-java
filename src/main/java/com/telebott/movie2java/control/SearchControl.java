@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/search")
-//@Api(value = "api", tags = "搜索接口")
+@Api(value = "api", tags = "搜索接口")
 public class SearchControl {
     @Autowired
     private SearchService service;
