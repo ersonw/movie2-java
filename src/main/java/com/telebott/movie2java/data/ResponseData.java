@@ -15,7 +15,7 @@ public class ResponseData {
     private String message;
     private String data;
 
-    //    public String getData(){
+//    public String getData(){
 //        if (data != null) return AESUtils.Encrypt(data);
 //        return null;
 //    }

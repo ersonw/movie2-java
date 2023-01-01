@@ -188,8 +188,8 @@ public class VideoService {
             }
         }
         object.put("id", id);
-        object.put("picThumb",getUrlPic(video.getPicThumb()));
-        object.put("vodPlayUrl",getUrlVideo(video.getVodPlayUrl()));
+        object.put("picThumb",getPicThumbUrl(video.getPicThumb()));
+        object.put("vodPlayUrl",getVideoUrl(video.getVodPlayUrl()));
         object.put("title", video.getTitle());
         object.put("addTime", video.getAddTime());
         object.put("vodContent", video.getVodContent());
@@ -340,12 +340,26 @@ public class VideoService {
         }
         return array;
     }
+    private String getVideoUrl(String url){
+        String picDomain = getConfig("videoDomain");
+        if (StringUtils.isEmpty(picDomain)) return url;
+        if (!picDomain.startsWith("http")) picDomain = "http://"+picDomain;
+        if (!picDomain.endsWith("/")) picDomain+="/";
+        return url.replaceAll("(https?|ftp|file)://([-A-Za-z0-9]+\\.)?[-A-Za-z0-9]+\\.[-A-Za-z0-9]+\\/",picDomain);
+    }
+    private String getPicThumbUrl(String url){
+        String picDomain = getConfig("picDomain");
+        if (StringUtils.isEmpty(picDomain)) return url;
+        if (!picDomain.startsWith("http")) picDomain = "http://"+picDomain;
+        if (!picDomain.endsWith("/")) picDomain+="/";
+        return url.replaceAll("(https?|ftp|file)://([-A-Za-z0-9]+\\.)?[-A-Za-z0-9]+\\.[-A-Za-z0-9]+\\/",picDomain);
+    }
     public JSONObject getVideo(Video video) {
         JSONObject json = new JSONObject();
         json.put("id", video.getId());
         json.put("title", video.getTitle());
         json.put("vodContent", video.getVodContent());
-        json.put("picThumb", video.getPicThumb());
+        json.put("picThumb", getPicThumbUrl(video.getPicThumb()));
         json.put("vodDuration",video.getVodDuration());
         json.put("plays", video.getPlays()+ videoPlayDao.countAllByVideoId(video.getId()));
         json.put("likes", video.getLikes()+ videoLikeDao.countAllByVideoId(video.getId()));
@@ -427,7 +441,7 @@ public class VideoService {
         JSONObject object = ResponseData.object("id",video.getId());
         object.put("title",video.getTitle());
         object.put("vodContent",video.getVodContent());
-        object.put("picThumb",getUrlPic(video.getPicThumb()));
+        object.put("picThumb",getPicThumbUrl(video.getPicThumb()));
         object.put("shareUrl", "");
         String shareDomain = getConfig("shareDomain");
         if (StringUtils.isNotEmpty(shareDomain)){
